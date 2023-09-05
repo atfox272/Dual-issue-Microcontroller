@@ -27,7 +27,7 @@ Dual-core Microcontroller ver1.0
 - Thiết lập Input/Output
 
 #### v. Main memory:
-- Chi tiết trong phần <Cấu trúc bộ nhớ>
+- Chi tiết trong phần <Interface between Processor and Memory & Memory structure>
 
 ## 2. Interface between Processor and Memory & Memory structure :
 - Memory Hierachy :
