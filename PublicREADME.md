@@ -36,7 +36,8 @@ Dual-core Microcontroller ver1.0
 
 - Interface between Processor and Memory:
   
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/b140daae-d70b-4a2e-aa18-c5591abcec8e)
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/24fd89c8-7826-42cf-8822-c5d54abee516)
+
 
 
 ## 3. Optional:
