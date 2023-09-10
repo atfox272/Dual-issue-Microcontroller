@@ -4,16 +4,18 @@ Dual-core Microcontroller ver1.0
 - Ở đề tài này, nhóm em sẽ làm 1 con Microcontroller sử dụng tập lệnh RISC-V đơn giản gồm 2 nhân và các ngoại vi cần thiết (gồm ngoại vi giao tiếp và I/O)
 ### a. Sơ đồ khối:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/00fda3c4-e28f-433b-9e3b-24a0143f0bfa)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/1ed7e937-0b87-4df9-9eed-458eac7bfb8a)
 
 ### b. Chức năng các khối
-#### i. Multi-processor Manager (Synchronization Primitive):
+#### i. Multi-processor Manager:
 - Phân phối instruction vào Processor đang trong trạn thái rỗi (IDLE_STATE)
+- Kiểm soát dữ liệu trong câu lệnh tiếp thep có nguy cơ bị out-dated khi xử lý song song hay không
+
+#### ii. Synchronization Primitive:
 - Đông bộ việc xử lý song song (parallel mamnagement)
   + Cơ chế chống đụng độ khi truy xuất main memory : _mutual exclusion_
 - Quản lý việc thanh ghi bên trong Processor này là **new data** (dữ liệu mới nhất được load vào register)
-- Kiểm soát dữ liệu trong thanh ghi có nguy cơ bị out-dated khi xử lý song song hay không
-  
+
 #### ii. Processor 1:
 - Nạp chương trình (Program device)
 - Quản lý I/O
@@ -28,7 +30,7 @@ Dual-core Microcontroller ver1.0
 - Thiết lập Input/Output
 - Bộ đếm cho dữ liệu input/output
 
-#### v. Main memory:
+#### v. Memory:
 - Chi tiết trong phần <Interface between Processor and Memory & Memory structure>
 
 ## 2. Interface between Processor and Memory & Memory structure :
@@ -37,8 +39,8 @@ Dual-core Microcontroller ver1.0
   ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/fe1c6162-6781-4c77-b61f-daee985725db)
 
 - Interface between Processor and Memory:
-  
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/24fd89c8-7826-42cf-8822-c5d54abee516)
+
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/70110588-7eb1-4edc-8ca1-bdd662dd2ab5)
 
 ## 3. Tính khả thi của đề tài đối với thời gian làm đồ án:
 
@@ -53,10 +55,9 @@ Dual-core Microcontroller ver1.0
 
 - Từ các các lệnh đơn giản trên processor thiết lập thanh ghi và gửi tín hiệu đến các ngoại vi để xử lý các tác vụ yêu cầu
   
-- Ngoài ra về các ngoại vi thì bên em đã có thiết kế trước các ngoại vi như UART, SPI, RAM (main memory), I2C, nên khối lượng còn lại chỉ là xử lý hành vi của **Processor** và **Multi-processor Manager** (_như hình_)
+- Ngoài ra về các ngoại vi thì bên em đã có thiết kế trước các ngoại vi như UART, SPI, RAM (main memory), I2C, nên khối lượng còn lại chỉ là xử lý hành vi của **Processor**, **Multi-processor Manager** và **Synchronization Primitive** (_như hình_)
 
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/81e9d469-296c-43ec-afd2-d6b19e24b14d)
-
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/4edd43f2-d21f-4b0e-a8ab-fd0a56db43da)
 
 ## 3. Optional Unit:
 - Timer Unit
