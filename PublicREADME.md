@@ -26,6 +26,7 @@ Dual-core Microcontroller ver1.0
 
 #### iv. I/O Peripheral
 - Thiết lập Input/Output
+- Bộ đếm cho dữ liệu input/output
 
 #### v. Main memory:
 - Chi tiết trong phần <Interface between Processor and Memory & Memory structure>
