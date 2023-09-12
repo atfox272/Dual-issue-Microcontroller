@@ -62,3 +62,34 @@ Dual-core Microcontroller ver1.0
 ## 3. Optional Unit:
 - Timer Unit
 - Interrupt Unit
+
+## 4. Modify:
+
+  _(Sep 12, 2023)_
+  - Change architecture (from _Von Neumann Architecture_ to _Harvard Architecture_) 
+    + **Description**: Seperate _Main memory_ into 2 block (_Program memory_ & _Data memory_)
+    + **Goal**: To Improve performence of Parallel Computing (Loading instruction is not depended on Loading data)
+
+  
+## 5. Testcase:
+  - Testcase for parallel processing:
+
+        Case:
+        <Instruction 1>: Instruct MCU send _data1_ with UART_1
+        <Instruction 2>: Instruct MCU send _data2_ with UART_2
+        Then Using LogicAnalyzer to record TX from UART_1 and UART_2
+
+        Expect outcome:
+        TX from UART_1 is working:    _____/--------------------\__________________
+        TX from UART_2 is working:    ____________/----------------------\_________ 
+
+        Case:
+        <Instructoins>:  assign 2 numbers to register
+                         multiply 2 numbers, then assign to regi 
+        <Instruction 1>: Instruct MCU send _data1_ with UART_1
+        <Instruction 2>: Instruct MCU send _data2_ with UART_2
+        Then Using LogicAnalyzer to record TX from UART_1 and UART_2
+
+        Expect outcome:
+        TX from UART_1 is working:    _____/--------------------\__________________
+        TX from UART_2 is working:    ____________/----------------------\_________ 
