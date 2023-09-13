@@ -4,7 +4,7 @@ Dual-core Microcontroller ver1.0
 - Ở đề tài này, nhóm em sẽ làm 1 con Microcontroller sử dụng tập lệnh RISC-V đơn giản gồm 2 nhân và các ngoại vi cần thiết (gồm ngoại vi giao tiếp và I/O)
 ### a. Sơ đồ khối:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/1ed7e937-0b87-4df9-9eed-458eac7bfb8a)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/c12f0b50-1c50-4cd7-8e85-9e6de20613f0)
 
 ### b. Chức năng các khối
 #### i. Multi-processor Manager:
@@ -59,19 +59,46 @@ Dual-core Microcontroller ver1.0
 
 ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/4edd43f2-d21f-4b0e-a8ab-fd0a56db43da)
 
-## 3. Optional Unit:
+## 3. Processor:
+
+### Register
+#### Special register in Processor_1
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/9c48abcc-c7b3-4325-964a-9f000d7d6758)
+
+
+#### Special register in Processor_2
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/67869342-c0d0-47a4-90cf-2ff1088c409a)
+
+## 4. UART_1:
+### a. UART_1:
+- RX module (Just use for Programing device):
+  + Send signal (RX_flag) to Processor_1 directly (disable _Internal FIFO_)
+
+        parameter RX_FLAG_CONFIG = 0;
+
+  + **Can't configure module** (only 8N1_9600)
+  + Just enable in _program mode_
+- TX module (Debugger)
+  + Enable via _DEBUGGER_ register
+ 
+## 4. Optional Unit:
 - Timer Unit
 - Interrupt Unit
 
-## 4. Modify:
+## 5. Modify main flow:
 
-  _(Sep 12, 2023)_
+  _(Sep 11, 2023)_
   - Change architecture (from _Von Neumann Architecture_ to _Harvard Architecture_) 
     + **Description**: Seperate _Main memory_ into 2 block (_Program memory_ & _Data memory_)
     + **Goal**: To Improve performence of Parallel Computing (Loading instruction is not depended on Loading data)
 
+  _(Sep 12, 2023)_
+  - Change Interface: modify mode_controller (program mode or running mode) from user to processor  
+    + **Description**: In INIT_STATE, MCU is in _Program mode_, then User will load code (bitstream file) via UART_1. Processor must detect _terminated instruction_ and change MCU's mode (from Program mode to Running mode)
+    + **Goal**: MCU change mode automatically when it detect _terminated instruction_
+
   
-## 5. Testcase:
+## 6. Testcase:
   - Testcase for parallel processing:
 
         Case:
