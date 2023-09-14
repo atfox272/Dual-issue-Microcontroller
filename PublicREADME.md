@@ -4,7 +4,8 @@ Dual-core Microcontroller ver1.0
 - Ở đề tài này, nhóm em sẽ làm 1 con Microcontroller sử dụng tập lệnh RISC-V đơn giản gồm 2 nhân và các ngoại vi cần thiết (gồm ngoại vi giao tiếp và I/O)
 ### a. Sơ đồ khối:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/c12f0b50-1c50-4cd7-8e85-9e6de20613f0)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/03dca417-8305-427f-a47e-291bd98870e8)
+
 
 ### b. Chức năng các khối
 #### i. Multi-processor Manager:
@@ -59,18 +60,23 @@ Dual-core Microcontroller ver1.0
 
 ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/4edd43f2-d21f-4b0e-a8ab-fd0a56db43da)
 
-## 3. Processor:
+## 4. Idea notation:
 
-### Register
-#### Special register in Processor_1
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/9c48abcc-c7b3-4325-964a-9f000d7d6758)
+### a. Processor:
 
 
-#### Special register in Processor_2
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/67869342-c0d0-47a4-90cf-2ff1088c409a)
+### b. Multi-processor manager (MPM):
 
-## 4. UART_1:
-### a. UART_1:
+- MPM will **polling** "i want to access memory" signal from Processor_1 and Processor_2 (via _if_ block and Processor_1 have higher priority), then MPM will give **lock** to 1 Processor. After Processor had proccessed and **sent signal to MPM**, MPM will take back the _lock_ and go on **polling**
+
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/35d2baab-dc53-4564-a2d5-153dc7a28604)
+
+### c. Data memory
+
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/3821fc05-83f5-4fd7-86de-2d4355f769f7)
+
+### d. UART_1:
+#### a. UART_1:
 - RX module (Just use for Programing device):
   + Send signal (RX_flag) to Processor_1 directly (disable _Internal FIFO_)
 
@@ -80,7 +86,7 @@ Dual-core Microcontroller ver1.0
   + Just enable in _program mode_
 - TX module (Debugger)
   + Enable via _DEBUGGER_ register
- 
+  + 
 ## 4. Optional Unit:
 - Timer Unit
 - Interrupt Unit
@@ -88,14 +94,19 @@ Dual-core Microcontroller ver1.0
 ## 5. Modify main flow:
 
   _(Sep 11, 2023)_
-  - Change architecture (from _Von Neumann Architecture_ to _Harvard Architecture_) 
+  - Change _Architecture_ (from _Von Neumann Architecture_ to _Harvard Architecture_) 
     + **Description**: Seperate _Main memory_ into 2 block (_Program memory_ & _Data memory_)
     + **Goal**: To Improve performence of Parallel Computing (Loading instruction is not depended on Loading data)
 
   _(Sep 12, 2023)_
-  - Change Interface: modify mode_controller (program mode or running mode) from user to processor  
+  - Change _Interface_: modify mode_controller (program mode or running mode) from user to processor  
     + **Description**: In INIT_STATE, MCU is in _Program mode_, then User will load code (bitstream file) via UART_1. Processor must detect _terminated instruction_ and change MCU's mode (from Program mode to Running mode)
     + **Goal**: MCU change mode automatically when it detect _terminated instruction_
+  
+  _(Sep 14, 2023)_
+  - Change _Configuartion register_:  Change location of Configuration register from _Register in Processor_ to _Data memory_
+    + **Description**: Change location of Configuration register from _Register in Processor_ to _Data memory_ 
+    + **Goal**: Not reserve register in Processor 
 
   
 ## 6. Testcase:
