@@ -41,7 +41,7 @@ Dual-core Microcontroller ver1.0
 
 - Interface between Processor and Memory:
 
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/70110588-7eb1-4edc-8ca1-bdd662dd2ab5)
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/80092521-3d10-446b-9076-bf76394505ac)
 
 ## 3. Tính khả thi của đề tài đối với thời gian làm đồ án:
 
