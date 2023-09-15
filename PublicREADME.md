@@ -67,15 +67,35 @@ Dual-core Microcontroller ver1.0
 
 ### b. Multi-processor manager (MPM):
 
-- MPM will **polling** "i want to access memory" signal from Processor_1 and Processor_2 (via _if_ block and Processor_1 have higher priority), then MPM will give **lock** to 1 Processor. After Processor had proccessed and **sent signal to MPM**, MPM will take back the _lock_ and go on **polling**
+
+
+
+### c. Synchronization Primitive (SP) :
+
+#### i. Idea:
+  - SP will **polling** "i want to access memory" signal from Processor_1 and Processor_2 (via _if_ block and Processor_1 have higher priority), then SP will give **access** to 1 Processor. After Processor had proccessed and **sent signal to SP**, SP will take back the _lock_ and go on **polling**
+
 
   ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/35d2baab-dc53-4564-a2d5-153dc7a28604)
+  
+#### ii. Interface:
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/38402923-92a7-4882-8aff-81557afd3be6)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/164e1e82-80a0-4786-8691-8f9c60993102)
 
-### c. Data memory
+
+#### iii. State:
+##### a. Read state:
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/54d148a5-5842-4e93-96bd-9942d0a8fea1)
+
+##### b. Write state:
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/68948543-20c4-4372-b0b0-ee63004a6a81)
+
+
+### . Data memory
 
   ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/3821fc05-83f5-4fd7-86de-2d4355f769f7)
 
-### d. UART_1:
+### . UART_1:
 #### a. UART_1:
 - RX module (Just use for Programing device):
   + Send signal (RX_flag) to Processor_1 directly (disable _Internal FIFO_)
