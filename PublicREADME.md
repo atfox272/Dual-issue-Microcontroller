@@ -62,11 +62,20 @@ Dual-core Microcontroller ver1.0
 
 ## 4. Idea notation:
 
-### a. Processor:
+### a. Processor_1:
+
+#### i. State:
+* Main processor:
+
+* ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/86486bad-80e2-4063-bea4-7710ab93bb42)
 
 
 ### b. Multi-processor manager (MPM):
 
+#### i. Interface:
+
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/a878ffce-43c1-4bd1-a452-fd3d7cf5deb3)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/9cfb2c9a-0033-43c1-b35f-a2082bda4f8c)
 
 
 
