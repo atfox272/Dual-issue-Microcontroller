@@ -22,14 +22,14 @@
 
 module Processor
     #(
-    parameter PROCESSOR_TYPE    = 1,            // Main processor - Sub processor
+    parameter MAIN_RPOCESSOR        = 1,            // Main processor - Sub processor
     
-    parameter DATA_WIDTH        = 8,
-    parameter DOUBLEWORD_WIDTH  = 64,
-    parameter DATA_MEMORY_SIZE  = 10'd256,      // 256 bytes (2Kb)
+    parameter DATA_WIDTH            = 8,
+    parameter DOUBLEWORD_WIDTH      = 64,
+    parameter DATA_MEMORY_SIZE      = 10'd256,      // 256 bytes (2Kb)
     
-    parameter ADDR_WIDTH_DM     = $clog2(DATA_MEMORY_SIZE),
-    parameter DATA_TYPE_WIDTH   = 2,
+    parameter ADDR_WIDTH_DM         = $clog2(DATA_MEMORY_SIZE),
+    parameter DATA_TYPE_WIDTH       = 2,
     
     parameter INSTRUCTION_WIDTH     = 32,   //32-bit instruction
     parameter PROGRAM_MEMORY_SIZE   = 64,
@@ -38,22 +38,59 @@ module Processor
     // Program memory
     parameter ADDR_WIDTH_PM         = $clog2(PROGRAM_MEMORY_SIZE),
     parameter START_WR_ADDR_PM      = 8'h00,
+    parameter OPCODE_SPACE_MSB      = 6,
+    parameter OPCODE_SPACE_LSB      = 0,
+    parameter OPCODE_SPACE_WIDTH    = OPCODE_SPACE_MSB - OPCODE_SPACE_LSB + 1,        
+    parameter FUNCT10_SPACE_MSB     = 16,
+    parameter FUNCT10_SPACE_LSB     = 7,
+    parameter FUNCT10_SPACE_WIDTH   = FUNCT10_SPACE_MSB - FUNCT10_SPACE_LSB + 1,      
+    parameter FUNCT3_SPACE_MSB      = 9,
+    parameter FUNCT3_SPACE_LSB      = 7,
+    parameter FUNCT3_SPACE_WIDTH    = FUNCT3_SPACE_MSB - FUNCT3_SPACE_LSB + 1,
     
     // Finish program condition 
     parameter FINISH_PROGRAM_OPCODE  = 7'b0001011,      // Detect finish_program_opcode (this opcode is RESERVED)
-    parameter FINISH_PROGRAM_TIMER   = 125000           // Counting time of EMPTY RX_module (assume 1ms)
+    parameter FINISH_PROGRAM_TIMER   = 125000,          // Counting time of EMPTY RX_module (assume 1ms)
+    
+    // Opcode encoder
+    parameter OP_ENCODE             = 7'b0110011,
+    parameter OP_IMM_ENCODE         = 7'b0010011,
+    parameter J_ENCODE              = 7'b1100111,
+    parameter BRANCH_ENCODE         = 7'b1100011,
+    parameter LOAD_ENCODE           = 7'b0000011,
+    parameter STORE_ENCODE          = 7'b0100011,
+    // Funct10 encoder
+    parameter ADD_ENCODE            = 10'b0000000000,   
+    parameter SUB_ENCODE            = 10'b1000000000,
+    parameter SRL_ENCODE            = 10'b0000000101,   // Shift right logical
+    parameter SlL_ENCODE            = 10'b0000000001,   // Shift left logical
+    parameter SLT_ENCODE            = 10'b0000000011,   // Set less than 
+    parameter SLTU_ENCODE           = 10'b0000000011,   // Set less than unsigned
+    parameter AND_ENCODE            = 10'b0000000111,
+    parameter XOR_ENCODE            = 10'b0000000100,
+    parameter OR_ENCODE             = 10'b0000000110,
+    parameter MUL_ENCODE            = 10'b0000001000,
+    // Funct3 encoder
+    parameter ADDI_ENCODE           = 3'b000,
+    parameter SLLI_ENCODE           = 3'b001,
+    parameter SRLI_ENCODE           = 3'b101,
+    parameter SLTI_ENCODE           = 3'b010,
+    parameter SLTIU_ENCODE          = 3'b011,
+    parameter XORI_ENCODE           = 3'b100,
+    parameter ORI_ENCODE            = 3'b110,
+    parameter ANDI_ENCODE           = 3'b111
     )(
     input clk,
     
     // Multi-processor Manager
-    input   wire    [INSTRUCTION_WIDTH - 1:0]   fetch_instruction,
-    input   wire                                boot_processor,
-    output  wire                                processor_idle,
-    input   wire    [REGISTER_AMOUNT - 1:0]     new_data_register,
+    input   wire [INSTRUCTION_WIDTH - 1:0]  fetch_instruction,
+    input   wire                            boot_processor,
+    output  wire                            processor_idle,
+    input   wire [REGISTER_AMOUNT - 1:0]    new_data_register,
     
     // Another Processor
-    output  wire    [REGISTER_AMOUNT - 1:0]     processor_register_main,
-    input   wire    [REGISTER_AMOUNT - 1:0]     processor_register_sub,
+    output  wire [REGISTER_AMOUNT - 1:0]    processor_register_main,
+    input   wire [REGISTER_AMOUNT - 1:0]    processor_register_sub,
     
     // Synchronization primitive (READ_STATE)
     input   wire [DOUBLEWORD_WIDTH - 1:0]   data_bus_rd,
@@ -100,11 +137,12 @@ module Processor
     input rst_n
     );
     generate
-    if(PROCESSOR_TYPE == 1) begin   : MAIN_RPOCESSOR
+    if(MAIN_RPOCESSOR == 1) begin   : MAIN_RPOCESSOR_BLOCK
         
         // Declare internal registers & wires
         reg [1:0] main_state_reg;
         reg [1:0] load_program_state_reg;
+        reg [2:0] running_program_state_reg;
         reg       RX_use_1_reg;
         reg [1:0] _4byte_counter;         // Overflow at 4
         wire      finish_program_condition;
@@ -112,9 +150,15 @@ module Processor
         wire      finish_program_condition_2;
         wire      start_counting_finish_program_condition;
         // Program Memory 
-        reg [DATA_WIDTH - 1:0]      data_bus_wr_pm_reg;
-        reg [ADDR_WIDTH_PM - 1:0]   addr_wr_pm_reg;
-        reg                         wr_ins_pm_reg;
+        // Load-Program state
+        reg [DATA_WIDTH - 1:0]          data_bus_wr_pm_reg;
+        reg [ADDR_WIDTH_PM - 1:0]       addr_wr_pm_reg;
+        reg                             wr_ins_pm_reg;
+        // Execute-program state
+        reg [INSTRUCTION_WIDTH - 1:0]   fetch_instruction_reg;
+        wire[OPCODE_SPACE_WIDTH - 1:0]  opcode_space;
+        wire[FUNCT10_SPACE_WIDTH - 1:0] funct10_space;
+        wire[FUNCT3_SPACE_WIDTH - 1:0]  funct3_space;
         
         // Main state encoder
         localparam IDLE_STATE = 0;
@@ -123,8 +167,11 @@ module Processor
         // Load program state
         localparam RD_FIFO_STATE = 1;
         localparam WR_RAM_STATE = 2;
+        // Running program state 
+        localparam FETCH_INSTRUCTION_STATE = 1;
+        localparam EXECUTE_INSTRUCTION_STATE = 2;
         
-        assign main_state = main_state;
+        assign main_state = main_state_reg;
         assign RX_use_1 = RX_use_1_reg;
         // Finish program condition
         assign finish_program_condition = finish_program_condition_1 | finish_program_condition_2;
@@ -134,9 +181,11 @@ module Processor
         assign data_bus_wr_pm = data_bus_wr_pm_reg;
         assign addr_wr_pm = addr_wr_pm_reg;
         assign wr_ins_pm = wr_ins_pm_reg;
+        assign opcode_space = fetch_instruction_reg[OPCODE_SPACE_MSB:OPCODE_SPACE_LSB];
+        assign funct10_space = fetch_instruction_reg[FUNCT10_SPACE_MSB:FUNCT10_SPACE_LSB];
+        assign funct3_space = fetch_instruction_reg[FUNCT3_SPACE_MSB:FUNCT3_SPACE_LSB];
         
-        
-        // Timer for finishing program 
+        // Timer for finishing program (time out)
         waiting_module #(
                     .END_COUNTER(FINISH_PROGRAM_TIMER),
                     .WAITING_TYPE(0),
@@ -153,6 +202,7 @@ module Processor
             if(!rst_n) begin
                 main_state_reg <= IDLE_STATE;
                 load_program_state_reg <= IDLE_STATE;
+                running_program_state_reg <= IDLE_STATE;
                 
                 RX_use_1_reg <= 0;
                 // Counter for instruction
@@ -230,13 +280,76 @@ module Processor
                         // Reset signal
                         RX_use_1_reg <= 0;
                         
-                        
+                        case(running_program_state_reg) 
+                            IDLE_STATE: begin
+                                if(boot_processor) begin
+                                    running_program_state_reg <= FETCH_INSTRUCTION_STATE;
+                                    
+                                    fetch_instruction_reg <= fetch_instruction; 
+                                end
+                                else running_program_state_reg <= IDLE_STATE;
+                            end
+                            FETCH_INSTRUCTION_STATE: begin
+                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                            
+                                case(opcode_space) 
+                                    OP_ENCODE: begin
+                                        case(funct10_space) 
+                                            ADD_ENCODE: begin
+                                                // ALU here
+                                            end
+                                            SUB_ENCODE: begin
+                                                // ALU here
+                                            end
+                                            SLT_ENCODE: begin
+                                                // ALU here
+                                            end
+                                            SLTU_ENCODE: begin
+                                                // ALU here
+                                            end
+                                            AND_ENCODE: begin
+                                                // ALU here
+                                            end
+                                            XOR_ENCODE: begin
+                                                // ALU here
+                                            end
+                                            OR_ENCODE: begin
+                                                // ALU here
+                                            end
+                                            MUL_ENCODE: begin
+                                                // ALU here
+                                            end
+                                        endcase
+                                    end
+                                    OP_IMM_ENCODE: begin
+                                        case(funct3_space) 
+                                            
+                                        endcase 
+                                    end    
+                                    J_ENCODE: begin
+                                    
+                                    end
+                                    BRANCH_ENCODE: begin
+                                    
+                                    end
+                                    LOAD_ENCODE: begin
+                                    
+                                    end
+                                    STORE_ENCODE: begin
+                                    
+                                    end
+                                endcase 
+                            end
+                            EXECUTE_INSTRUCTION_STATE: begin
+                            
+                            end
+                        endcase
                     end
                 endcase 
             end
         end
     end
-    else begin                      : SUB_PROCESSOR
+    else begin                      : SUB_PROCESSOR_BLOCK
     
     end
     
