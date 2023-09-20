@@ -77,12 +77,14 @@ Dual-core Microcontroller ver1.0
 ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/a878ffce-43c1-4bd1-a452-fd3d7cf5deb3)
 ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/9cfb2c9a-0033-43c1-b35f-a2082bda4f8c)
 
+### ii. Task:
 
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/495f5c5f-0fc5-4759-8996-17ee0f425cdd)
 
 ### c. Synchronization Primitive (SP) :
 
 #### i. Idea:
-  - SP will **polling** "i want to access memory" signal from Processor_1 and Processor_2 (via _if_ block and Processor_1 have higher priority), then SP will give **access** to 1 Processor. After Processor had proccessed and **sent signal to SP**, SP will take back the _lock_ and go on **polling**
+  - SP will **polling** "i want to access memory" signal from Processor_1 and Processor_2 (via _if_ block and Processor_1 have higher priority), then SP will give **access** to 1 Processor. After The Processor had processed and **sent signal to SP**, SP will take back the _lock_ and go on **polling**
 
 
   ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/35d2baab-dc53-4564-a2d5-153dc7a28604)
@@ -124,8 +126,8 @@ Dual-core Microcontroller ver1.0
 
   _(Sep 11, 2023)_
   - Change _Architecture_ (from _Von Neumann Architecture_ to _Harvard Architecture_) 
-    + **Description**: Seperate _Main memory_ into 2 block (_Program memory_ & _Data memory_)
-    + **Goal**: To Improve performence of Parallel Computing (Loading instruction is not depended on Loading data)
+    + **Description**: Separate _Main memory_ into 2 block (_Program memory_ & _Data memory_)
+    + **Goal**: To Improve the performance of Parallel Computing (Loading instruction is not depended on Loading data)
 
   _(Sep 12, 2023)_
   - Change _Interface_: modify mode_controller (program mode or running mode) from user to processor  
@@ -137,7 +139,11 @@ Dual-core Microcontroller ver1.0
     + **Description**: Change location of Configuration register from _Register in Processor_ to _Data memory_ 
     + **Goal**: Not reserve register in Processor 
 
-  
+  _(Sep 20, 2023)_
+  - Change _Function of Multi-processor manager_: The Multi-processor manager process some instruction by itself (not only the processors)
+    + **Description**: The MPM will process B-type and J-type instruction by itself (NOT fetch these instructions into the Processor)
+    + **Goal**: Reduce the number of PC registers (merge all PC register into Multi-processor manager)
+      
 ## 6. Testcase:
   - Testcase for parallel processing:
 
