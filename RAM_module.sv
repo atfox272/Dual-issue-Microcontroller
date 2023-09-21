@@ -17,19 +17,9 @@ module ram_module
         parameter DATA_TYPE_DOUBLEWORD_ENCODE   = 2,
         
         // Reserved register in RAM (for Peripheral configuration)
-        parameter RESERVED_REG_AMOUNT           = 11,
+        parameter RESERVED_REG_AMOUNT           = 1,
         // Set default data for RESERVED_REGISTERs
-        parameter byte RESERVED_REG_DEFAULT[0:RESERVED_REG_AMOUNT - 1] = {8'b00000000,  // address 0x0 
-                                                                          8'b00000000,  // address 0x1
-                                                                          8'b00000000,  // address 0x2
-                                                                          8'b00000000,  // address 0x3
-                                                                          8'b00100011,  // address 0x4
-                                                                          8'b00100011,  // address 0x5
-                                                                          8'b00000000,  // address 0x6
-                                                                          8'b00000000,  // address 0x7
-                                                                          8'b00100011,  // address 0x8
-                                                                          8'b00100011,  // address 0x9
-                                                                          8'b11111000}  // address 0xA
+        parameter byte RESERVED_REG_DEFAULT[0:RESERVED_REG_AMOUNT - 1] = {8'b00000000}  // address 0x0
     )
     (
     input   wire                        clk,
@@ -58,6 +48,9 @@ module ram_module
     output  wire    [DATA_WIDTH - 1:0]  reserved_registers  [0:RESERVED_REG_AMOUNT - 1],
     
     input   wire                        rst_n
+    
+    // Debug
+    ,output  wire    [DATA_WIDTH - 1:0]  registers_wire [0: ADDR_DEPTH - 1]
     );
     
     // Power checking: single register
@@ -354,4 +347,7 @@ module ram_module
             end
         end
     endgenerate
+    
+    // Debug area
+    assign registers_wire = registers;
 endmodule
