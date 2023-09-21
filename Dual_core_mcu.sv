@@ -34,17 +34,18 @@ module Dual_core_mcu
     
     // Data memory 
     parameter      DATA_MEMORY_SIZE                                =  10'd256,      // 256 bytes (2Kb)
-    parameter      RESERVED_REG_AMOUNT                             =  10'd10,
+    parameter      RESERVED_REG_AMOUNT                             =  11,
     parameter byte RESERVED_REG_DEFAULT[0:RESERVED_REG_AMOUNT - 1] = {8'b00000000,  // address 0x0  (PORT_A)
                                                                       8'b00000000,  // address 0x1  (PORT_B)
-                                                                      8'b00000000,  // address 0x2  (DEBUGGER) 
-                                                                      8'b00100011,  // address 0x3  (UART_1_RX_CONFIG)
-                                                                      8'b00100011,  // address 0x4  (UART_1_TX_CONFIG)
-                                                                      8'b00000000,  // address 0x5  (COM_PERIPHERAL)
-                                                                      8'b00000000,  // address 0x6  (ADDRESS_ENCODER_PERIPHERAL)
-                                                                      8'b00100011,  // address 0x7  (UART_2_RX_CONFIG)
-                                                                      8'b00100011,  // address 0x8  (UART_2_TX_CONFIG)
-                                                                      8'b11111000}, // address 0x9  (SPI_CONFIG)
+                                                                      8'b00000000,  // address 0x2  (PORT_C)
+                                                                      8'b00000000,  // address 0x3  (DEBUGGER) 
+                                                                      8'b00100011,  // address 0x4  (UART_1_RX_CONFIG)
+                                                                      8'b00100011,  // address 0x5  (UART_1_TX_CONFIG)
+                                                                      8'b00000000,  // address 0x6  (COM_PERIPHERAL)
+                                                                      8'b00000000,  // address 0x7  (ADDRESS_ENCODER_PERIPHERAL)
+                                                                      8'b00100011,  // address 0x8  (UART_2_RX_CONFIG)
+                                                                      8'b00100011,  // address 0x9  (UART_2_TX_CONFIG)
+                                                                      8'b11111000}, // address 0xA  (SPI_CONFIG)
     // Program memory
     parameter INSTRUCTION_WIDTH     = 32,   //32-bit instruction
     parameter PROGRAM_MEMORY_SIZE   = 64,   // 64 instruction
@@ -79,7 +80,7 @@ module Dual_core_mcu
     inout   wire            SS,           
     
     // GPIO
-    inout   wire    [9:0]   IO_PORT,
+    inout   wire    [11:0]   IO_PORT,
     
     // Reset negedge
     input   wire            rst_n
@@ -154,6 +155,7 @@ module Dual_core_mcu
     // GPIO 
     wire [DATA_WIDTH - 1:0] PORT_A;
     wire [DATA_WIDTH - 1:0] PORT_B;
+    wire [DATA_WIDTH - 1:0] PORT_C;
     
     ///////////////////////////////////////////////////////////////
     
@@ -163,17 +165,18 @@ module Dual_core_mcu
     // Reserved register (configuration register)
     assign PORT_A               = reserved_registers[8'h00];
     assign PORT_B               = reserved_registers[8'h01];
-    assign TX_enable_1          = reserved_registers[8'h02][0];     // Debugger
-    assign RX_config_register_1 = reserved_registers[8'h03];
-    assign TX_config_register_1 = reserved_registers[8'h04];
-    assign I2C_enable           = reserved_registers[8'h05][8'h00];
-    assign SPI_enable           = reserved_registers[8'h05][8'h01];
-    assign RX_enable_2          = reserved_registers[8'h05][8'h02];
-    assign TX_enable_2          = reserved_registers[8'h05][8'h03];
-    // Address encoder place    = reserved_registers[8'h06]
-    assign RX_config_register_2 = reserved_registers[8'h07];
-    assign TX_config_register_2 = reserved_registers[8'h08];
-    assign SPI_config_register  = reserved_registers[8'h09];
+    assign PORT_C               = reserved_registers[8'h02];
+    assign TX_enable_1          = reserved_registers[8'h03][0];     // Debugger
+    assign RX_config_register_1 = reserved_registers[8'h04];
+    assign TX_config_register_1 = reserved_registers[8'h05];
+    assign I2C_enable           = reserved_registers[8'h06][8'h00];
+    assign SPI_enable           = reserved_registers[8'h06][8'h01];
+    assign RX_enable_2          = reserved_registers[8'h06][8'h02];
+    assign TX_enable_2          = reserved_registers[8'h06][8'h03];
+    // Address encoder place    = reserved_registers[8'h07]
+    assign RX_config_register_2 = reserved_registers[8'h08];
+    assign TX_config_register_2 = reserved_registers[8'h09];
+    assign SPI_config_register  = reserved_registers[8'h0A];
     ////////////////////////////////////////////////////////////////////////////
     
     Processor processor_1   
