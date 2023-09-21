@@ -104,7 +104,9 @@ Dual-core Microcontroller ver1.0
 
 ### . Data memory
 
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/3821fc05-83f5-4fd7-86de-2d4355f769f7)
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/4523388c-3585-4c10-9a91-1477672bba95)
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/a73ebcbb-d61f-45e9-8fe4-3ec39e6e450d)
+
 
 ### . UART_1:
 #### a. UART_1:
@@ -137,13 +139,18 @@ Dual-core Microcontroller ver1.0
   _(Sep 14, 2023)_
   - Change _Configuartion register_:  Change location of Configuration register from _Register in Processor_ to _Data memory_
     + **Description**: Change location of Configuration register from _Register in Processor_ to _Data memory_ 
-    + **Goal**: Not reserve register in Processor 
-
+    + **Goal**: Not reserve register in Processor
+    + 
   _(Sep 20, 2023)_
   - Change _Function of Multi-processor manager_: The Multi-processor manager process some instruction by itself (not only the processors)
     + **Description**: The MPM will process B-type and J-type instruction by itself (NOT fetch these instructions into the Processor)
     + **Goal**: Reduce the number of PC registers (merge all PC register into Multi-processor manager)
       
+  _(Sep 21, 2023)_
+  - Change _Configuartion segment in Data memoyr_: Add 1 reserved segment for GPIO (address: 0x002)
+    + **Description**: Add "**VALUE PORT_N**" to save previous value or output value of I/O 
+    + **Goal**:
+   
 ## 6. Testcase:
   - Testcase for parallel processing:
 
