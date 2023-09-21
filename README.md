@@ -69,7 +69,16 @@ Dual-core Microcontroller ver1.0
 
 * ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/86486bad-80e2-4063-bea4-7710ab93bb42)
 
-
+#### ii. Testing case:
+* LOAD_PROGRAM:
+- Module in testbench:
+  + Processor_1 (main processor)
+  + UART_1
+- Testing:
+  + Behavior of interactive action between Processor and Multi-processor manager
+  + Behavior of interactive action between Processor and Synchronization primitive
+  + R-type/I-type instruction
+  + Load and Store instruction 
 ### b. Multi-processor manager (MPM):
 
 #### i. Interface:
@@ -77,17 +86,16 @@ Dual-core Microcontroller ver1.0
 ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/a878ffce-43c1-4bd1-a452-fd3d7cf5deb3)
 ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/9cfb2c9a-0033-43c1-b35f-a2082bda4f8c)
 
-### ii. Task:
+#### ii. Task:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/495f5c5f-0fc5-4759-8996-17ee0f425cdd)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/52fff71e-e606-4477-828e-4be7f20929f0)
 
 ### c. Synchronization Primitive (SP) :
 
 #### i. Idea:
   - SP will **polling** "i want to access memory" signal from Processor_1 and Processor_2 (via _if_ block and Processor_1 have higher priority), then SP will give **access** to 1 Processor. After The Processor had processed and **sent signal to SP**, SP will take back the _lock_ and go on **polling**
 
-
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/35d2baab-dc53-4564-a2d5-153dc7a28604)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/0a0711d4-68f4-4dc0-8943-a56c03f0511a)
   
 #### ii. Interface:
 ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/38402923-92a7-4882-8aff-81557afd3be6)
