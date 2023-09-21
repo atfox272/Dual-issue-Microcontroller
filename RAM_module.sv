@@ -17,18 +17,19 @@ module ram_module
         parameter DATA_TYPE_DOUBLEWORD_ENCODE   = 2,
         
         // Reserved register in RAM (for Peripheral configuration)
-        parameter RESERVED_REG_AMOUNT           = 10,
+        parameter RESERVED_REG_AMOUNT           = 11,
         // Set default data for RESERVED_REGISTERs
         parameter byte RESERVED_REG_DEFAULT[0:RESERVED_REG_AMOUNT - 1] = {8'b00000000,  // address 0x0 
                                                                           8'b00000000,  // address 0x1
                                                                           8'b00000000,  // address 0x2
-                                                                          8'b00100011,  // address 0x3
+                                                                          8'b00000000,  // address 0x3
                                                                           8'b00100011,  // address 0x4
-                                                                          8'b00000000,  // address 0x5
+                                                                          8'b00100011,  // address 0x5
                                                                           8'b00000000,  // address 0x6
-                                                                          8'b00100011,  // address 0x7
+                                                                          8'b00000000,  // address 0x7
                                                                           8'b00100011,  // address 0x8
-                                                                          8'b11111000}  // address 0x9
+                                                                          8'b00100011,  // address 0x9
+                                                                          8'b11111000}  // address 0xA
     )
     (
     input   wire                        clk,
