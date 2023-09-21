@@ -16,7 +16,10 @@ module Processor
     // Program memory
     parameter ADDR_WIDTH_PM         = $clog2(PROGRAM_MEMORY_SIZE),
     parameter START_WR_ADDR_PM      = 8'h00,
-    
+    // RAM's data_type encode
+    parameter BYTE_TYPE_ENCODE      = 2'b00,
+    parameter WORD_TYPE_ENCODE      = 2'b01,
+    parameter DWORD_TYPE_ENCODE     = 2'b10,
     // Instruction Format 
     parameter OPCODE_SPACE_MSB      = 6,
     parameter OPCODE_SPACE_LSB      = 0,
@@ -69,7 +72,7 @@ module Processor
     parameter XOR_ENCODE            = 10'b0000000100,
     parameter OR_ENCODE             = 10'b0000000110,
     parameter MUL_ENCODE            = 10'b0000001000,
-    // Funct3 encoder
+    // Funct3 encoder (for I-type)
     parameter ADDI_ENCODE           = 3'b000,
     parameter SLLI_ENCODE           = 3'b001,
     parameter SRLI_ENCODE           = 3'b101,
@@ -77,7 +80,11 @@ module Processor
     parameter SLTIU_ENCODE          = 3'b011,
     parameter XORI_ENCODE           = 3'b100,
     parameter ORI_ENCODE            = 3'b110,
-    parameter ANDI_ENCODE           = 3'b111
+    parameter ANDI_ENCODE           = 3'b111,
+    // Funct3 encoder (for LOAD-type & STORE-type) 
+    parameter BYTE_WIDTH_ENCODE     = 3'b000,  
+    parameter WORD_WIDTH_ENCODE     = 3'b010,  
+    parameter DWORD_WIDTH_ENCODE    = 3'b011
     )(
     input clk,
     
@@ -147,7 +154,7 @@ module Processor
         // Declare wires and states
         reg [1:0] main_state_reg;
         reg [1:0] load_program_state_reg;
-        reg [2:0] running_program_state_reg;
+        reg [3:0] running_program_state_reg;
         reg       RX_use_1_reg;
         reg [1:0] _4byte_counter;         // Overflow at 4
         wire      finish_program_condition;
@@ -170,7 +177,18 @@ module Processor
         wire[IMM_1_SPACE_WIDTH - 1:0]       immediate_1_space;
         wire[IMM_2_SPACE_WIDTH - 1:0]       immediate_2_space;
         wire[IMM_3_SPACE_WIDTH - 1:0]       immediate_3_space;
-        // Register (new data)
+        
+        // Synchronization primitive
+        //  - read 
+        reg [ADDR_WIDTH_DM - 1:0]           addr_rd_reg;
+        reg [DATA_TYPE_WIDTH - 1:0]         data_type_rd_reg;   
+        reg                                 rd_ins_reg;
+        reg                                 rd_finish_reg;
+        //  - write
+        reg [DOUBLEWORD_WIDTH - 1:0]        data_bus_wr_reg;
+        reg [ADDR_WIDTH_DM - 1:0]           addr_wr_reg;
+        reg [DATA_TYPE_WIDTH - 1:0]         data_type_wr_reg;
+        reg                                 wr_ins_reg;
         
         // ALU block
         reg [DOUBLEWORD_WIDTH - 1:0]        alu_operand_1; 
@@ -190,7 +208,12 @@ module Processor
         // Running program state 
         localparam FETCH_INSTRUCTION_STATE = 1;
         localparam EXECUTE_INSTRUCTION_STATE = 2;
-        localparam ASSIGN_INSTRUCTION_STATE = 3;
+        localparam RETURN_RD_ADDR_INSTRUCTION_STATE = 3;
+        localparam RETURN_WR_ADDR_INSTRUCTION_STATE = 8;
+        localparam RD_PRE_ACCESS_INSTRUCTION_STATE = 4;
+        localparam RD_ACCESS_INSTRUCTION_STATE = 5;
+        localparam WR_PRE_ACCESS_INSTRUCTION_STATE = 6;
+        localparam WR_ACCESS_INSTRUCTION_STATE = 7;
         
         assign main_state = main_state_reg;
         assign RX_use_1 = RX_use_1_reg;
@@ -202,6 +225,11 @@ module Processor
         assign data_bus_wr_pm = data_bus_wr_pm_reg;
         assign addr_wr_pm = addr_wr_pm_reg;
         assign wr_ins_pm = wr_ins_pm_reg;
+        // Synchronization primitive
+        assign addr_rd = addr_rd_reg;
+        assign data_type_rd = data_type_rd_reg;
+        assign rd_ins = rd_ins_reg;
+        assign rd_finish = rd_finish_reg;
         // Instruction format
         assign opcode_space = fetch_instruction_reg[OPCODE_SPACE_MSB:OPCODE_SPACE_LSB];
         assign funct10_space = fetch_instruction_reg[FUNCT10_SPACE_MSB:FUNCT10_SPACE_LSB];
@@ -212,8 +240,8 @@ module Processor
         assign immediate_1_space = fetch_instruction_reg[IMM_1_SPACE_MSB:IMM_1_SPACE_LSB];
         assign immediate_2_space = fetch_instruction_reg[IMM_2_SPACE_MSB:IMM_2_SPACE_LSB];
         assign immediate_3_space = fetch_instruction_reg[IMM_3_SPACE_MSB:IMM_3_SPACE_LSB];
-        // Avoid out-dated data in register
         
+        // Avoid out-dated data in register
         for(genvar register_index = 0; register_index < REGISTER_AMOUNT; register_index = register_index + 1) begin : wire_out_register_block
             assign processor_register_main[register_index] = registers_owner[register_index];
             assign registers_renew[register_index] = (new_data_register[register_index]) ? processor_register_main[register_index] : processor_register_sub[register_index];
@@ -296,14 +324,23 @@ module Processor
                 running_program_state_reg <= IDLE_STATE;
                 
                 RX_use_1_reg <= 0;
-                // Counter for instruction
+                // Reste counter for instruction
                 _4byte_counter <= 0;
-                // PM's interface initialization
+                // Reset buffer interact with Program-memory
                 data_bus_wr_pm_reg <= 8'h00;
                 addr_wr_pm_reg <= START_WR_ADDR_PM;
                 wr_ins_pm_reg <= 0;
-                // ALU block
+                // Reset buffer interact ALU block
                 alu_use <= 0;
+                // Reset buffer interact with RAM 
+                addr_rd_reg <= 0;
+                rd_ins_reg <= 0;
+                data_type_rd_reg <= 0;
+                rd_finish_reg <= 0;
+                addr_wr_reg <= 0;
+                data_bus_wr_reg <= 0;
+                wr_ins_reg <= 0;
+                data_type_wr_reg <= 0;
             end
             else begin
                 case(main_state_reg) 
@@ -487,19 +524,79 @@ module Processor
                                     // Processor don't process J-type instruction
                                     end
                                     LOAD_ENCODE: begin
-                                    
+                                        alu_use <= 1;
+                                        running_program_state_reg <= RETURN_RD_ADDR_INSTRUCTION_STATE;
                                     end
                                     STORE_ENCODE: begin
-                                    
+                                        alu_use <= 1;
+                                        running_program_state_reg <= RETURN_WR_ADDR_INSTRUCTION_STATE;
                                     end
                                 endcase 
                             end
                             EXECUTE_INSTRUCTION_STATE: begin
+                                alu_use <= 0;
                                 if(alu_idle == 1) begin
                                     registers_owner[rd_space] <= alu_result;
                                     running_program_state_reg <= IDLE_STATE;
                                 end
                                 else running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                            end
+                            RETURN_RD_ADDR_INSTRUCTION_STATE: begin
+                                alu_use <= 0;
+                                if(alu_idle == 1) begin
+                                    addr_rd_reg <= alu_result;
+                                    rd_ins_reg <= 1;
+                                    case(funct3_space) 
+                                        BYTE_WIDTH_ENCODE: data_type_rd_reg <= BYTE_TYPE_ENCODE;
+                                        WORD_WIDTH_ENCODE: data_type_rd_reg <= WORD_TYPE_ENCODE;
+                                        DWORD_WIDTH_ENCODE: data_type_rd_reg <= DWORD_TYPE_ENCODE;
+                                        default: data_type_rd_reg <= BYTE_TYPE_ENCODE;
+                                    endcase
+                                    rd_finish_reg <= 0;      
+                                    running_program_state_reg <= RD_PRE_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= RETURN_RD_ADDR_INSTRUCTION_STATE;
+                                
+                            end
+                            RD_PRE_ACCESS_INSTRUCTION_STATE: begin
+                                if(rd_access) begin
+                                    running_program_state_reg <= RD_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= RD_PRE_ACCESS_INSTRUCTION_STATE;
+                            end
+                            RD_ACCESS_INSTRUCTION_STATE: begin
+                                if(rd_idle) begin
+                                    registers_owner[rd_space] <= data_bus_rd;
+                                    rd_finish_reg <= 1;
+                                    running_program_state_reg <= IDLE_STATE;
+                                end
+                                else running_program_state_reg <= RD_ACCESS_INSTRUCTION_STATE;
+                            end
+                            RETURN_WR_ADDR_INSTRUCTION_STATE: begin
+                                alu_use <= 0;
+                                if(alu_idle == 1) begin
+                                    addr_wr_reg <= alu_result;
+                                    data_bus_wr_reg <= registers_renew[rs2_space];
+                                    wr_ins_reg <= 1;
+                                    case(funct3_space) 
+                                        BYTE_WIDTH_ENCODE: data_type_wr_reg <= BYTE_TYPE_ENCODE;
+                                        WORD_WIDTH_ENCODE: data_type_wr_reg <= WORD_TYPE_ENCODE;
+                                        DWORD_WIDTH_ENCODE: data_type_wr_reg <= DWORD_TYPE_ENCODE;
+                                        default: data_type_wr_reg <= BYTE_TYPE_ENCODE;
+                                    endcase
+                                    running_program_state_reg <= WR_PRE_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= RETURN_WR_ADDR_INSTRUCTION_STATE;
+                            end
+                            WR_PRE_ACCESS_INSTRUCTION_STATE: begin
+                                if(wr_access) begin
+                                    running_program_state_reg <= WR_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= WR_PRE_ACCESS_INSTRUCTION_STATE;
+                            end
+                            WR_ACCESS_INSTRUCTION_STATE: begin  
+                                // Notation of WR_ACCESS_INSTRUCTION_STATE: Just wait for 1 cycle to confirm stablization of interactive buffer
+                                running_program_state_reg <= IDLE_STATE;
                             end
                         endcase
                     end
