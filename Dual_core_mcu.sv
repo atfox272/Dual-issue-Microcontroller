@@ -1,267 +1,639 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: HCMUT
-// Engineer: ATFox
-// 
-// Create Date: 09/11/2023 08:46:02 PM
-// Design Name: 
-// Module Name: Dual_core_mcu
-// Project Name: Dual_core Microcontroller
-// Target Devices: Arty-Z7 20
-// Tool Versions: Vivado 2020.2
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-
-module Dual_core_mcu
+module Processor
     #(
-    parameter DATA_WIDTH        = 8,
-    parameter WORD_WIDTH        = 32,
-    parameter DOUBLEWORD_WIDTH  = 64,
+    parameter           MAIN_RPOCESSOR          = 1,            // Main processor - Sub processor
     
-    // Common
-    parameter REGISTER_AMOUNT       = 32,
+    parameter           DATA_WIDTH              = 8,
+    parameter           DOUBLEWORD_WIDTH        = 64,
+    parameter           DATA_MEMORY_SIZE        = 10'd256,      // 256 bytes (2Kb)
     
-    // GPIO
-    parameter GPIO_NUM = 10,
+    parameter           ADDR_WIDTH_DM           = $clog2(DATA_MEMORY_SIZE),
+    parameter           DATA_TYPE_WIDTH         = 2,
     
-    // Data memory 
-    parameter      DATA_MEMORY_SIZE                                =  10'd256,      // 256 bytes (2Kb)
-    parameter      RESERVED_REG_AMOUNT                             =  11,
-    parameter byte RESERVED_REG_DEFAULT[0:RESERVED_REG_AMOUNT - 1] = {8'b00000000,  // address 0x0  (PORT_A)
-                                                                      8'b00000000,  // address 0x1  (PORT_B)
-                                                                      8'b00000000,  // address 0x2  (PORT_C)
-                                                                      8'b00000000,  // address 0x3  (DEBUGGER) 
-                                                                      8'b00100011,  // address 0x4  (UART_1_RX_CONFIG)
-                                                                      8'b00100011,  // address 0x5  (UART_1_TX_CONFIG)
-                                                                      8'b00000000,  // address 0x6  (COM_PERIPHERAL)
-                                                                      8'b00000000,  // address 0x7  (ADDRESS_ENCODER_PERIPHERAL)
-                                                                      8'b00100011,  // address 0x8  (UART_2_RX_CONFIG)
-                                                                      8'b00100011,  // address 0x9  (UART_2_TX_CONFIG)
-                                                                      8'b11111000}, // address 0xA  (SPI_CONFIG)
+    parameter           INSTRUCTION_WIDTH       = 32,   //32-bit instruction
+    parameter           PROGRAM_MEMORY_SIZE     = 64,
+    
+    // Special register     x0:     hardwired zero
+    //                      x2:     stack pointer   (default: 0xF0)
+    //                      x3:     global pointer  (default: 0x2B)
+    parameter           REGISTER_AMOUNT                          =   32,
+    parameter longint   REGISTER_DEFAULT [0:REGISTER_AMOUNT - 1] =  {64'h0000000000000000, 64'h0000000000000000, 64'h00000000000000F0, 64'h000000000000002B,  // x0   -   x3
+                                                                     64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000,  // x4   -   x7
+                                                                     64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000,  // x8   -   x11
+                                                                     64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000,  // x12  -   x15
+                                                                     64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000,  // x16  -   x19
+                                                                     64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000,  // x20  -   x23
+                                                                     64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000,  // x24  -   x27
+                                                                     64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000, 64'h0000000000000000}, // x28  -   x31 
     // Program memory
-    parameter INSTRUCTION_WIDTH     = 32,   //32-bit instruction
-    parameter PROGRAM_MEMORY_SIZE   = 64,   // 64 instruction
-    parameter WORD_SIZE_ENCODE      = 2'b01,
-    parameter BYTE_SIZE_ENCODE      = 2'b00,
+    parameter ADDR_WIDTH_PM         = $clog2(PROGRAM_MEMORY_SIZE),
+    parameter START_WR_ADDR_PM      = 8'h00,
+    // RAM's data_type encode
+    parameter BYTE_TYPE_ENCODE      = 2'b00,
+    parameter WORD_TYPE_ENCODE      = 2'b01,
+    parameter DWORD_TYPE_ENCODE     = 2'b10,
+    // Instruction Format 
+    parameter OPCODE_SPACE_MSB      = 6,
+    parameter OPCODE_SPACE_LSB      = 0,
+    parameter OPCODE_SPACE_WIDTH    = OPCODE_SPACE_MSB - OPCODE_SPACE_LSB + 1,        
+    parameter FUNCT10_SPACE_MSB     = 16,
+    parameter FUNCT10_SPACE_LSB     = 7,
+    parameter FUNCT10_SPACE_WIDTH   = FUNCT10_SPACE_MSB - FUNCT10_SPACE_LSB + 1,      
+    parameter FUNCT3_SPACE_MSB      = 9,
+    parameter FUNCT3_SPACE_LSB      = 7,
+    parameter FUNCT3_SPACE_WIDTH    = FUNCT3_SPACE_MSB - FUNCT3_SPACE_LSB + 1,
+    parameter RD_SPACE_MSB          = 31,
+    parameter RD_SPACE_LSB          = 27,
+    parameter RS1_SPACE_MSB         = 26,
+    parameter RS1_SPACE_LSB         = 22,
+    parameter RS2_SPACE_MSB         = 21,
+    parameter RS2_SPACE_LSB         = 17,
+    parameter REGISTER_SPACE_WIDTH  = 5,
+    parameter IMM_1_SPACE_MSB       = 16,   
+    parameter IMM_1_SPACE_LSB       = 10,
+    parameter IMM_1_SPACE_WIDTH     = IMM_1_SPACE_MSB - IMM_1_SPACE_LSB + 1,
+    parameter IMM_2_SPACE_MSB       = 21,
+    parameter IMM_2_SPACE_LSB       = 17,
+    parameter IMM_2_SPACE_WIDTH     = IMM_2_SPACE_MSB - IMM_2_SPACE_LSB + 1,
+    parameter IMM_3_SPACE_MSB       = 31,
+    parameter IMM_3_SPACE_LSB       = 27,
+    parameter IMM_3_SPACE_WIDTH     = IMM_3_SPACE_MSB - IMM_3_SPACE_LSB + 1,
     
-    // Deep configuration
-    parameter DATA_TYPE         = 3,                // byte - word - doubleword
-    parameter DATA_TYPE_WIDTH   = $clog2(DATA_TYPE),
-    parameter ADDR_WIDTH_DM     = $clog2(DATA_MEMORY_SIZE),
-    parameter ADDR_WIDTH_PM     = $clog2(PROGRAM_MEMORY_SIZE),
-    parameter FIFO_BUFFER_SIZE  = 10'd64,
+    // Finish program condition 
+    parameter FINISH_PROGRAM_OPCODE  = 7'b0001011,      // Detect finish_program_opcode (this opcode is RESERVED)
+    parameter FINISH_PROGRAM_TIMER   = 125000,          // Counting time of EMPTY RX_module (assume 1ms)
     
-    // Reserved Instruction
-    parameter TERMINATE_OPCODE  = 7'b0001011
-    )
-    (
-    input   wire            device_clk,
+    //ALU parameter 
+    parameter OPCODE_ALU_WIDTH      = 17, 
     
-    // UART_1 for program device
-    input   wire            RX_1,
-    output  wire            TX_1,
+    // Opcode encoder
+    parameter R_TYPE_ENCODE         = 7'b0110011,       // R-type
+    parameter I_TYPE_ENCODE         = 7'b0010011,       // I-type
+    parameter J_TYPE_ENCODE         = 7'b1100111,       // J-type
+    parameter B_TYPE_ENCODE         = 7'b1100011,       // B-type   
+    parameter LOAD_ENCODE           = 7'b0000011,       // LOAD-type
+    parameter STORE_ENCODE          = 7'b0100011,       // STORE-type
+    // Funct10 encoder
+    parameter ADD_ENCODE            = 10'b0000000000,   
+    parameter SUB_ENCODE            = 10'b1000000000,
+    parameter SRL_ENCODE            = 10'b0000000101,   // Shift right logical
+    parameter SLL_ENCODE            = 10'b0000000001,   // Shift left logical
+    parameter SLT_ENCODE            = 10'b0000000010,   // Set less than 
+    parameter SLTU_ENCODE           = 10'b0000000011,   // Set less than unsigned
+    parameter AND_ENCODE            = 10'b0000000111,
+    parameter XOR_ENCODE            = 10'b0000000100,
+    parameter OR_ENCODE             = 10'b0000000110,
+    parameter MUL_ENCODE            = 10'b0000001000,
+    // Funct3 encoder (for I-type)
+    parameter ADDI_ENCODE           = 3'b000,
+    parameter SLLI_ENCODE           = 3'b001,
+    parameter SRLI_ENCODE           = 3'b101,
+    parameter SLTI_ENCODE           = 3'b010,
+    parameter SLTIU_ENCODE          = 3'b011,
+    parameter XORI_ENCODE           = 3'b100,
+    parameter ORI_ENCODE            = 3'b110,
+    parameter ANDI_ENCODE           = 3'b111,
+    // Funct3 encoder (for LOAD-type & STORE-type) 
+    parameter BYTE_WIDTH_ENCODE     = 3'b000,  
+    parameter WORD_WIDTH_ENCODE     = 3'b010,  
+    parameter DWORD_WIDTH_ENCODE    = 3'b011
+    )(
+    input clk,
     
-    // UART_2
-    input   wire            RX_2,
-    output  wire            TX_2,
-    
-    // SPI
-    inout   wire            MOSI,            
-    inout   wire            MISO, 
-    inout   wire            SCK,
-    inout   wire            SS,           
-    
-    // GPIO
-    inout   wire    [11:0]   IO_PORT,
-    
-    // Reset negedge
-    input   wire            rst_n
-    );
+    // Multi-processor Manager
+    input   wire [INSTRUCTION_WIDTH - 1:0]  fetch_instruction,
+    input   wire                            boot_processor,
+    output  wire                            processor_idle,
+    input   wire [REGISTER_AMOUNT - 1:0]    new_data_register,  // 1-main processor ; 0-sub processor
     
     
-    wire internal_clk;
+    // Synchronization primitive (READ_STATE)
+    input   wire [DOUBLEWORD_WIDTH - 1:0]   data_bus_rd,
+    output  wire [ADDR_WIDTH_DM - 1:0]      addr_rd,
+    output  wire [DATA_TYPE_WIDTH - 1:0]    data_type_rd,
+    input   wire                            rd_idle,   
+    output  wire                            rd_ins, 
+    input   wire                            rd_access,
+    output  wire                            rd_finish,
+    // Synchronization primitive (WRITE_STATE)
+    output  wire [DOUBLEWORD_WIDTH - 1:0]   data_bus_wr,
+    output  wire [ADDR_WIDTH_DM - 1:0]      addr_wr,
+    output  wire [DATA_TYPE_WIDTH - 1:0]    data_type_wr,
+    input   wire                            wr_idle,   
+    output  wire                            wr_ins, 
+    input   wire                            wr_access,
     
-    // Declare interface //////////////////////////////////////////////
-    // DATA_MEMORY (dm)
-    wire [DOUBLEWORD_WIDTH - 1:0]    data_bus_wr_dm;
-    wire [DOUBLEWORD_WIDTH - 1:0]    data_bus_rd_dm;
-    wire [DATA_TYPE_WIDTH - 1:0]     data_type_wr_dm;
-    wire [DATA_TYPE_WIDTH - 1:0]     data_type_rd_dm;
-    wire [ADDR_WIDTH_DM - 1:0]       addr_wr_dm;
-    wire [ADDR_WIDTH_DM - 1:0]       addr_rd_dm;
-    wire                             wr_ins_dm;
-    wire                             rd_ins_dm;
-    wire                             wr_idle_dm;
-    wire                             rd_idle_dm;
-    wire [DATA_WIDTH - 1:0]          reserved_registers  [0:RESERVED_REG_AMOUNT - 1];
-    // PROGRAM_MEMORY (pm)
-    wire [INSTRUCTION_WIDTH - 1:0]   data_bus_wr_pm;
-    wire [INSTRUCTION_WIDTH - 1:0]   data_bus_rd_pm;
-    wire [ADDR_WIDTH_PM - 1:0]       addr_wr_pm;
-    wire [ADDR_WIDTH_PM - 1:0]       addr_rd_pm;
-    wire                             wr_ins_pm;
-    wire                             rd_ins_pm;
-    wire                             wr_idle_pm;
-    wire                             rd_idle_pm;
-    
-    // UART_TX_1
-    wire [DATA_WIDTH - 1:0] data_bus_in_uart_1;
-    wire [DATA_WIDTH - 1:0] TX_config_register_1;
-    wire                    TX_use_1;
-    wire                    TX_complete_1;
-    wire                    TX_enable_1;
+    // For main Processor ///////////////////////////////////////////////
     // UART_RX_1
-    wire [DATA_WIDTH - 1:0] data_bus_out_uart_1;
-    wire [DATA_WIDTH - 1:0] RX_config_register_1;
-    wire                    RX_use_1;
-    wire                    RX_flag_1;
-    wire                    RX_enable_1;
+    input   wire [DATA_WIDTH - 1:0]         data_bus_out_uart_1,
+    output  wire                            RX_use_1,
+    output  wire                            RX_flag_1,
+    // UART_TX_1
+    output  wire [DATA_WIDTH - 1:0]         data_bus_in_uart_1,
+    output  wire                            TX_use_1,
+    // Program memory
+    output  wire    [DATA_WIDTH - 1:0]      data_bus_wr_pm,
+    input   wire                            wr_idle_pm,
+    output  wire    [ADDR_WIDTH_PM - 1:0]   addr_wr_pm,
+    output  wire                            wr_ins_pm,
+    // Common 
+    output  wire    [1:0]                   main_state,
+    //////////////////////////////////////////////////////////////////////
     
+    // For sub Processor ///////////////////////////////////////////////
+    // Data_bus block
+    input   wire [DATA_WIDTH - 1:0]         data_bus_in_com_per,
+    output  wire [DATA_WIDTH - 1:0]         data_bus_out_com_per,
+    output  wire                            wr_use,
+    output  wire                            rd_use,
+    //////////////////////////////////////////////////////////////////////
+    `ifdef MAIN_RPOCESSOR
+        output  wire [DOUBLEWORD_WIDTH - 1:0]   processor_register_main [0:REGISTER_AMOUNT - 1],
+        input   wire [DOUBLEWORD_WIDTH - 1:0]   processor_register_sub  [0:REGISTER_AMOUNT - 1],
+    `else
+        input   wire [DOUBLEWORD_WIDTH - 1:0]   processor_register_main [0:REGISTER_AMOUNT - 1],
+        output  wire [DOUBLEWORD_WIDTH - 1:0]   processor_register_sub  [0:REGISTER_AMOUNT - 1],
+    `endif
+    
+    input rst_n
+    
+    
+    // Debug 
+    ,output wire    [63:0]                      debug_1
+    );
+    generate
+    if(MAIN_RPOCESSOR == 1) begin   : MAIN_RPOCESSOR_BLOCK
         
-    // UART_TX_2
-    wire [DATA_WIDTH - 1:0] data_bus_in_uart_2;
-    wire [DATA_WIDTH - 1:0] TX_config_register_2;
-    wire                    TX_use_2;
-    wire                    TX_complete_2;
-    wire                    TX_enable_2;   
-    // UART_RX_2
-    wire [DATA_WIDTH - 1:0] data_bus_out_uart_2;
-    wire [DATA_WIDTH - 1:0] RX_config_register_2;
-    wire                    RX_flag_2;
-    wire                    RX_enable_2;
-    
-    // SPI
-    wire                    SPI_enable;
-    wire [DATA_WIDTH - 1:0] SPI_config_register;
-    wire [DATA_WIDTH - 1:0] data_bus_in_spi;
-    wire [DATA_WIDTH - 1:0] data_bus_out_spi;
-    wire                    SPI_use;
-    wire                    SPI_read;
-    wire                    SPI_write;
-    wire                    SPI_avail;   // SPI_en (SPI available to read data)
-    
-    
-    // I2C (Uncertain)
-    wire I2C_enable;
-    
-    // GPIO 
-    wire [DATA_WIDTH - 1:0] PORT_A;
-    wire [DATA_WIDTH - 1:0] PORT_B;
-    wire [DATA_WIDTH - 1:0] PORT_C;
-    
-    ///////////////////////////////////////////////////////////////
-    
-    // Connect wire /////////////////////////////////////////////////////////////
-    assign internal_clk = device_clk;
-    
-    // Reserved register (configuration register)
-    assign PORT_A               = reserved_registers[8'h00];
-    assign PORT_B               = reserved_registers[8'h01];
-    assign PORT_C               = reserved_registers[8'h02];
-    assign TX_enable_1          = reserved_registers[8'h03][0];     // Debugger
-    assign RX_config_register_1 = reserved_registers[8'h04];
-    assign TX_config_register_1 = reserved_registers[8'h05];
-    assign I2C_enable           = reserved_registers[8'h06][8'h00];
-    assign SPI_enable           = reserved_registers[8'h06][8'h01];
-    assign RX_enable_2          = reserved_registers[8'h06][8'h02];
-    assign TX_enable_2          = reserved_registers[8'h06][8'h03];
-    // Address encoder place    = reserved_registers[8'h07]
-    assign RX_config_register_2 = reserved_registers[8'h08];
-    assign TX_config_register_2 = reserved_registers[8'h09];
-    assign SPI_config_register  = reserved_registers[8'h0A];
-    ////////////////////////////////////////////////////////////////////////////
-    
-    Processor processor_1   
-                        (
-                        );
-    
-    Processor processor_2  
-                        (
-                        );
+        // Declare CPU registers
+        reg [DOUBLEWORD_WIDTH - 1:0] registers_owner    [0:REGISTER_AMOUNT - 1];
+        wire[DOUBLEWORD_WIDTH - 1:0] registers_renew    [0:REGISTER_AMOUNT - 1];
+        // Declare wires and states
+        reg [1:0] main_state_reg;
+        reg [1:0] load_program_state_reg;
+        reg [3:0] running_program_state_reg;
+        reg       RX_use_1_reg;
+        reg [1:0] _4byte_counter;         // Overflow at 4
+        wire      finish_program_condition;
+        wire      finish_program_condition_1;
+        wire      finish_program_condition_2;
+        wire      start_counting_finish_program_condition;
+        // Program Memory 
+        // Load-Program state
+        reg [DATA_WIDTH - 1:0]          data_bus_wr_pm_reg;
+        reg [ADDR_WIDTH_PM - 1:0]       addr_wr_pm_reg;
+        reg                             wr_ins_pm_reg;
+        // Execute-program state
+        reg [INSTRUCTION_WIDTH - 1:0]       fetch_instruction_reg;
+        wire[OPCODE_SPACE_WIDTH - 1:0]      opcode_space;
+        wire[FUNCT10_SPACE_WIDTH - 1:0]     funct10_space;
+        wire[FUNCT3_SPACE_WIDTH - 1:0]      funct3_space;
+        wire[REGISTER_SPACE_WIDTH - 1:0]    rd_space;
+        wire[REGISTER_SPACE_WIDTH - 1:0]    rs1_space;
+        wire[REGISTER_SPACE_WIDTH - 1:0]    rs2_space;
+        wire[IMM_1_SPACE_WIDTH - 1:0]       immediate_1_space;
+        wire[IMM_2_SPACE_WIDTH - 1:0]       immediate_2_space;
+        wire[IMM_3_SPACE_WIDTH - 1:0]       immediate_3_space;
+        
+        // Synchronization primitive
+        //  - read 
+        reg [ADDR_WIDTH_DM - 1:0]           addr_rd_reg;
+        reg [DATA_TYPE_WIDTH - 1:0]         data_type_rd_reg;   
+        reg                                 rd_ins_reg;
+        reg                                 rd_finish_reg;
+        //  - write
+        reg [DOUBLEWORD_WIDTH - 1:0]        data_bus_wr_reg;
+        reg [ADDR_WIDTH_DM - 1:0]           addr_wr_reg;
+        reg [DATA_TYPE_WIDTH - 1:0]         data_type_wr_reg;
+        reg                                 wr_ins_reg;
+        
+        // ALU block
+        reg [DOUBLEWORD_WIDTH - 1:0]        alu_operand_1; 
+        reg [DOUBLEWORD_WIDTH - 1:0]        alu_operand_2; 
+        wire[DOUBLEWORD_WIDTH - 1:0]        alu_result; 
+        reg [OPCODE_ALU_WIDTH - 1:0]        alu_opcode;
+        reg                                 alu_use;
+        wire                                alu_idle;
+        
+        // Main state encoder
+        localparam IDLE_STATE = 0;
+        localparam LOAD_PROGRAM_STATE = 1;
+        localparam RUNNING_PROGRAM_STATE = 2;
+        // Load program state
+        localparam RD_FIFO_STATE = 1;
+        localparam WR_RAM_STATE = 2;
+        // Running program state 
+        localparam FETCH_INSTRUCTION_STATE = 1;
+        localparam EXECUTE_INSTRUCTION_STATE = 2;
+        localparam EXCUTE_ADDR_INSTRUCTION_STATE = 3;
+        localparam EXCUTE_WR_ADDR_INSTRUCTION_STATE = 8;
+        localparam EXCUTE_RD_PRE_ACCESS_INSTRUCTION_STATE = 4;
+        localparam EXCUTE_RD_ACCESS_INSTRUCTION_STATE = 5;
+        localparam EXCUTE_WR_PRE_ACCESS_INSTRUCTION_STATE = 6;
+        localparam EXCUTE_WR_ACCESS_INSTRUCTION_STATE = 7;
+        
+        assign main_state = main_state_reg;
+        assign RX_use_1 = RX_use_1_reg;
+        // Finish program condition
+        assign finish_program_condition = finish_program_condition_1 | finish_program_condition_2;
+        assign finish_program_condition_1 = (data_bus_out_uart_1[6:0] == FINISH_PROGRAM_OPCODE & RX_flag_1 == 1) & (_4byte_counter == 0);   // (_4byte_counter == 0) <=> Opdcode location
+        assign start_counting_finish_program_condition = (main_state_reg == LOAD_PROGRAM_STATE) & (RX_flag_1 == 0);        // MCU in LOAD_PROGRAM_STATE & RX_module is empty 
+        // Program Memory 
+        assign data_bus_wr_pm = data_bus_wr_pm_reg;
+        assign addr_wr_pm = addr_wr_pm_reg;
+        assign wr_ins_pm = wr_ins_pm_reg;
+        // Synchronization primitive
+        assign addr_rd = addr_rd_reg;
+        assign data_type_rd = data_type_rd_reg;
+        assign rd_ins = rd_ins_reg;
+        assign rd_finish = rd_finish_reg;
+        // Decode instruciton
+        assign opcode_space = fetch_instruction_reg[OPCODE_SPACE_MSB:OPCODE_SPACE_LSB];
+        assign funct10_space = fetch_instruction_reg[FUNCT10_SPACE_MSB:FUNCT10_SPACE_LSB];
+        assign funct3_space = fetch_instruction_reg[FUNCT3_SPACE_MSB:FUNCT3_SPACE_LSB];
+        assign rd_space = fetch_instruction_reg[RD_SPACE_MSB:RD_SPACE_LSB];
+        assign rs1_space = fetch_instruction_reg[RS1_SPACE_MSB:RS1_SPACE_LSB];
+        assign rs2_space = fetch_instruction_reg[RS2_SPACE_MSB:RS2_SPACE_LSB];
+        assign immediate_1_space = fetch_instruction_reg[IMM_1_SPACE_MSB:IMM_1_SPACE_LSB];
+        assign immediate_2_space = fetch_instruction_reg[IMM_2_SPACE_MSB:IMM_2_SPACE_LSB];
+        assign immediate_3_space = fetch_instruction_reg[IMM_3_SPACE_MSB:IMM_3_SPACE_LSB];
+        // Multi-processor manager
+        assign processor_idle = (running_program_state_reg == IDLE_STATE);
+        // Avoid out-dated data in register
+        for(genvar register_index = 0; register_index < REGISTER_AMOUNT; register_index = register_index + 1) begin : wire_out_register_block
+            assign processor_register_main[register_index] = registers_owner[register_index];
+            assign registers_renew[register_index] = (new_data_register[register_index]) ? processor_register_main[register_index] : processor_register_sub[register_index];
+        end
+        
+        // ALU block
+        always @* begin
+            case(opcode_space) 
+                R_TYPE_ENCODE: begin    
+                    alu_operand_1 <= registers_renew[rs1_space];
+                    alu_operand_2 <= registers_renew[rs2_space];
+                    alu_opcode <= {funct10_space, opcode_space};
+                end
+                I_TYPE_ENCODE: begin    
+                    alu_operand_1 <= registers_renew[rs1_space];
+                    alu_operand_2 <= {52'h00, immediate_2_space, immediate_1_space};
+                    alu_opcode <= {7'b00, funct3_space, opcode_space};
+                end
+                LOAD_ENCODE: begin      // result: address of target -> access Data memory to write value
+                    alu_operand_1 <= registers_renew[rs1_space];
+                    alu_operand_2 <= {52'h00, immediate_2_space, immediate_1_space};
+                    alu_opcode <= {ADD_ENCODE, R_TYPE_ENCODE};  // Add: Base + offset = Address of target
+                end
+                STORE_ENCODE: begin
+                    alu_operand_1 <= registers_renew[rs1_space];
+                    alu_operand_2 <= {52'h00, immediate_3_space, immediate_1_space};
+                    alu_opcode <= {ADD_ENCODE, R_TYPE_ENCODE};  // Add: Base + offset = Address of target
+                end
+                J_TYPE_ENCODE: begin
+                // Processor doesn't process J-type instruction
+                    alu_operand_1 <= 64'h00;
+                    alu_operand_2 <= 64'h00;
+                    alu_opcode <= 17'b00;
+                end
+                B_TYPE_ENCODE: begin
+                // Processor doesn't process B-type instruction
+                    alu_operand_1 <= 64'h00;
+                    alu_operand_2 <= 64'h00;
+                    alu_opcode <= 17'b00;
+                end
+                default: begin
+                    alu_operand_1 <= 64'h00;
+                    alu_operand_2 <= 64'h00;
+                    alu_opcode <= 17'b00;
+                end
+            endcase
+        end
+        ALU_module #(
+                    .OPERAND_WIDTH(DOUBLEWORD_WIDTH)
+                    )
+        alu_module  (
+                    .clk(clk),
+                    .operand_1(alu_operand_1),
+                    .operand_2(alu_operand_2),
+                    .result(alu_result),
+                    .op_code(alu_opcode),
+                    .alu_trig(alu_use),
+                    .alu_idle(alu_idle),
+                    .rst_n(rst_n)
+                    ); 
+                    
+        // Timer for finishing program (time out)
+        waiting_module #(
+                    .END_COUNTER(FINISH_PROGRAM_TIMER),
+                    .WAITING_TYPE(0),
+                    .LEVEL_PULSE(1)
+                    )
+        timout_programming(
+                    .clk(clk),
+                    .start_counting(start_counting_finish_program_condition),
+                    .reach_limit(finish_program_condition_2),
+                    .rst_n(rst_n)
+                    );             
+                    
+        // Main state controller
+        always @(posedge clk, negedge rst_n) begin
+            if(!rst_n) begin
+                main_state_reg <= IDLE_STATE;
+                load_program_state_reg <= IDLE_STATE;
+                running_program_state_reg <= IDLE_STATE;
+                
+                RX_use_1_reg <= 0;
+                // Reste counter for instruction
+                _4byte_counter <= 0;
+                // Reset buffer interact with Program-memory
+                data_bus_wr_pm_reg <= 8'h00;
+                addr_wr_pm_reg <= START_WR_ADDR_PM;
+                wr_ins_pm_reg <= 0;
+                // Reset register in processor
+                for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+                    registers_owner[i] <= REGISTER_DEFAULT[i];
+                end
+                // Reset buffer interact ALU block
+                alu_use <= 0;
+                // Reset buffer interact with RAM 
+                addr_rd_reg <= 0;
+                rd_ins_reg <= 0;
+                data_type_rd_reg <= 0;
+                rd_finish_reg <= 0;
+                addr_wr_reg <= 0;
+                data_bus_wr_reg <= 0;
+                wr_ins_reg <= 0;
+                data_type_wr_reg <= 0;
+            end
+            else begin
+                case(main_state_reg) 
+                    IDLE_STATE: begin
+                        if(RX_flag_1) begin
+                            main_state_reg <= LOAD_PROGRAM_STATE;
+                        end 
+                        else main_state_reg <= IDLE_STATE;              // Polling RX_1 data 
+                        RX_use_1_reg <= 0;
+                    end
+                    LOAD_PROGRAM_STATE: begin
+                        case(load_program_state_reg) 
+                            IDLE_STATE: begin
+                                if(finish_program_condition) begin              // Finish program
+                                    main_state_reg <= RUNNING_PROGRAM_STATE;
+                                    RX_use_1_reg <= (RX_flag_1 == 1) ? 1 : 0;   // Clear FIFO
+                                end    
+                                else begin
+                                    load_program_state_reg <= RD_FIFO_STATE;
+                                    data_bus_wr_pm_reg <= data_bus_out_uart_1;
+                                    RX_use_1_reg <= 1;
+                                    _4byte_counter <= _4byte_counter + 1;
+                                end
+                            end
+                            RD_FIFO_STATE: begin
+                                // Reset signal
+                                RX_use_1_reg <= 0;
+                                
+                                if(wr_idle_pm) begin
+                                    load_program_state_reg <= WR_RAM_STATE;
+                                    wr_ins_pm_reg <= 1;
+                                end
+                            end
+                            WR_RAM_STATE: begin
+                                // Reset signal
+                                wr_ins_pm_reg <= 0;
+                                
+                                if(finish_program_condition) begin              // Finish program
+                                    main_state_reg <= RUNNING_PROGRAM_STATE;
+                                    load_program_state_reg <= IDLE_STATE;
+                                    
+                                    RX_use_1_reg <= (RX_flag_1 == 1) ? 1 : 0;   // Clear FIFO
+                                end    
+                                else begin
+                                    if(RX_flag_1) begin
+                                        load_program_state_reg <= RD_FIFO_STATE;
+                                        // UART signal
+                                        RX_use_1_reg <= 1;
+                                        // Program memory signal
+                                        data_bus_wr_pm_reg <= data_bus_out_uart_1;
+                                        addr_wr_pm_reg <= addr_wr_pm_reg + 1;
+                                        _4byte_counter <= _4byte_counter + 1;
+                                    end
+                                end
+                            end
+                            default: begin
                             
-    Sync_primitive synchronization_primitive  
-                        (
-                        );
+                            end
+                        endcase 
+                    end
+                    RUNNING_PROGRAM_STATE: begin
+                        // Reset signal
+                        RX_use_1_reg <= 0;
                         
-    Multi_processor_manager multi_processor_manager
-                        (
-                        );
+                        case(running_program_state_reg) 
+                            IDLE_STATE: begin
+                                if(boot_processor) begin
+                                    running_program_state_reg <= FETCH_INSTRUCTION_STATE;
+                                    
+                                    fetch_instruction_reg <= fetch_instruction; 
+                                end
+                                else running_program_state_reg <= IDLE_STATE;
+                            end
+                            FETCH_INSTRUCTION_STATE: begin
+                            
+                                case(opcode_space) 
+                                    R_TYPE_ENCODE: begin
+                                        case(funct10_space) 
+                                            ADD_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SUB_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SLT_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SLTU_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SRL_ENCODE: begin
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SLL_ENCODE: begin
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            AND_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            XOR_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            OR_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            MUL_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            default: begin
+                                                running_program_state_reg <= IDLE_STATE;
+                                            end
+                                        endcase
+                                    end
+                                    I_TYPE_ENCODE: begin
+                                        case(funct3_space) 
+                                            ADDI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end               
+                                            SLLI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SRLI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end  
+                                            SLTI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SLTIU_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            XORI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            ORI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            ANDI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end    
+                                            default: begin
+                                                running_program_state_reg <= IDLE_STATE;
+                                            end
+                                        endcase 
+                                    end    
+                                    J_TYPE_ENCODE: begin
+                                    // Processor don't process J-type instruction
+                                    end
+                                    B_TYPE_ENCODE: begin
+                                    // Processor don't process J-type instruction
+                                    end
+                                    LOAD_ENCODE: begin
+                                        alu_use <= 1;
+                                        running_program_state_reg <= EXCUTE_ADDR_INSTRUCTION_STATE;
+                                    end
+                                    STORE_ENCODE: begin
+                                        alu_use <= 1;
+                                        running_program_state_reg <= EXCUTE_WR_ADDR_INSTRUCTION_STATE;
+                                    end
+                                endcase 
+                            end
+                            EXECUTE_INSTRUCTION_STATE: begin
+                                alu_use <= 0;
+                                if(alu_idle == 1) begin
+                                    registers_owner[rd_space] <= alu_result;
+                                    running_program_state_reg <= IDLE_STATE;
+                                end
+                                else running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                            end
+                            EXCUTE_ADDR_INSTRUCTION_STATE: begin
+                                alu_use <= 0;
+                                if(alu_idle == 1) begin
+                                    addr_rd_reg <= alu_result;
+                                    rd_ins_reg <= 1;
+                                    case(funct3_space) 
+                                        BYTE_WIDTH_ENCODE: data_type_rd_reg <= BYTE_TYPE_ENCODE;
+                                        WORD_WIDTH_ENCODE: data_type_rd_reg <= WORD_TYPE_ENCODE;
+                                        DWORD_WIDTH_ENCODE: data_type_rd_reg <= DWORD_TYPE_ENCODE;
+                                        default: data_type_rd_reg <= BYTE_TYPE_ENCODE;
+                                    endcase
+                                    rd_finish_reg <= 0;      
+                                    running_program_state_reg <= EXCUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= EXCUTE_ADDR_INSTRUCTION_STATE;
+                                
+                            end
+                            EXCUTE_RD_PRE_ACCESS_INSTRUCTION_STATE: begin
+                                if(rd_access) begin
+                                    running_program_state_reg <= EXCUTE_RD_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= EXCUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
+                            end
+                            EXCUTE_RD_ACCESS_INSTRUCTION_STATE: begin
+                                if(rd_idle) begin
+                                    registers_owner[rd_space] <= data_bus_rd;
+                                    rd_finish_reg <= 1;
+                                    running_program_state_reg <= IDLE_STATE;
+                                end
+                                else running_program_state_reg <= EXCUTE_RD_ACCESS_INSTRUCTION_STATE;
+                            end
+                            EXCUTE_WR_ADDR_INSTRUCTION_STATE: begin
+                                alu_use <= 0;
+                                if(alu_idle == 1) begin
+                                    addr_wr_reg <= alu_result;
+                                    data_bus_wr_reg <= registers_renew[rs2_space];
+                                    wr_ins_reg <= 1;
+                                    case(funct3_space) 
+                                        BYTE_WIDTH_ENCODE: data_type_wr_reg <= BYTE_TYPE_ENCODE;
+                                        WORD_WIDTH_ENCODE: data_type_wr_reg <= WORD_TYPE_ENCODE;
+                                        DWORD_WIDTH_ENCODE: data_type_wr_reg <= DWORD_TYPE_ENCODE;
+                                        default: data_type_wr_reg <= BYTE_TYPE_ENCODE;
+                                    endcase
+                                    running_program_state_reg <= EXCUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= EXCUTE_WR_ADDR_INSTRUCTION_STATE;
+                            end
+                            EXCUTE_WR_PRE_ACCESS_INSTRUCTION_STATE: begin
+                                if(wr_access) begin
+                                    running_program_state_reg <= EXCUTE_WR_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= EXCUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
+                            end
+                            EXCUTE_WR_ACCESS_INSTRUCTION_STATE: begin  
+                                // Notation of EXCUTE_WR_ACCESS_INSTRUCTION_STATE: Just wait for 1 cycle to confirm stablization of interactive buffer
+                                running_program_state_reg <= IDLE_STATE;
+                            end
+                        endcase
+                    end
+                endcase 
+            end
+        end
+        
+        // Debug area
+        assign debug_1 = {0, alu_result};
+    end
+    else begin                      : SUB_PROCESSOR_BLOCK
     
-    // Data Memory (2Kb - 256bytes)
-    ram_module      #(
-                    .ADDR_DEPTH(DATA_MEMORY_SIZE),
-                    .DOUBLEWORD_WIDTH(DOUBLEWORD_WIDTH),
-                    .RESERVED_REG_AMOUNT(RESERVED_REG_AMOUNT),
-                    .RESERVED_REG_DEFAULT(RESERVED_REG_DEFAULT)
-                    )data_memory(
-                    .clk(internal_clk),
-                    .data_bus_wr(data_bus_wr_dm),
-                    .data_bus_rd(data_bus_rd_dm),
-                    .data_type_wr(data_type_wr_dm),
-                    .data_type_rd(data_type_rd_dm),
-                    .addr_wr(addr_wr_dm),
-                    .addr_rd(addr_rd_dm),
-                    .wr_ins(wr_ins_dm),
-                    .rd_ins(rd_ins_dm),
-                    .wr_idle(wr_idle_dm),
-                    .rd_idle(rd_idle_dm),
-                    .reserved_registers(reserved_registers),
-                    .rst_n(rst_n)
-                    );
-    // Program memory (1Kb - 32 instructions)
-    ram_module      #(
-                    .ADDR_DEPTH(PROGRAM_MEMORY_SIZE)
-                    )program_memory(
-                    .clk(internal_clk),
-                    .data_bus_wr(data_bus_wr_pm),
-                    .data_bus_rd(data_bus_rd_pm),
-                    .data_type_wr(BYTE_SIZE_ENCODE),    // Write byte (8bit)
-                    .data_type_rd(WORD_SIZE_ENCODE),    // Read  word (32bit)
-                    .addr_wr(addr_wr_pm),
-                    .addr_rd(addr_rd_pm),
-                    .wr_ins(wr_ins_pm),
-                    .rd_ins(rd_ins_pm),
-                    .wr_idle(wr_idle_pm),
-                    .rd_idle(rd_idle_pm),
-                    .rst_n(rst_n)
-                    );
+    end
     
-    // Communication peripherals            
-    com_uart            #(
-                        .RX_FLAG_CONFIG(1'b1),              // Use internal FIFO
-                        .FIFO_DEPTH(FIFO_BUFFER_SIZE)
-                        )uart_peripheral_1(
-                        .clk(internal_clk),
-                        .TX(TX_1),
-                        .RX(RX_1),
-                        // TX
-                        .data_bus_in(data_bus_in_uart_1),
-                        .TX_config_register(TX_config_register_1),
-                        .TX_use(TX_use_1),
-                        .TX_complete(TX_complete_1),
-                        .TX_enable(TX_enable_1),
-                        // RX
-                        .data_bus_out(data_bus_out_uart_1),
-                        .RX_config_register(RX_config_register_1),
-                        .RX_use(RX_use_1),
-                        .RX_flag(RX_flag_1),
-                        .RX_enable(RX_enable_1),
-                        .rst_n(rst_n)
-                        );
-    com_uart            #(
-                        .RX_FLAG_CONFIG(1'b1),              // Use internal FIFO
-                        .FIFO_DEPTH(FIFO_BUFFER_SIZE)
-                        )uart_peripheral_2( 
-                        );      
-    com_spi  spi_peripheral 
-                        (
-                        );                                                                                     
+    
+    endgenerate
+    
 endmodule
