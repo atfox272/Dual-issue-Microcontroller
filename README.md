@@ -4,7 +4,7 @@ Dual-core Microcontroller ver1.0
 - Ở đề tài này, nhóm em sẽ làm 1 con Microcontroller sử dụng tập lệnh RISC-V đơn giản gồm 2 nhân và các ngoại vi cần thiết (gồm ngoại vi giao tiếp và I/O)
 ### a. Sơ đồ khối:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/03dca417-8305-427f-a47e-291bd98870e8)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/43a0b605-8def-4ab8-9ab4-f93881ab7d74)
 
 
 ### b. Chức năng các khối
@@ -18,10 +18,10 @@ Dual-core Microcontroller ver1.0
 - Quản lý việc thanh ghi bên trong Processor này là **new data** (dữ liệu mới nhất được load vào register)
 
 #### ii. Processor 1:
-- Nạp chương trình (Program device)
-- Quản lý I/O
+- Program device
+- I/O Manager
 - Debugger (via UART_1)
-- Xử lý lệnh 
+- Execute instruction
 
 #### iii. Processor 2:
 - Quản lý các ngoại vi truyền thông (UART_2, SPI, I2C)
@@ -32,7 +32,7 @@ Dual-core Microcontroller ver1.0
 - Bộ đếm cho dữ liệu input/output
 
 #### v. Memory:
-- Chi tiết trong phần <Interface between Processor and Memory & Memory structure>
+- In <Interface between Processor and Memory & Memory structure>
 
 ## 2. Interface between Processor and Memory & Memory structure :
 - Memory Hierachy :
@@ -41,24 +41,17 @@ Dual-core Microcontroller ver1.0
 
 - Interface between Processor and Memory:
 
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/80092521-3d10-446b-9076-bf76394505ac)
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/d02e7121-9420-4383-9407-706cbe4b2a9b)
 
-## 3. Tính khả thi của đề tài đối với thời gian làm đồ án:
 
-- Ở đây vì để tài có thể **phát sinh thời gian khá lớn** nên nhóm bọn em sẽ hạ số lượng lệnh mà processor phải xử lý xuống, gồm các lệnh sau đây:
-  + add instruction 
-  + sub instruction 
-  + mul instruction
-  + load/store instruction
-  + conditional branch instruction
+## 3. Instruction requirement:
+  + add instruction (R-type & I-type)
+  + sub instruction (R-type)
+  + mul instruction (R-type & I-type)
+  + and/or/xor/shift instruction (R-type & I-type)
+  + load/store instruction  (BYTE - WORD - DOUBLEWORD)
+  + conditional branch instruction 
   + jump instruction
-  + and/or/xor/shift instruction
-
-- Từ các các lệnh đơn giản trên processor thiết lập thanh ghi và gửi tín hiệu đến các ngoại vi để xử lý các tác vụ yêu cầu
-  
-- Ngoài ra về các ngoại vi thì bên em đã có thiết kế trước các ngoại vi như UART, SPI, RAM (main memory), I2C, nên khối lượng còn lại chỉ là xử lý hành vi của **Processor**, **Multi-processor Manager** và **Synchronization Primitive** (_như hình_)
-
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/4edd43f2-d21f-4b0e-a8ab-fd0a56db43da)
 
 ## 4. Idea notation:
 
@@ -83,8 +76,8 @@ Dual-core Microcontroller ver1.0
 
 #### i. Interface:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/a878ffce-43c1-4bd1-a452-fd3d7cf5deb3)
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/9cfb2c9a-0033-43c1-b35f-a2082bda4f8c)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/1432908a-85df-472a-9489-d1964e64716d)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/15e7b076-85eb-4f43-b5cd-18e349c464a6)
 
 #### ii. Task:
 
@@ -118,7 +111,7 @@ Dual-core Microcontroller ver1.0
 
 ### . UART_1:
 #### a. UART_1:
-- RX module (Just use for Programing device):
+- RX module (Just use for Programming device):
   + Send signal (RX_flag) to Processor_1 directly (disable _Internal FIFO_)
 
         parameter RX_FLAG_CONFIG = 0;
@@ -155,10 +148,15 @@ Dual-core Microcontroller ver1.0
     + **Goal**: Reduce the number of PC registers (merge all PC register into Multi-processor manager)
       
   _(Sep 21, 2023)_
-  - Change _Configuartion segment in Data memoyr_: Add 1 reserved segment for GPIO (address: 0x002)
+  - Add _Configuartion segment in Data memoyr_: Add 1 reserved segment for GPIO (address: 0x002)
     + **Description**: Add "**VALUE PORT_N**" to save previous value or output value of I/O 
     + **Goal**:
-   
+
+  _(Sep 23, 2023)_
+  - Add _Timer/Interrupt Function_: External / Pin Change / Timer interrupt
+    + **Description**: Add External / Pin Change / Timer interrupt
+    + **Goal**:
+  
 ## 6. Testcase:
   - Testcase for parallel processing:
 
