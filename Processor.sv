@@ -146,13 +146,9 @@ module Processor
     output  wire                            wr_use,
     output  wire                            rd_use,
     //////////////////////////////////////////////////////////////////////
-    `ifdef MAIN_RPOCESSOR
-        output  wire [DOUBLEWORD_WIDTH - 1:0]   processor_register_main [0:REGISTER_AMOUNT - 1],
-        input   wire [DOUBLEWORD_WIDTH - 1:0]   processor_register_sub  [0:REGISTER_AMOUNT - 1],
-    `else
-        input   wire [DOUBLEWORD_WIDTH - 1:0]   processor_register_main [0:REGISTER_AMOUNT - 1],
-        output  wire [DOUBLEWORD_WIDTH - 1:0]   processor_register_sub  [0:REGISTER_AMOUNT - 1],
-    `endif
+    // Register management
+    output  wire [DOUBLEWORD_WIDTH - 1:0]   processor_registers [0:REGISTER_AMOUNT - 1],
+    input   wire [DOUBLEWORD_WIDTH - 1:0]   registers_renew     [0:REGISTER_AMOUNT - 1],
     
     input rst_n
     
@@ -165,7 +161,6 @@ module Processor
         
         // Declare CPU registers
         reg [DOUBLEWORD_WIDTH - 1:0] registers_owner    [0:REGISTER_AMOUNT - 1];
-        wire[DOUBLEWORD_WIDTH - 1:0] registers_renew    [0:REGISTER_AMOUNT - 1];
         // Declare wires and states
         reg [1:0] main_state_reg;
         reg [1:0] load_program_state_reg;
@@ -223,12 +218,12 @@ module Processor
         // Running program state 
         localparam FETCH_INSTRUCTION_STATE = 1;
         localparam EXECUTE_INSTRUCTION_STATE = 2;
-        localparam EXCUTE_ADDR_INSTRUCTION_STATE = 3;
-        localparam EXCUTE_WR_ADDR_INSTRUCTION_STATE = 8;
-        localparam EXCUTE_RD_PRE_ACCESS_INSTRUCTION_STATE = 4;
-        localparam EXCUTE_RD_ACCESS_INSTRUCTION_STATE = 5;
-        localparam EXCUTE_WR_PRE_ACCESS_INSTRUCTION_STATE = 6;
-        localparam EXCUTE_WR_ACCESS_INSTRUCTION_STATE = 7;
+        localparam EXECUTE_ADDR_INSTRUCTION_STATE = 3;
+        localparam EXECUTE_WR_ADDR_INSTRUCTION_STATE = 8;
+        localparam EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE = 4;
+        localparam EXECUTE_RD_ACCESS_INSTRUCTION_STATE = 5;
+        localparam EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE = 6;
+        localparam EXECUTE_WR_ACCESS_INSTRUCTION_STATE = 7;
         
         assign main_state = main_state_reg;
         assign RX_use_1 = RX_use_1_reg;
@@ -257,10 +252,9 @@ module Processor
         assign immediate_3_space = fetch_instruction_reg[IMM_3_SPACE_MSB:IMM_3_SPACE_LSB];
         // Multi-processor manager
         assign processor_idle = (running_program_state_reg == IDLE_STATE);
-        // Avoid out-dated data in register
-        for(genvar register_index = 0; register_index < REGISTER_AMOUNT; register_index = register_index + 1) begin : wire_out_register_block
-            assign processor_register_main[register_index] = registers_owner[register_index];
-            assign registers_renew[register_index] = (new_data_register[register_index]) ? processor_register_main[register_index] : processor_register_sub[register_index];
+        // Register management
+        for(genvar index_register = 0; index_register < REGISTER_AMOUNT; index_register = index_register + 1) begin
+            assign processor_registers[index_register] = registers_owner[index_register];
         end
         
         // ALU block
@@ -547,11 +541,11 @@ module Processor
                                     end
                                     LOAD_ENCODE: begin
                                         alu_use <= 1;
-                                        running_program_state_reg <= EXCUTE_ADDR_INSTRUCTION_STATE;
+                                        running_program_state_reg <= EXECUTE_ADDR_INSTRUCTION_STATE;
                                     end
                                     STORE_ENCODE: begin
                                         alu_use <= 1;
-                                        running_program_state_reg <= EXCUTE_WR_ADDR_INSTRUCTION_STATE;
+                                        running_program_state_reg <= EXECUTE_WR_ADDR_INSTRUCTION_STATE;
                                     end
                                 endcase 
                             end
@@ -563,7 +557,7 @@ module Processor
                                 end
                                 else running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
                             end
-                            EXCUTE_ADDR_INSTRUCTION_STATE: begin
+                            EXECUTE_ADDR_INSTRUCTION_STATE: begin
                                 alu_use <= 0;
                                 if(alu_idle == 1) begin
                                     addr_rd_reg <= alu_result;
@@ -575,26 +569,26 @@ module Processor
                                         default: data_type_rd_reg <= BYTE_TYPE_ENCODE;
                                     endcase
                                     rd_finish_reg <= 0;      
-                                    running_program_state_reg <= EXCUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
+                                    running_program_state_reg <= EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
                                 end
-                                else running_program_state_reg <= EXCUTE_ADDR_INSTRUCTION_STATE;
+                                else running_program_state_reg <= EXECUTE_ADDR_INSTRUCTION_STATE;
                                 
                             end
-                            EXCUTE_RD_PRE_ACCESS_INSTRUCTION_STATE: begin
+                            EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE: begin
                                 if(rd_access) begin
-                                    running_program_state_reg <= EXCUTE_RD_ACCESS_INSTRUCTION_STATE;
+                                    running_program_state_reg <= EXECUTE_RD_ACCESS_INSTRUCTION_STATE;
                                 end
-                                else running_program_state_reg <= EXCUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
+                                else running_program_state_reg <= EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
                             end
-                            EXCUTE_RD_ACCESS_INSTRUCTION_STATE: begin
+                            EXECUTE_RD_ACCESS_INSTRUCTION_STATE: begin
                                 if(rd_idle) begin
                                     registers_owner[rd_space] <= data_bus_rd;
                                     rd_finish_reg <= 1;
                                     running_program_state_reg <= IDLE_STATE;
                                 end
-                                else running_program_state_reg <= EXCUTE_RD_ACCESS_INSTRUCTION_STATE;
+                                else running_program_state_reg <= EXECUTE_RD_ACCESS_INSTRUCTION_STATE;
                             end
-                            EXCUTE_WR_ADDR_INSTRUCTION_STATE: begin
+                            EXECUTE_WR_ADDR_INSTRUCTION_STATE: begin
                                 alu_use <= 0;
                                 if(alu_idle == 1) begin
                                     addr_wr_reg <= alu_result;
@@ -606,18 +600,18 @@ module Processor
                                         DWORD_WIDTH_ENCODE: data_type_wr_reg <= DWORD_TYPE_ENCODE;
                                         default: data_type_wr_reg <= BYTE_TYPE_ENCODE;
                                     endcase
-                                    running_program_state_reg <= EXCUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
+                                    running_program_state_reg <= EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
                                 end
-                                else running_program_state_reg <= EXCUTE_WR_ADDR_INSTRUCTION_STATE;
+                                else running_program_state_reg <= EXECUTE_WR_ADDR_INSTRUCTION_STATE;
                             end
-                            EXCUTE_WR_PRE_ACCESS_INSTRUCTION_STATE: begin
+                            EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE: begin
                                 if(wr_access) begin
-                                    running_program_state_reg <= EXCUTE_WR_ACCESS_INSTRUCTION_STATE;
+                                    running_program_state_reg <= EXECUTE_WR_ACCESS_INSTRUCTION_STATE;
                                 end
-                                else running_program_state_reg <= EXCUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
+                                else running_program_state_reg <= EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
                             end
-                            EXCUTE_WR_ACCESS_INSTRUCTION_STATE: begin  
-                                // Notation of EXCUTE_WR_ACCESS_INSTRUCTION_STATE: Just wait for 1 cycle to confirm stablization of interactive buffer
+                            EXECUTE_WR_ACCESS_INSTRUCTION_STATE: begin  
+                                // Notation of EXECUTE_WR_ACCESS_INSTRUCTION_STATE: Just wait for 1 cycle to confirm stablization of interactive buffer
                                 running_program_state_reg <= IDLE_STATE;
                             end
                         endcase
