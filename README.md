@@ -4,7 +4,7 @@ Dual-core Microcontroller ver1.0
 - Ở đề tài này, nhóm em sẽ làm 1 con Microcontroller sử dụng tập lệnh RISC-V đơn giản gồm 2 nhân và các ngoại vi cần thiết (gồm ngoại vi giao tiếp và I/O)
 ### a. Sơ đồ khối:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/43a0b605-8def-4ab8-9ab4-f93881ab7d74)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/3b57f4e2-6f29-4d72-ac94-0bab97081b08)
 
 
 ### b. Chức năng các khối
@@ -41,7 +41,7 @@ Dual-core Microcontroller ver1.0
 
 - Interface between Processor and Memory:
 
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/d02e7121-9420-4383-9407-706cbe4b2a9b)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/16e1149e-28bf-4a10-91d0-d6dfa7d76270)
 
 
 ## 3. Instruction requirement:
@@ -76,8 +76,9 @@ Dual-core Microcontroller ver1.0
 
 #### i. Interface:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/1432908a-85df-472a-9489-d1964e64716d)
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/15e7b076-85eb-4f43-b5cd-18e349c464a6)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/8ab3aabd-1734-4026-9752-ac8f46c91219)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/9ce337f2-aefb-44de-8051-cc6f21fbfcc9)
+
 
 #### ii. Task:
 
