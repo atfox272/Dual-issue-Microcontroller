@@ -104,24 +104,24 @@ Dual-core Microcontroller ver1.0
 ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/68948543-20c4-4372-b0b0-ee63004a6a81)
 
 
+### d. Interrupt control (INTC) :
+#### i. Idea:
+- Interrupt control will manage FIFO_INT_1 & FIFO_INT_2 & FIFO_INT_3
+  + _interrupt_request_1_ is **write_ins** of Queue (FIFO)
+  + _RETI_ is **read_ins** of Queue (FIFO)
+  + _interrupt_flag_ is **!empty** of Queue (FIFO)
+- This module will decide the order of 3 interrupt vectors (via interrupt_flag_1 is the highest priority interruption)
+
+#### ii. Interface:
+
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/df891921-aed4-4cf8-bb1e-b6363079520e)
+
+
 ### . Data memory
 
   ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/4523388c-3585-4c10-9a91-1477672bba95)
   ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/a73ebcbb-d61f-45e9-8fe4-3ec39e6e450d)
 
-
-### . UART_1:
-#### a. UART_1:
-- RX module (Just use for Programming device):
-  + Send signal (RX_flag) to Processor_1 directly (disable _Internal FIFO_)
-
-        parameter RX_FLAG_CONFIG = 0;
-
-  + **Can't configure module** (only 8N1_9600)
-  + Just enable in _program mode_
-- TX module (Debugger)
-  + Enable via _DEBUGGER_ register
-  + 
 ## 4. Optional Unit:
 - Timer Unit
 - Interrupt Unit
