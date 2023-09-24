@@ -7,3 +7,9 @@
 - Case finish loading instruction                    ✔️
   + Time out                                         ✔️
   + Detect FINISH_INSTRUCTION_OPCODE at opcode space ✔️
+# Fetch & Execute Instruction state (100%)
+- Processor received instruction completely          ✔️
+- Encode instruction
+- Add / addi / sub / mul / mul / and / or instruction✔️
+- load instruction                                   ✔️
+- store instruction (unchecked)                      ➖
