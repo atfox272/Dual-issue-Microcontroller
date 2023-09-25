@@ -114,13 +114,14 @@ Dual-core Microcontroller ver1.0
 
 #### ii. Interface:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/df891921-aed4-4cf8-bb1e-b6363079520e)
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/5eb8c97d-733b-476c-85be-a1e023a85813)
 
 
 ### . Data memory
 
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/4523388c-3585-4c10-9a91-1477672bba95)
-  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/a73ebcbb-d61f-45e9-8fe4-3ec39e6e450d)
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/b4856a86-0e39-4c5f-8b58-096444763c32)
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/216e50bd-2e3c-4334-8826-e0898901f399)
+  ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/b4f3fe8d-ff7d-4bc8-9d2a-8cf5d92ba8d4)
 
 ## 4. Optional Unit:
 - Timer Unit
