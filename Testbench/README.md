@@ -13,3 +13,8 @@
 - Add / addi / sub / mul / mul / and / or instruction✔️
 - load instruction                                   ✔️
 - store instruction (unchecked)                      ➖
+## Multi-processor mamanger (30%)
+### Without Interrupt control & Synchronization primitive:
+- Simple Arithmetic (add, sub, mul)
+- J , JAL (x1 checked)
+- Simple Dual-core case 
