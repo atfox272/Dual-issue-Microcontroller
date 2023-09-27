@@ -155,6 +155,7 @@ module Processor
     
     // Debug 
     ,output wire    [63:0]                      debug_1
+    ,output wire    [63:0]                      debug_2
     );
     generate
     if(MAIN_RPOCESSOR == 1) begin   : MAIN_RPOCESSOR_BLOCK
@@ -187,6 +188,8 @@ module Processor
         wire[IMM_1_SPACE_WIDTH - 1:0]       immediate_1_space;
         wire[IMM_2_SPACE_WIDTH - 1:0]       immediate_2_space;
         wire[IMM_3_SPACE_WIDTH - 1:0]       immediate_3_space;
+        reg [DOUBLEWORD_WIDTH - 1:0]        rs1_buffer; 
+        reg [DOUBLEWORD_WIDTH - 1:0]        rs2_buffer; 
         
         // Synchronization primitive
         //  - read 
@@ -261,22 +264,22 @@ module Processor
         always @* begin
             case(opcode_space) 
                 R_TYPE_ENCODE: begin    
-                    alu_operand_1 <= registers_renew[rs1_space];
-                    alu_operand_2 <= registers_renew[rs2_space];
+                    alu_operand_1 <= rs1_buffer;
+                    alu_operand_2 <= rs2_buffer;
                     alu_opcode <= {funct10_space, opcode_space};
                 end
                 I_TYPE_ENCODE: begin    
-                    alu_operand_1 <= registers_renew[rs1_space];
+                    alu_operand_1 <= rs1_buffer;
                     alu_operand_2 <= {52'h00, immediate_2_space, immediate_1_space};
                     alu_opcode <= {7'b00, funct3_space, opcode_space};
                 end
                 LOAD_ENCODE: begin      // result: address of target -> access Data memory to write value
-                    alu_operand_1 <= registers_renew[rs1_space];
+                    alu_operand_1 <= rs1_buffer;
                     alu_operand_2 <= {52'h00, immediate_2_space, immediate_1_space};
                     alu_opcode <= {ADD_ENCODE, R_TYPE_ENCODE};  // Add: Base + offset = Address of target
                 end
                 STORE_ENCODE: begin
-                    alu_operand_1 <= registers_renew[rs1_space];
+                    alu_operand_1 <= rs1_buffer;
                     alu_operand_2 <= {52'h00, immediate_3_space, immediate_1_space};
                     alu_opcode <= {ADD_ENCODE, R_TYPE_ENCODE};  // Add: Base + offset = Address of target
                 end
@@ -318,8 +321,7 @@ module Processor
                     .END_COUNTER(FINISH_PROGRAM_TIMER),
                     .WAITING_TYPE(0),
                     .LEVEL_PULSE(1)
-                    )
-        timout_programming(
+                    )timout_programming(
                     .clk(clk),
                     .start_counting(start_counting_finish_program_condition),
                     .reach_limit(finish_program_condition_2),
@@ -355,6 +357,8 @@ module Processor
                 data_bus_wr_reg <= 0;
                 wr_ins_reg <= 0;
                 data_type_wr_reg <= 0;
+                rs1_buffer <= 0;
+                rs2_buffer <= 0;
             end
             else begin
                 case(main_state_reg) 
@@ -432,6 +436,9 @@ module Processor
                             
                                 case(opcode_space) 
                                     R_TYPE_ENCODE: begin
+                                        // Confirm data
+                                        rs1_buffer <= registers_renew[rs1_space];
+                                        rs2_buffer <= registers_renew[rs2_space];
                                         case(funct10_space) 
                                             ADD_ENCODE: begin
                                                 // ALU signal here
@@ -487,6 +494,8 @@ module Processor
                                         endcase
                                     end
                                     I_TYPE_ENCODE: begin
+                                        // Confirm data
+                                        rs1_buffer <= registers_renew[rs1_space];
                                         case(funct3_space) 
                                             ADDI_ENCODE: begin
                                                 // ALU signal here
@@ -540,10 +549,14 @@ module Processor
                                     // Processor don't process J-type instruction
                                     end
                                     LOAD_ENCODE: begin
+                                        // Confirm data
+                                        rs1_buffer <= registers_renew[rs1_space];
                                         alu_use <= 1;
                                         running_program_state_reg <= EXECUTE_ADDR_INSTRUCTION_STATE;
                                     end
                                     STORE_ENCODE: begin
+                                        // Confirm data
+                                        rs1_buffer <= registers_renew[rs1_space];
                                         alu_use <= 1;
                                         running_program_state_reg <= EXECUTE_WR_ADDR_INSTRUCTION_STATE;
                                     end
@@ -624,7 +637,360 @@ module Processor
         assign debug_1 = {0, alu_result};
     end
     else begin                      : SUB_PROCESSOR_BLOCK
-    
+        reg [3:0]                           running_program_state_reg;
+        reg [DOUBLEWORD_WIDTH - 1:0]        registers_owner    [0:REGISTER_AMOUNT - 1];
+        // Execute-program state
+        reg [INSTRUCTION_WIDTH - 1:0]       fetch_instruction_reg;
+        wire[OPCODE_SPACE_WIDTH - 1:0]      opcode_space;
+        wire[FUNCT10_SPACE_WIDTH - 1:0]     funct10_space;
+        wire[FUNCT3_SPACE_WIDTH - 1:0]      funct3_space;
+        wire[REGISTER_SPACE_WIDTH - 1:0]    rd_space;
+        wire[REGISTER_SPACE_WIDTH - 1:0]    rs1_space;
+        wire[REGISTER_SPACE_WIDTH - 1:0]    rs2_space;
+        wire[IMM_1_SPACE_WIDTH - 1:0]       immediate_1_space;
+        wire[IMM_2_SPACE_WIDTH - 1:0]       immediate_2_space;
+        wire[IMM_3_SPACE_WIDTH - 1:0]       immediate_3_space;
+        reg [DOUBLEWORD_WIDTH - 1:0]        rs1_buffer; 
+        reg [DOUBLEWORD_WIDTH - 1:0]        rs2_buffer; 
+        
+        // Synchronization primitive
+        //  - read 
+        reg [ADDR_WIDTH_DM - 1:0]           addr_rd_reg;
+        reg [DATA_TYPE_WIDTH - 1:0]         data_type_rd_reg;   
+        reg                                 rd_ins_reg;
+        reg                                 rd_finish_reg;
+        //  - write
+        reg [DOUBLEWORD_WIDTH - 1:0]        data_bus_wr_reg;
+        reg [ADDR_WIDTH_DM - 1:0]           addr_wr_reg;
+        reg [DATA_TYPE_WIDTH - 1:0]         data_type_wr_reg;
+        reg                                 wr_ins_reg;
+        
+        // ALU block
+        reg [DOUBLEWORD_WIDTH - 1:0]        alu_operand_1; 
+        reg [DOUBLEWORD_WIDTH - 1:0]        alu_operand_2; 
+        wire[DOUBLEWORD_WIDTH - 1:0]        alu_result; 
+        reg [OPCODE_ALU_WIDTH - 1:0]        alu_opcode;
+        reg                                 alu_use;
+        wire                                alu_idle;
+        
+        // Running program state 
+        localparam IDLE_STATE = 0;
+        localparam FETCH_INSTRUCTION_STATE = 1;
+        localparam EXECUTE_INSTRUCTION_STATE = 2;
+        localparam EXECUTE_ADDR_INSTRUCTION_STATE = 3;
+        localparam EXECUTE_WR_ADDR_INSTRUCTION_STATE = 8;
+        localparam EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE = 4;
+        localparam EXECUTE_RD_ACCESS_INSTRUCTION_STATE = 5;
+        localparam EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE = 6;
+        localparam EXECUTE_WR_ACCESS_INSTRUCTION_STATE = 7;
+        
+        // Synchronization primitive
+        assign addr_rd = addr_rd_reg;
+        assign data_type_rd = data_type_rd_reg;
+        assign rd_ins = rd_ins_reg;
+        assign rd_finish = rd_finish_reg;
+        // Decode instruciton
+        assign opcode_space = fetch_instruction_reg[OPCODE_SPACE_MSB:OPCODE_SPACE_LSB];
+        assign funct10_space = fetch_instruction_reg[FUNCT10_SPACE_MSB:FUNCT10_SPACE_LSB];
+        assign funct3_space = fetch_instruction_reg[FUNCT3_SPACE_MSB:FUNCT3_SPACE_LSB];
+        assign rd_space = fetch_instruction_reg[RD_SPACE_MSB:RD_SPACE_LSB];
+        assign rs1_space = fetch_instruction_reg[RS1_SPACE_MSB:RS1_SPACE_LSB];
+        assign rs2_space = fetch_instruction_reg[RS2_SPACE_MSB:RS2_SPACE_LSB];
+        assign immediate_1_space = fetch_instruction_reg[IMM_1_SPACE_MSB:IMM_1_SPACE_LSB];
+        assign immediate_2_space = fetch_instruction_reg[IMM_2_SPACE_MSB:IMM_2_SPACE_LSB];
+        assign immediate_3_space = fetch_instruction_reg[IMM_3_SPACE_MSB:IMM_3_SPACE_LSB];
+        // Multi-processor manager
+        assign processor_idle = (running_program_state_reg == IDLE_STATE);
+        // Register management
+        for(genvar index_register = 0; index_register < REGISTER_AMOUNT; index_register = index_register + 1) begin
+            assign processor_registers[index_register] = registers_owner[index_register];
+        end
+        
+        // ALU block
+        always @* begin
+            case(opcode_space) 
+                R_TYPE_ENCODE: begin    
+                    alu_operand_1 <= rs1_buffer;
+                    alu_operand_2 <= rs2_buffer;
+                    alu_opcode <= {funct10_space, opcode_space};
+                end
+                I_TYPE_ENCODE: begin    
+                    alu_operand_1 <= rs1_buffer;
+                    alu_operand_2 <= {52'h00, immediate_2_space, immediate_1_space};
+                    alu_opcode <= {7'b00, funct3_space, opcode_space};
+                end
+                LOAD_ENCODE: begin      // result: address of target -> access Data memory to write value
+                    alu_operand_1 <= rs1_buffer;
+                    alu_operand_2 <= {52'h00, immediate_2_space, immediate_1_space};
+                    alu_opcode <= {ADD_ENCODE, R_TYPE_ENCODE};  // Add: Base + offset = Address of target
+                end
+                STORE_ENCODE: begin
+                    alu_operand_1 <= rs1_buffer;
+                    alu_operand_2 <= {52'h00, immediate_3_space, immediate_1_space};
+                    alu_opcode <= {ADD_ENCODE, R_TYPE_ENCODE};  // Add: Base + offset = Address of target
+                end
+                J_TYPE_ENCODE: begin
+                // Processor doesn't process J-type instruction
+                    alu_operand_1 <= 64'h00;
+                    alu_operand_2 <= 64'h00;
+                    alu_opcode <= 17'b00;
+                end
+                B_TYPE_ENCODE: begin
+                // Processor doesn't process B-type instruction
+                    alu_operand_1 <= 64'h00;
+                    alu_operand_2 <= 64'h00;
+                    alu_opcode <= 17'b00;
+                end
+                default: begin
+                    alu_operand_1 <= 64'h00;
+                    alu_operand_2 <= 64'h00;
+                    alu_opcode <= 17'b00;
+                end
+            endcase
+        end
+        ALU_module #(
+                    .OPERAND_WIDTH(DOUBLEWORD_WIDTH)
+                    )
+        alu_module  (
+                    .clk(clk),
+                    .operand_1(alu_operand_1),
+                    .operand_2(alu_operand_2),
+                    .result(alu_result),
+                    .op_code(alu_opcode),
+                    .alu_trig(alu_use),
+                    .alu_idle(alu_idle),
+                    .rst_n(rst_n)
+                    ); 
+        
+        always @(posedge clk, negedge rst_n) begin
+            if(!rst_n) begin
+                running_program_state_reg <= IDLE_STATE;
+                // Reset register in processor
+                for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+                    registers_owner[i] <= REGISTER_DEFAULT[i];
+                end
+                // Reset buffer interact ALU block
+                alu_use <= 0;
+                // Reset buffer interact with RAM 
+                addr_rd_reg <= 0;
+                rd_ins_reg <= 0;
+                data_type_rd_reg <= 0;
+                rd_finish_reg <= 0;
+                addr_wr_reg <= 0;
+                data_bus_wr_reg <= 0;
+                wr_ins_reg <= 0;
+                data_type_wr_reg <= 0;
+                rs1_buffer <= 0;
+                rs2_buffer <= 0;
+            end
+            else begin
+                case(running_program_state_reg) 
+                    IDLE_STATE: begin
+                                if(boot_processor) begin
+                                    running_program_state_reg <= FETCH_INSTRUCTION_STATE;
+                                    
+                                    fetch_instruction_reg <= fetch_instruction; 
+                                end
+                                else running_program_state_reg <= IDLE_STATE;
+                            end
+                    FETCH_INSTRUCTION_STATE: begin
+                            
+                                case(opcode_space) 
+                                    R_TYPE_ENCODE: begin
+                                        // Confirm data
+                                        rs1_buffer <= registers_renew[rs1_space];
+                                        rs2_buffer <= registers_renew[rs2_space];
+                                        case(funct10_space) 
+                                            ADD_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SUB_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SLT_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SLTU_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SRL_ENCODE: begin
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SLL_ENCODE: begin
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            AND_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            XOR_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            OR_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            MUL_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            default: begin
+                                                running_program_state_reg <= IDLE_STATE;
+                                            end
+                                        endcase
+                                    end
+                                    I_TYPE_ENCODE: begin
+                                        // Confirm data
+                                        rs1_buffer <= registers_renew[rs1_space];
+                                        case(funct3_space) 
+                                            ADDI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end               
+                                            SLLI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SRLI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end  
+                                            SLTI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            SLTIU_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            XORI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            ORI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end
+                                            ANDI_ENCODE: begin
+                                                // ALU signal here
+                                                alu_use <= 1;
+                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                            end    
+                                            default: begin
+                                                running_program_state_reg <= IDLE_STATE;
+                                            end
+                                        endcase 
+                                    end    
+                                    J_TYPE_ENCODE: begin
+                                    // Processor don't process J-type instruction
+                                    end
+                                    B_TYPE_ENCODE: begin
+                                    // Processor don't process J-type instruction
+                                    end
+                                    LOAD_ENCODE: begin
+                                        // Confirm data
+                                        rs1_buffer <= registers_renew[rs1_space];
+                                        alu_use <= 1;
+                                        running_program_state_reg <= EXECUTE_ADDR_INSTRUCTION_STATE;
+                                    end
+                                    STORE_ENCODE: begin
+                                        // Confirm data
+                                        rs1_buffer <= registers_renew[rs1_space];
+                                        alu_use <= 1;
+                                        running_program_state_reg <= EXECUTE_WR_ADDR_INSTRUCTION_STATE;
+                                    end
+                                endcase 
+                            end
+                    EXECUTE_INSTRUCTION_STATE: begin
+                                alu_use <= 0;
+                                if(alu_idle == 1) begin
+                                    registers_owner[rd_space] <= alu_result;
+                                    running_program_state_reg <= IDLE_STATE;
+                                end
+                                else running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                            end
+                    EXECUTE_ADDR_INSTRUCTION_STATE: begin
+                                alu_use <= 0;
+                                if(alu_idle == 1) begin
+                                    addr_rd_reg <= alu_result;
+                                    rd_ins_reg <= 1;
+                                    case(funct3_space) 
+                                        BYTE_WIDTH_ENCODE: data_type_rd_reg <= BYTE_TYPE_ENCODE;
+                                        WORD_WIDTH_ENCODE: data_type_rd_reg <= WORD_TYPE_ENCODE;
+                                        DWORD_WIDTH_ENCODE: data_type_rd_reg <= DWORD_TYPE_ENCODE;
+                                        default: data_type_rd_reg <= BYTE_TYPE_ENCODE;
+                                    endcase
+                                    rd_finish_reg <= 0;      
+                                    running_program_state_reg <= EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= EXECUTE_ADDR_INSTRUCTION_STATE;
+                                
+                            end
+                    EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE: begin
+                                if(rd_access) begin
+                                    running_program_state_reg <= EXECUTE_RD_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
+                            end
+                    EXECUTE_RD_ACCESS_INSTRUCTION_STATE: begin
+                                if(rd_idle) begin
+                                    registers_owner[rd_space] <= data_bus_rd;
+                                    rd_finish_reg <= 1;
+                                    running_program_state_reg <= IDLE_STATE;
+                                end
+                                else running_program_state_reg <= EXECUTE_RD_ACCESS_INSTRUCTION_STATE;
+                            end
+                    EXECUTE_WR_ADDR_INSTRUCTION_STATE: begin
+                                alu_use <= 0;
+                                if(alu_idle == 1) begin
+                                    addr_wr_reg <= alu_result;
+                                    data_bus_wr_reg <= registers_renew[rs2_space];
+                                    wr_ins_reg <= 1;
+                                    case(funct3_space) 
+                                        BYTE_WIDTH_ENCODE: data_type_wr_reg <= BYTE_TYPE_ENCODE;
+                                        WORD_WIDTH_ENCODE: data_type_wr_reg <= WORD_TYPE_ENCODE;
+                                        DWORD_WIDTH_ENCODE: data_type_wr_reg <= DWORD_TYPE_ENCODE;
+                                        default: data_type_wr_reg <= BYTE_TYPE_ENCODE;
+                                    endcase
+                                    running_program_state_reg <= EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= EXECUTE_WR_ADDR_INSTRUCTION_STATE;
+                            end
+                    EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE: begin
+                                if(wr_access) begin
+                                    running_program_state_reg <= EXECUTE_WR_ACCESS_INSTRUCTION_STATE;
+                                end
+                                else running_program_state_reg <= EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
+                            end
+                    EXECUTE_WR_ACCESS_INSTRUCTION_STATE: begin  
+                                // Notation of EXECUTE_WR_ACCESS_INSTRUCTION_STATE: Just wait for 1 cycle to confirm stablization of interactive buffer
+                                running_program_state_reg <= IDLE_STATE;
+                            end
+                endcase
+            end
+        end
     end
     
     
