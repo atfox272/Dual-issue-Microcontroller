@@ -15,6 +15,12 @@ module Multi_processor_manager
     
     // Interrupt 
     parameter INTERRUPT_BUFFER      = 16,
+    parameter PROGRAM_AMOUNT        = 4,
+    parameter PROGRAM_COUNTER_WIDTH = $clog2(PROGRAM_AMOUNT),
+    parameter MAIN_PROGRAM_ENCODE   = 2'b00,
+    parameter INT1_PROGRAM_ENCODE   = 2'b01,
+    parameter INT2_PROGRAM_ENCODE   = 2'b10,
+    parameter INT3_PROGRAM_ENCODE   = 2'b11,
     
     // Instruction Format 
     parameter OPCODE_SPACE_MSB      = 6,
@@ -53,12 +59,16 @@ module Multi_processor_manager
     parameter B_TYPE_ENCODE         = 7'b1100011,       // B-type   
     parameter LOAD_ENCODE           = 7'b0000011,       // LOAD-type
     parameter STORE_ENCODE          = 7'b0100011,       // STORE-type
-    parameter RETI_ENCODE           = 7'b1111111,       // Return interrupt
+    parameter SYSTEM_ENCODE         = 7'b1110111,       // Return interrupt
     // Funct3 enoder (for B-type)
     parameter BEQ_ENCODE           = 3'b000,
     parameter BNE_ENCODE           = 3'b001,
     parameter BLT_ENCODE           = 3'b100,
     parameter BGE_ENCODE           = 3'b101,
+    // Funct3 encoder (for SYSTEM-type) 
+    parameter BREAK_ENCODE         = 3'b001,            // BREAK: use for debugger
+    parameter EXIT_ENCODE          = 3'b010,
+    parameter RETI_ENCODE          = 3'b011,
     
     parameter ADDR_WIDTH_PM         = $clog2(PROGRAM_MEMORY_SIZE),
     parameter REG_SPACE_WIDTH       = $clog2(REGISTER_AMOUNT),
@@ -127,6 +137,13 @@ module Multi_processor_manager
     // Processor 
     reg boot_processor_1_reg;
     reg boot_processor_2_reg;
+    // Interrupt control
+    reg RETI_1_reg;
+    reg RETI_2_reg;
+    reg RETI_3_reg;
+    reg interrupt_handling_1_reg;
+    reg interrupt_handling_2_reg;
+    reg interrupt_handling_3_reg;
     // instruction space
     wire[INSTRUCTION_WIDTH - 1:0]       cur_instruction;
     wire[OPCODE_SPACE_WIDTH - 1:0]      opcode_space;
@@ -141,21 +158,20 @@ module Multi_processor_manager
     reg                                 boot_renew_register_1_reg;
     reg                                 boot_renew_register_2_reg;
     // LIFO 
-    // - common
     reg  active_stack_clk;
     reg wr_stack_ins;
     reg rd_stack_ins;
-    // - PC Stack
-    reg  [ADDR_WIDTH_PM - 1:0] PC_in_stack;
+    reg  [PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 1:0] PC_info_in_stack;    // <program-type> + <PC>
+    wire [PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 1:0] PC_info_out_stack;
+    wire [PROGRAM_COUNTER_WIDTH - 1:0] program_type_out_stack;
     wire [ADDR_WIDTH_PM - 1:0] PC_out_stack;
-    wire PC_stack_almost_empty;
     
     localparam INIT_STATE = 1;
     localparam MAIN_PROGRAM_IDLE_STATE = 0;
     localparam REQUEST_INS_STATE = 2;
     localparam DECODE_INS_STATE = 3;
     localparam PARALLEL_BLOCKING_STATE = 4;
-    localparam PARALLEL_BLOCKING_EX_INTERNAL_STATE = 4;
+    localparam PARALLEL_BLOCKING_EX_INTERNAL_STATE = 24;
     localparam FETCH_INSTRUCTION_STATE = 5;
     localparam EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE = 6;
     localparam EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE = 9;
@@ -206,16 +222,29 @@ module Multi_processor_manager
     assign pipeline_blocking_condition = (rs1_cur == rd_prev_interrupt_program | rs2_cur == rd_prev_interrupt_program);
     assign release_blocking_condition = (processor_idle_1 == 1) & (processor_idle_2 == 1);
     
+    // Interrupt control
+    assign RETI_1 = RETI_1_reg;
+    assign RETI_2 = RETI_2_reg;
+    assign RETI_3 = RETI_3_reg;
+    assign interrupt_handling_1 = interrupt_handling_1_reg;
+    assign interrupt_handling_2 = interrupt_handling_2_reg;
+    assign interrupt_handling_3 = interrupt_handling_3_reg;
+    assign main_program_state = ~(interrupt_handling_1 | interrupt_handling_2 | interrupt_handling_3);
+    
+    // LIFO_out decode
+    assign program_type_out_stack = PC_info_out_stack[PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 1 : PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 2];
+    assign PC_out_stack = PC_info_out_stack[PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 3:0];
+    
+    // data_bus format : {prgram_type (2-bit), PC}
     LIFO_module #(
-                .DATA_WIDTH(ADDR_WIDTH_PM),
+                .DATA_WIDTH(PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM),
                 .LIFO_DEPTH(INTERRUPT_BUFFER)
                 ) interrupt_buffer (
                 .active_clk(active_stack_clk),
-                .data_bus_in(PC_in_stack),
-                .data_bus_out(PC_out_stack),
+                .data_bus_in(PC_info_in_stack),
+                .data_bus_out(PC_info_out_stack),
                 .wr_ins(wr_stack_ins),
                 .rd_ins(rd_stack_ins),
-                .almost_empty(PC_stack_almost_empty),
                 .rst_n(rst_n)
                 );
                             
@@ -232,10 +261,16 @@ module Multi_processor_manager
             boot_processor_1_reg <= 0;
             boot_processor_2_reg <= 0;
             active_stack_clk <= 0;
-            PC_in_stack <= 0;
+            PC_info_in_stack <= 0;
             wr_stack_ins <= 0;
             rd_stack_ins <= 0;
             rd_prev_interrupt_program <= 0;
+            RETI_1_reg <= 0;
+            RETI_2_reg <= 0;
+            RETI_3_reg <= 0;
+            interrupt_handling_1_reg <= 0;
+            interrupt_handling_2_reg <= 0;
+            interrupt_handling_3_reg <= 0;
         end
         else begin
             case(program_state)
@@ -432,24 +467,36 @@ module Multi_processor_manager
                         // Assign Interrupt address
                         PC <= INT1_PROGRAM_ADDR;
                         // Prepare data to push in stack
-                        PC_in_stack <= PC;
+                        PC_info_in_stack <= {MAIN_PROGRAM_ENCODE[1:0],PC};
                         wr_stack_ins <= 1;
+                        // Interrupt control
+                        interrupt_handling_1_reg <= 1;
+                        interrupt_handling_2_reg <= 0;
+                        interrupt_handling_3_reg <= 0;
                     end
                     else if(interrupt_flag_2) begin
                         program_state <= RESTORE_PC_STATE;
                         // Assign Interrupt address
                         PC <= INT2_PROGRAM_ADDR;
                         // Prepare data to push in stack
-                        PC_in_stack <= PC;
+                        PC_info_in_stack <= {MAIN_PROGRAM_ENCODE[1:0],PC};
                         wr_stack_ins <= 1;
+                        // Interrupt control
+                        interrupt_handling_1_reg <= 0;
+                        interrupt_handling_2_reg <= 1;
+                        interrupt_handling_3_reg <= 0;
                     end
                     else if(interrupt_flag_3) begin
                         program_state <= RESTORE_PC_STATE;
                         // Assign Interrupt address
                         PC <= INT3_PROGRAM_ADDR;
                         // Prepare data to push in stack
-                        PC_in_stack <= PC;
+                        PC_info_in_stack <= {MAIN_PROGRAM_ENCODE[1:0],PC};
                         wr_stack_ins <= 1;
+                        // Interrupt control
+                        interrupt_handling_1_reg <= 0;
+                        interrupt_handling_2_reg <= 0;
+                        interrupt_handling_3_reg <= 1;
                     end
                     else begin
                         program_state <= MAIN_PROGRAM_IDLE_STATE;
@@ -473,6 +520,7 @@ module Multi_processor_manager
                     else program_state <= program_state;
                     // Recovery state of Stack 
                     active_stack_clk <= 0;
+                    rd_stack_ins <= 0;
                     wr_stack_ins <= 0;
                 end
                 DECODE_INT_INS_STATE: begin
@@ -529,20 +577,62 @@ module Multi_processor_manager
                             end
                             contain_ins <= 0;
                         end
-                        RETI_ENCODE: begin
-                            if(processor_idle_1) begin
-                                if(PC_stack_almost_empty) begin // Return main program
-                                    program_state <= RECOVERY_MAIN_PC_STATE;
-                                    PC <= PC_out_stack;
-                                    rd_stack_ins <= 1;
+                        SYSTEM_ENCODE: begin
+                            case(funct3_space) 
+                                RETI_ENCODE: begin
+                                    if(processor_idle_1) begin
+                                        case(program_type_out_stack)
+                                            MAIN_PROGRAM_ENCODE: begin
+                                                program_state <= RECOVERY_MAIN_PC_STATE;
+                                                PC <= PC_out_stack;
+                                                rd_stack_ins <= 1;
+                                                // Interrupt control
+                                                interrupt_handling_1_reg <= 0;
+                                                interrupt_handling_2_reg <= 0;
+                                                interrupt_handling_3_reg <= 0;
+                                            end
+                                            INT1_PROGRAM_ENCODE: begin
+                                                program_state <= RECOVERY_INT_PC_STATE;
+                                                PC <= PC_out_stack;
+                                                rd_stack_ins <= 1;
+                                                // Interrupt control
+                                                interrupt_handling_1_reg <= 1;
+                                                interrupt_handling_2_reg <= 0;
+                                                interrupt_handling_3_reg <= 0;
+                                            end
+                                            INT2_PROGRAM_ENCODE: begin
+                                                program_state <= RECOVERY_INT_PC_STATE;
+                                                PC <= PC_out_stack;
+                                                rd_stack_ins <= 1;
+                                                // Interrupt control
+                                                interrupt_handling_1_reg <= 0;
+                                                interrupt_handling_2_reg <= 1;
+                                                interrupt_handling_3_reg <= 0;
+                                            end
+                                            INT3_PROGRAM_ENCODE: begin
+                                                program_state <= RECOVERY_INT_PC_STATE;
+                                                PC <= PC_out_stack;
+                                                rd_stack_ins <= 1;
+                                                // Interrupt control
+                                                interrupt_handling_1_reg <= 0;
+                                                interrupt_handling_2_reg <= 0;
+                                                interrupt_handling_3_reg <= 1;
+                                            end
+                                        endcase
+                                        contain_ins <= 0;
+                                    end
                                 end
-                                else begin                      // Return another interrupt program
-                                    program_state <= RECOVERY_INT_PC_STATE;
-                                    PC <= PC_out_stack;
-                                    rd_stack_ins <= 1;
+                                EXIT_ENCODE: begin
+                                
                                 end
-                                contain_ins <= 0;
-                            end
+                                BREAK_ENCODE: begin
+                                
+                                end
+                                default: begin
+                                
+                                end
+                            endcase 
+                            
                         end
                         default: program_state <= program_state;
                     endcase 
@@ -622,13 +712,96 @@ module Multi_processor_manager
                     active_stack_clk <= 1;
                     // Recovery rd_prev_interrupt_program (because x1 is reserved register, compiler will not put x1 to register destination (rd)
                     rd_prev_interrupt_program <= 1; 
-                    // Request instructions
+                    // Request Instructions
                     contain_ins <= 1;
-                    // Request Instruction
                     rd_ins_pm_reg <= 1;
                 end
                 DETECT_HIGHER_INT_STATE: begin
-                
+                    if(interrupt_handling_1) begin
+                        if(contain_ins) begin
+                            program_state <= DECODE_INT_INS_STATE;
+                            // 
+                            contain_ins <= contain_ins - 1;
+                        end
+                        else begin
+                            program_state <= REQUEST_INT_INS_STATE;
+                            // Request Instruction
+                            contain_ins <= 1;
+                            rd_ins_pm_reg <= 1;
+                        end
+                    end
+                    if(interrupt_handling_2) begin
+                        if(interrupt_flag_1) begin
+                            program_state <= RESTORE_PC_STATE;
+                            // Assign Interrupt address
+                            PC <= INT1_PROGRAM_ADDR;
+                            // Prepare data to push in stack
+                            PC_info_in_stack <= {INT2_PROGRAM_ENCODE[1:0],PC};
+                            wr_stack_ins <= 1;
+                            // Interrupt control
+                            interrupt_handling_1_reg <= 1;
+                            interrupt_handling_2_reg <= 0;
+                            interrupt_handling_3_reg <= 0;
+                            // Change program pre-process
+                            rd_prev_interrupt_program <= 1; 
+                        end
+                        else begin
+                           if(contain_ins) begin
+                                program_state <= DECODE_INT_INS_STATE;
+                                // 
+                                contain_ins <= contain_ins - 1;
+                            end
+                            else begin
+                                program_state <= REQUEST_INT_INS_STATE;
+                                // Request Instruction
+                                contain_ins <= 1;
+                                rd_ins_pm_reg <= 1;
+                            end 
+                        end
+                    end
+                    if(interrupt_handling_3) begin
+                        if(interrupt_flag_1) begin
+                            program_state <= RESTORE_PC_STATE;
+                            // Assign Interrupt address
+                            PC <= INT1_PROGRAM_ADDR;
+                            // Prepare data to push in stack
+                            PC_info_in_stack <= {INT3_PROGRAM_ENCODE[1:0],PC};
+                            wr_stack_ins <= 1;
+                            // Interrupt control
+                            interrupt_handling_1_reg <= 1;
+                            interrupt_handling_2_reg <= 0;
+                            interrupt_handling_3_reg <= 0;
+                            // Change program pre-process
+                            rd_prev_interrupt_program <= 1; 
+                        end
+                        else if(interrupt_flag_2) begin
+                            program_state <= RESTORE_PC_STATE;
+                            // Assign Interrupt address
+                            PC <= INT2_PROGRAM_ADDR;
+                            // Prepare data to push in stack
+                            PC_info_in_stack <= {INT3_PROGRAM_ENCODE[1:0],PC};
+                            wr_stack_ins <= 1;
+                            // Interrupt control
+                            interrupt_handling_1_reg <= 0;
+                            interrupt_handling_2_reg <= 1;
+                            interrupt_handling_3_reg <= 0;
+                            // Change program pre-process
+                            rd_prev_interrupt_program <= 1;
+                        end
+                        else begin
+                           if(contain_ins) begin
+                                program_state <= DECODE_INT_INS_STATE;
+                                // 
+                                contain_ins <= contain_ins - 1;
+                            end
+                            else begin
+                                program_state <= REQUEST_INT_INS_STATE;
+                                // Request Instruction
+                                contain_ins <= 1;
+                                rd_ins_pm_reg <= 1;
+                            end 
+                        end
+                    end
                 end
                 default: begin
                 
