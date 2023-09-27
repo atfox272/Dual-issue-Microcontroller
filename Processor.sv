@@ -10,7 +10,7 @@ module Processor
     parameter           DATA_TYPE_WIDTH         = 2,
     
     parameter           INSTRUCTION_WIDTH       = 32,   //32-bit instruction
-    parameter           PROGRAM_MEMORY_SIZE     = 64,
+    parameter           PROGRAM_MEMORY_SIZE     = 256,
     
     // Special register     x0:     hardwired zero
     //                      x2:     stack pointer   (default: 0xF0)
@@ -102,9 +102,7 @@ module Processor
     // Multi-processor Manager
     input   wire [INSTRUCTION_WIDTH - 1:0]  fetch_instruction,
     input   wire                            boot_processor,
-    output  wire                            processor_idle,
-    input   wire [REGISTER_AMOUNT - 1:0]    new_data_register,  // 1-main processor ; 0-sub processor
-    
+    output  wire                            processor_idle,    
     
     // Synchronization primitive (READ_STATE)
     input   wire [DOUBLEWORD_WIDTH - 1:0]   data_bus_rd,
