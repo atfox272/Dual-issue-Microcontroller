@@ -56,6 +56,7 @@ module Multi_processor_manager
     parameter I_TYPE_ENCODE         = 7'b0010011,       // I-type
     parameter J_TYPE_ENCODE         = 7'b1100111,       // J-type
     parameter JAL_TYPE_ENCODE       = 7'b1101111,       // J-type
+    parameter JALR_TYPE_ENCODE      = 7'b1101011,       // J-type
     parameter B_TYPE_ENCODE         = 7'b1100011,       // B-type   
     parameter LOAD_ENCODE           = 7'b0000011,       // LOAD-type
     parameter STORE_ENCODE          = 7'b0100011,       // STORE-type
@@ -95,11 +96,12 @@ module Multi_processor_manager
     input   wire                                processor_idle_2,
     
     // Registers management
-    input   wire    [DOUBLEWORD_WIDTH - 1:0]    register_renew [0:REGISTER_AMOUNT - 1],
+    input   wire    [DOUBLEWORD_WIDTH - 1:0]    registers_renew [0:REGISTER_AMOUNT - 1],
     output  wire    [REG_SPACE_WIDTH - 1:0]     register_num,
     output  wire                                boot_renew_register_1,
     output  wire                                boot_renew_register_2,
     output  wire                                main_program_state,
+    output  wire    [DOUBLEWORD_WIDTH - 1:0]    ra_register,
     
     // Interrupt control
     input   wire                                interrupt_flag_1,
@@ -175,6 +177,7 @@ module Multi_processor_manager
     localparam FETCH_INSTRUCTION_STATE = 5;
     localparam EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE = 6;
     localparam EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE = 9;
+    localparam EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE = 25;
     localparam CONFIRM_FETCH_INSTRUCTION_P1_STATE = 7;
     localparam CONFIRM_FETCH_INSTRUCTION_P2_STATE = 8;
     localparam PC_INSCREASE_STATE = 10;
@@ -187,6 +190,7 @@ module Multi_processor_manager
     localparam PIPELINE_BLOCKING_STATE = 17;
     localparam EXECUTE_BTYPE_INT_INS_INTERNAL_STATE = 18;
     localparam EXECUTE_JTYPE_INT_INS_INTERNAL_STATE = 19;
+    localparam EXECUTE_JALRTYPE_INT_INS_INTERNAL_STATE = 26;
     localparam INT_PC_INSCREASE_STATE = 20;
     localparam RECOVERY_INT_PC_STATE = 21;
     localparam RECOVERY_MAIN_PC_STATE = 22;
@@ -216,6 +220,7 @@ module Multi_processor_manager
     assign register_num = register_num_reg;
     assign boot_renew_register_1 = boot_renew_register_1_reg;
     assign boot_renew_register_2 = boot_renew_register_2_reg;
+    assign ra_register = x1;
     // Condition
     assign parallel_blocking_Rtype_condition = (rs1_cur == rd_prev) | (rs2_cur == rd_prev);
     assign parallel_blocking_Itype_condition = (rs1_cur == rd_prev);
@@ -265,6 +270,9 @@ module Multi_processor_manager
             wr_stack_ins <= 0;
             rd_stack_ins <= 0;
             rd_prev_interrupt_program <= 0;
+            register_num_reg <= 0;
+            boot_renew_register_1_reg <= 0;
+            boot_renew_register_2_reg <= 0;
             RETI_1_reg <= 0;
             RETI_2_reg <= 0;
             RETI_3_reg <= 0;
@@ -350,7 +358,6 @@ module Multi_processor_manager
                         end
                         // Execute immediate
                         B_TYPE_ENCODE: begin
-                            contain_ins <= 0;
                             if(parallel_blocking_Rtype_condition) begin
                                 if(release_blocking_condition) begin
                                     program_state <= EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE;
@@ -362,11 +369,12 @@ module Multi_processor_manager
                         end
                         J_TYPE_ENCODE: begin
                             program_state <= EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE;
-                            contain_ins <= 0;
                         end
                         JAL_TYPE_ENCODE: begin
                             program_state <= EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE;
-                            contain_ins <= 0;
+                        end
+                        JALR_TYPE_ENCODE: begin
+                            program_state <= EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE;
                         end
                         default: program_state <= FETCH_INSTRUCTION_STATE;
                     endcase 
@@ -384,7 +392,7 @@ module Multi_processor_manager
                         boot_processor_1_reg <= 1;
                         boot_renew_register_1_reg <= 1;
                     end
-                    else begin  // processor_idle_2 == 1 (because previous state had confirmed "one more processor is IDLE"
+                    else if(processor_idle_2)begin  
                         program_state <= CONFIRM_FETCH_INSTRUCTION_P2_STATE;
                         // Boot
                         boot_processor_2_reg <= 1;
@@ -412,36 +420,36 @@ module Multi_processor_manager
                 EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE: begin
                     case(funct3_space)
                         BEQ_ENCODE: begin
-                            if(register_renew[rs1_cur] == register_renew[rs2_cur]) begin
+                            if(registers_renew[rs1_cur] == registers_renew[rs2_cur]) begin
                                 program_state <= DETECT_INTERRUPT_STATE;
-                                PC <= {immediate_3_space, immediate_1_space};
+                                PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
                             else begin
                                 program_state <= PC_INSCREASE_STATE;
                             end 
                         end
                         BNE_ENCODE: begin
-                            if(register_renew[rs1_cur] != register_renew[rs2_cur]) begin
+                            if(registers_renew[rs1_cur] != registers_renew[rs2_cur]) begin
                                 program_state <= DETECT_INTERRUPT_STATE;
-                                PC <= {immediate_3_space, immediate_1_space};
+                                PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
                             else begin
                                 program_state <= PC_INSCREASE_STATE;
                             end 
                         end
                         BLT_ENCODE: begin
-                            if(register_renew[rs1_cur] < register_renew[rs2_cur]) begin
+                            if(registers_renew[rs1_cur] < registers_renew[rs2_cur]) begin
                                 program_state <= DETECT_INTERRUPT_STATE;
-                                PC <= {immediate_3_space, immediate_1_space};
+                                PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
                             else begin
                                 program_state <= PC_INSCREASE_STATE;
                             end 
                         end
                         BGE_ENCODE: begin
-                            if(register_renew[rs1_cur] > register_renew[rs2_cur]) begin
+                            if(registers_renew[rs1_cur] > registers_renew[rs2_cur]) begin
                                 program_state <= DETECT_INTERRUPT_STATE;
-                                PC <= {immediate_3_space, immediate_1_space};
+                                PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
                             else begin
                                 program_state <= PC_INSCREASE_STATE;
@@ -451,11 +459,18 @@ module Multi_processor_manager
                         
                         end
                     endcase
+                    contain_ins <= 0;
                 end
                 EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE: begin
                     program_state <= DETECT_INTERRUPT_STATE;
                     x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
-                    PC <= PC + jump_offset_space;
+                    PC <= PC + jump_offset_space[ADDR_WIDTH_PM - 1:0];
+                    contain_ins <= 0;
+                end
+                EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE: begin
+                    program_state <= DETECT_INTERRUPT_STATE;
+                    PC <= x1;
+                    contain_ins <= 0;
                 end
                 PC_INSCREASE_STATE: begin
                     program_state <= DETECT_INTERRUPT_STATE;
@@ -561,21 +576,24 @@ module Multi_processor_manager
                                 if(processor_idle_1) program_state <= EXECUTE_BTYPE_INT_INS_INTERNAL_STATE;
                                 else program_state <= PIPELINE_BLOCKING_STATE;
                             end
-                            contain_ins <= 0;
                         end
                         J_TYPE_ENCODE: begin
                             if(pipeline_blocking_condition) begin
                                 if(processor_idle_1) program_state <= EXECUTE_JTYPE_INT_INS_INTERNAL_STATE;
                                 else program_state <= PIPELINE_BLOCKING_STATE;
                             end
-                            contain_ins <= 0;
                         end
                         JAL_TYPE_ENCODE: begin
                             if(pipeline_blocking_condition) begin
                                 if(processor_idle_1) program_state <= EXECUTE_JTYPE_INT_INS_INTERNAL_STATE;
                                 else program_state <= PIPELINE_BLOCKING_STATE;
                             end
-                            contain_ins <= 0;
+                        end
+                        JALR_TYPE_ENCODE: begin
+                            if(pipeline_blocking_condition) begin
+                                if(processor_idle_1) program_state <= EXECUTE_JALRTYPE_INT_INS_INTERNAL_STATE;
+                                else program_state <= PIPELINE_BLOCKING_STATE;
+                            end
                         end
                         SYSTEM_ENCODE: begin
                             case(funct3_space) 
@@ -652,36 +670,36 @@ module Multi_processor_manager
                 EXECUTE_BTYPE_INT_INS_INTERNAL_STATE: begin
                     case(funct3_space)
                         BEQ_ENCODE: begin
-                            if(register_renew[rs1_cur] == register_renew[rs2_cur]) begin
+                            if(registers_renew[rs1_cur] == registers_renew[rs2_cur]) begin
                                 program_state <= DETECT_HIGHER_INT_STATE;
-                                PC <= {immediate_3_space, immediate_1_space};
+                                PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
                             else begin
                                 program_state <= INT_PC_INSCREASE_STATE;
                             end 
                         end
                         BNE_ENCODE: begin
-                            if(register_renew[rs1_cur] != register_renew[rs2_cur]) begin
+                            if(registers_renew[rs1_cur] != registers_renew[rs2_cur]) begin
                                 program_state <= DETECT_HIGHER_INT_STATE;
-                                PC <= {immediate_3_space, immediate_1_space};
+                                PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
                             else begin
                                 program_state <= INT_PC_INSCREASE_STATE;
                             end 
                         end
                         BLT_ENCODE: begin
-                            if(register_renew[rs1_cur] < register_renew[rs2_cur]) begin
+                            if(registers_renew[rs1_cur] < registers_renew[rs2_cur]) begin
                                 program_state <= DETECT_HIGHER_INT_STATE;
-                                PC <= {immediate_3_space, immediate_1_space};
+                                PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
                             else begin
                                 program_state <= INT_PC_INSCREASE_STATE;
                             end 
                         end
                         BGE_ENCODE: begin
-                            if(register_renew[rs1_cur] > register_renew[rs2_cur]) begin
+                            if(registers_renew[rs1_cur] > registers_renew[rs2_cur]) begin
                                 program_state <= DETECT_HIGHER_INT_STATE;
-                                PC <= {immediate_3_space, immediate_1_space};
+                                PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
                             else begin
                                 program_state <= INT_PC_INSCREASE_STATE;
@@ -691,11 +709,18 @@ module Multi_processor_manager
                         
                         end
                     endcase
+                    contain_ins <= 0;
                 end
                 EXECUTE_JTYPE_INT_INS_INTERNAL_STATE: begin
                     program_state <= DETECT_HIGHER_INT_STATE;
                     x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
-                    PC <= PC + jump_offset_space;
+                    PC <= PC + {39'b00, jump_offset_space};
+                    contain_ins <= 0;
+                end
+                EXECUTE_JALRTYPE_INT_INS_INTERNAL_STATE: begin
+                    program_state <= DETECT_HIGHER_INT_STATE;
+                    PC <= x1;
+                    contain_ins <= 0;
                 end
                 INT_PC_INSCREASE_STATE: begin
                     program_state <= DETECT_HIGHER_INT_STATE;
