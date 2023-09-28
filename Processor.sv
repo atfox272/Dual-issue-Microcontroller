@@ -147,6 +147,7 @@ module Processor
     // Register management
     output  wire [DOUBLEWORD_WIDTH - 1:0]   processor_registers [0:REGISTER_AMOUNT - 1],
     input   wire [DOUBLEWORD_WIDTH - 1:0]   registers_renew     [0:REGISTER_AMOUNT - 1],
+    input   wire                            synchronization_processor,
     
     input rst_n
     
@@ -630,6 +631,14 @@ module Processor
                 endcase 
             end
         end
+        // Synchronization reigsters block
+        always @(posedge clk) begin
+            if(synchronization_processor) begin
+                for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+                    registers_owner[i] <= registers_renew[i];
+                end
+            end
+        end
         
         // Debug area
         assign debug_1 = {0, alu_result};
@@ -987,6 +996,14 @@ module Processor
                                 running_program_state_reg <= IDLE_STATE;
                             end
                 endcase
+            end
+        end
+        // Synchronization reigsters block
+        always @(posedge clk) begin
+            if(synchronization_processor) begin
+                for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+                    registers_owner[i] <= registers_renew[i];
+                end
             end
         end
     end
