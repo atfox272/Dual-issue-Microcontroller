@@ -1,10 +1,9 @@
 # Dual-core-Microcontroller
 Dual-core Microcontroller ver1.0
-## 1. Tổng quan:
-- Ở đề tài này, nhóm em sẽ làm 1 con Microcontroller sử dụng tập lệnh RISC-V đơn giản gồm 2 nhân và các ngoại vi cần thiết (gồm ngoại vi giao tiếp và I/O)
-### a. Sơ đồ khối:
+## 1. General:
+### a. Block diagram:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/3b57f4e2-6f29-4d72-ac94-0bab97081b08)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/974c4e2d-642c-45b5-a796-ec13e169736c)
 
 
 ### b. Chức năng các khối
@@ -76,8 +75,9 @@ Dual-core Microcontroller ver1.0
 
 #### i. Interface:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/b8acb228-67a0-4d13-843b-a5f7cc7f4090)
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/b24db694-bb44-4a1a-8bd7-3d0bc6c6eafb)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/558f4497-57f7-4a06-b8d7-3d063ceaac7d)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/e7b2b0e6-6810-4824-a306-c2592add3641)
+
 
 
 #### ii. Task:
@@ -158,7 +158,12 @@ Dual-core Microcontroller ver1.0
   - Add _Timer/Interrupt Function_: External / Pin Change / Timer interrupt
     + **Description**: Add External / Pin Change / Timer interrupt
     + **Goal**:
-  
+
+  _(Sep 28, 2023)_
+  - Change _Synchronization registers automaticly_ from _Using register_renew_:
+    + **Description**: Register_management (RM) block sends sync_signal to Processor 1 and Processor 2 (if RM detects that some processors have modified register_owner)
+    + **Goal**:
+        
 ## 6. Testcase:
   - Testcase for parallel processing:
 
