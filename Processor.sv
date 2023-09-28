@@ -238,10 +238,16 @@ module Processor
         assign addr_wr_pm = addr_wr_pm_reg;
         assign wr_ins_pm = wr_ins_pm_reg;
         // Synchronization primitive
+        // -- read
         assign addr_rd = addr_rd_reg;
         assign data_type_rd = data_type_rd_reg;
         assign rd_ins = rd_ins_reg;
         assign rd_finish = rd_finish_reg;
+        // -- write
+        assign wr_ins = wr_ins_reg;
+        assign data_bus_wr = data_bus_wr_reg;
+        assign addr_wr = addr_wr_reg;
+        assign data_type_wr = data_type_wr_reg;
         // Decode instruciton
         assign opcode_space = fetch_instruction_reg[OPCODE_SPACE_MSB:OPCODE_SPACE_LSB];
         assign funct10_space = fetch_instruction_reg[FUNCT10_SPACE_MSB:FUNCT10_SPACE_LSB];
@@ -567,7 +573,7 @@ module Processor
                                     registers_owner[rd_space] <= alu_result;
                                     running_program_state_reg <= IDLE_STATE;
                                 end
-                                else running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                else running_program_state_reg <= running_program_state_reg;
                             end
                             EXECUTE_ADDR_INSTRUCTION_STATE: begin
                                 alu_use <= 0;
@@ -583,14 +589,15 @@ module Processor
                                     rd_finish_reg <= 0;      
                                     running_program_state_reg <= EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
                                 end
-                                else running_program_state_reg <= EXECUTE_ADDR_INSTRUCTION_STATE;
+                                else running_program_state_reg <= running_program_state_reg;
                                 
                             end
                             EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE: begin
                                 if(rd_access) begin
                                     running_program_state_reg <= EXECUTE_RD_ACCESS_INSTRUCTION_STATE;
+                                    rd_ins_reg <= 0;
                                 end
-                                else running_program_state_reg <= EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
+                                else running_program_state_reg <= running_program_state_reg;
                             end
                             EXECUTE_RD_ACCESS_INSTRUCTION_STATE: begin
                                 if(rd_idle) begin
@@ -598,7 +605,7 @@ module Processor
                                     rd_finish_reg <= 1;
                                     running_program_state_reg <= IDLE_STATE;
                                 end
-                                else running_program_state_reg <= EXECUTE_RD_ACCESS_INSTRUCTION_STATE;
+                                else running_program_state_reg <= running_program_state_reg;
                             end
                             EXECUTE_WR_ADDR_INSTRUCTION_STATE: begin
                                 alu_use <= 0;
@@ -614,17 +621,18 @@ module Processor
                                     endcase
                                     running_program_state_reg <= EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
                                 end
-                                else running_program_state_reg <= EXECUTE_WR_ADDR_INSTRUCTION_STATE;
+                                else running_program_state_reg <= running_program_state_reg;
                             end
                             EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE: begin
                                 if(wr_access) begin
                                     running_program_state_reg <= EXECUTE_WR_ACCESS_INSTRUCTION_STATE;
                                 end
-                                else running_program_state_reg <= EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE;
+                                else running_program_state_reg <= running_program_state_reg;
                             end
                             EXECUTE_WR_ACCESS_INSTRUCTION_STATE: begin  
                                 // Notation of EXECUTE_WR_ACCESS_INSTRUCTION_STATE: Just wait for 1 cycle to confirm stablization of interactive buffer
                                 running_program_state_reg <= IDLE_STATE;
+                                wr_ins_reg <= 0;
                             end
                         endcase
                     end
@@ -692,10 +700,16 @@ module Processor
         localparam EXECUTE_WR_ACCESS_INSTRUCTION_STATE = 7;
         
         // Synchronization primitive
+        // -- read
         assign addr_rd = addr_rd_reg;
         assign data_type_rd = data_type_rd_reg;
         assign rd_ins = rd_ins_reg;
         assign rd_finish = rd_finish_reg;
+        // -- write
+        assign wr_ins = wr_ins_reg;
+        assign data_bus_wr = data_bus_wr_reg;
+        assign addr_wr = addr_wr_reg;
+        assign data_type_wr = data_type_wr_reg;
         // Decode instruciton
         assign opcode_space = fetch_instruction_reg[OPCODE_SPACE_MSB:OPCODE_SPACE_LSB];
         assign funct10_space = fetch_instruction_reg[FUNCT10_SPACE_MSB:FUNCT10_SPACE_LSB];
@@ -958,6 +972,7 @@ module Processor
                     EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE: begin
                                 if(rd_access) begin
                                     running_program_state_reg <= EXECUTE_RD_ACCESS_INSTRUCTION_STATE;
+                                    rd_ins_reg <= 0;
                                 end
                                 else running_program_state_reg <= EXECUTE_RD_PRE_ACCESS_INSTRUCTION_STATE;
                             end
@@ -994,6 +1009,7 @@ module Processor
                     EXECUTE_WR_ACCESS_INSTRUCTION_STATE: begin  
                                 // Notation of EXECUTE_WR_ACCESS_INSTRUCTION_STATE: Just wait for 1 cycle to confirm stablization of interactive buffer
                                 running_program_state_reg <= IDLE_STATE;
+                                wr_ins_reg <= 0;
                             end
                 endcase
             end
