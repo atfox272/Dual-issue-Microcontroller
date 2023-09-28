@@ -97,6 +97,7 @@ module Multi_processor_manager
     
     // Registers management
     input   wire    [DOUBLEWORD_WIDTH - 1:0]    registers_renew [0:REGISTER_AMOUNT - 1],
+    input   wire                                synchronized_processors,
     output  wire    [REG_SPACE_WIDTH - 1:0]     register_num,
     output  wire                                boot_renew_register_1,
     output  wire                                boot_renew_register_2,
@@ -418,59 +419,65 @@ module Multi_processor_manager
                     else program_state <= CONFIRM_FETCH_INSTRUCTION_P2_STATE;
                 end
                 EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE: begin
-                    case(funct3_space)
-                        BEQ_ENCODE: begin
-                            if(registers_renew[rs1_cur] == registers_renew[rs2_cur]) begin
-                                program_state <= DETECT_INTERRUPT_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                    if(synchronized_processors) begin
+                        case(funct3_space)
+                            BEQ_ENCODE: begin
+                                if(registers_renew[rs1_cur] == registers_renew[rs2_cur]) begin
+                                    program_state <= DETECT_INTERRUPT_STATE;
+                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                end
+                                else begin
+                                    program_state <= PC_INSCREASE_STATE;
+                                end 
                             end
-                            else begin
-                                program_state <= PC_INSCREASE_STATE;
-                            end 
-                        end
-                        BNE_ENCODE: begin
-                            if(registers_renew[rs1_cur] != registers_renew[rs2_cur]) begin
-                                program_state <= DETECT_INTERRUPT_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                            BNE_ENCODE: begin
+                                if(registers_renew[rs1_cur] != registers_renew[rs2_cur]) begin
+                                    program_state <= DETECT_INTERRUPT_STATE;
+                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                end
+                                else begin
+                                    program_state <= PC_INSCREASE_STATE;
+                                end 
                             end
-                            else begin
-                                program_state <= PC_INSCREASE_STATE;
-                            end 
-                        end
-                        BLT_ENCODE: begin
-                            if(registers_renew[rs1_cur] < registers_renew[rs2_cur]) begin
-                                program_state <= DETECT_INTERRUPT_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                            BLT_ENCODE: begin
+                                if(registers_renew[rs1_cur] < registers_renew[rs2_cur]) begin
+                                    program_state <= DETECT_INTERRUPT_STATE;
+                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                end
+                                else begin
+                                    program_state <= PC_INSCREASE_STATE;
+                                end 
                             end
-                            else begin
-                                program_state <= PC_INSCREASE_STATE;
-                            end 
-                        end
-                        BGE_ENCODE: begin
-                            if(registers_renew[rs1_cur] > registers_renew[rs2_cur]) begin
-                                program_state <= DETECT_INTERRUPT_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                            BGE_ENCODE: begin
+                                if(registers_renew[rs1_cur] > registers_renew[rs2_cur]) begin
+                                    program_state <= DETECT_INTERRUPT_STATE;
+                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                end
+                                else begin
+                                    program_state <= PC_INSCREASE_STATE;
+                                end 
                             end
-                            else begin
-                                program_state <= PC_INSCREASE_STATE;
-                            end 
-                        end
-                        default: begin
-                        
-                        end
-                    endcase
-                    contain_ins <= 0;
+                            default: begin
+                            
+                            end
+                        endcase
+                        contain_ins <= 0;
+                    end
                 end
                 EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE: begin
-                    program_state <= DETECT_INTERRUPT_STATE;
-                    x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
-                    PC <= PC + jump_offset_space[ADDR_WIDTH_PM - 1:0];
-                    contain_ins <= 0;
+                    if(synchronized_processors) begin
+                        program_state <= DETECT_INTERRUPT_STATE;
+                        x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
+                        PC <= PC + jump_offset_space[ADDR_WIDTH_PM - 1:0];
+                        contain_ins <= 0;
+                    end
                 end
                 EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE: begin
-                    program_state <= DETECT_INTERRUPT_STATE;
-                    PC <= x1;
-                    contain_ins <= 0;
+                    if(synchronized_processors) begin
+                        program_state <= DETECT_INTERRUPT_STATE;
+                        PC <= x1;
+                        contain_ins <= 0;
+                    end
                 end
                 PC_INSCREASE_STATE: begin
                     program_state <= DETECT_INTERRUPT_STATE;
@@ -518,12 +525,14 @@ module Multi_processor_manager
                     end
                 end
                 RESTORE_PC_STATE: begin
-                    program_state <= REQUEST_INT_INS_STATE;
-                    contain_ins <= 1;
-                    // Write PC to Stack
-                    active_stack_clk <= 1;
-                    // Request Instruction
-                    rd_ins_pm_reg <= 1;
+                    if(synchronized_processors) begin
+                        program_state <= REQUEST_INT_INS_STATE;
+                        contain_ins <= 1;
+                        // Write PC to Stack
+                        active_stack_clk <= 1;
+                        // Request Instruction
+                        rd_ins_pm_reg <= 1;
+                    end
                 end
                 REQUEST_INT_INS_STATE: begin
                     if(rd_idle_pm) begin
@@ -668,78 +677,88 @@ module Multi_processor_manager
                     end
                 end
                 EXECUTE_BTYPE_INT_INS_INTERNAL_STATE: begin
-                    case(funct3_space)
-                        BEQ_ENCODE: begin
-                            if(registers_renew[rs1_cur] == registers_renew[rs2_cur]) begin
-                                program_state <= DETECT_HIGHER_INT_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                    if(synchronized_processors) begin
+                        case(funct3_space)
+                            BEQ_ENCODE: begin
+                                if(registers_renew[rs1_cur] == registers_renew[rs2_cur]) begin
+                                    program_state <= DETECT_HIGHER_INT_STATE;
+                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                end
+                                else begin
+                                    program_state <= INT_PC_INSCREASE_STATE;
+                                end 
                             end
-                            else begin
-                                program_state <= INT_PC_INSCREASE_STATE;
-                            end 
-                        end
-                        BNE_ENCODE: begin
-                            if(registers_renew[rs1_cur] != registers_renew[rs2_cur]) begin
-                                program_state <= DETECT_HIGHER_INT_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                            BNE_ENCODE: begin
+                                if(registers_renew[rs1_cur] != registers_renew[rs2_cur]) begin
+                                    program_state <= DETECT_HIGHER_INT_STATE;
+                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                end
+                                else begin
+                                    program_state <= INT_PC_INSCREASE_STATE;
+                                end 
                             end
-                            else begin
-                                program_state <= INT_PC_INSCREASE_STATE;
-                            end 
-                        end
-                        BLT_ENCODE: begin
-                            if(registers_renew[rs1_cur] < registers_renew[rs2_cur]) begin
-                                program_state <= DETECT_HIGHER_INT_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                            BLT_ENCODE: begin
+                                if(registers_renew[rs1_cur] < registers_renew[rs2_cur]) begin
+                                    program_state <= DETECT_HIGHER_INT_STATE;
+                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                end
+                                else begin
+                                    program_state <= INT_PC_INSCREASE_STATE;
+                                end 
                             end
-                            else begin
-                                program_state <= INT_PC_INSCREASE_STATE;
-                            end 
-                        end
-                        BGE_ENCODE: begin
-                            if(registers_renew[rs1_cur] > registers_renew[rs2_cur]) begin
-                                program_state <= DETECT_HIGHER_INT_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                            BGE_ENCODE: begin
+                                if(registers_renew[rs1_cur] > registers_renew[rs2_cur]) begin
+                                    program_state <= DETECT_HIGHER_INT_STATE;
+                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                end
+                                else begin
+                                    program_state <= INT_PC_INSCREASE_STATE;
+                                end 
                             end
-                            else begin
-                                program_state <= INT_PC_INSCREASE_STATE;
-                            end 
-                        end
-                        default: begin
-                        
-                        end
-                    endcase
-                    contain_ins <= 0;
+                            default: begin
+                            
+                            end
+                        endcase
+                        contain_ins <= 0;
+                    end
                 end
                 EXECUTE_JTYPE_INT_INS_INTERNAL_STATE: begin
-                    program_state <= DETECT_HIGHER_INT_STATE;
-                    x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
-                    PC <= PC + {39'b00, jump_offset_space};
-                    contain_ins <= 0;
+                    if(synchronized_processors) begin
+                        program_state <= DETECT_HIGHER_INT_STATE;
+                        x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
+                        PC <= PC + {39'b00, jump_offset_space};
+                        contain_ins <= 0;
+                    end
                 end
                 EXECUTE_JALRTYPE_INT_INS_INTERNAL_STATE: begin
-                    program_state <= DETECT_HIGHER_INT_STATE;
-                    PC <= x1;
-                    contain_ins <= 0;
+                    if(synchronized_processors) begin
+                        program_state <= DETECT_HIGHER_INT_STATE;
+                        PC <= x1;
+                        contain_ins <= 0;
+                    end
                 end
                 INT_PC_INSCREASE_STATE: begin
                     program_state <= DETECT_HIGHER_INT_STATE;
                     PC <= PC + 4;
                 end
                 RECOVERY_MAIN_PC_STATE: begin
-                    program_state <= MAIN_PROGRAM_IDLE_STATE;
-                    // 
-                    active_stack_clk <= 1;
+                    if(synchronized_processors) begin
+                        program_state <= MAIN_PROGRAM_IDLE_STATE;
+                        // 
+                        active_stack_clk <= 1;
+                    end
                 end
                 RECOVERY_INT_PC_STATE: begin
-                    program_state <= REQUEST_INT_INS_STATE;
-                    // 
-                    active_stack_clk <= 1;
-                    // Recovery rd_prev_interrupt_program (because x1 is reserved register, compiler will not put x1 to register destination (rd)
-                    rd_prev_interrupt_program <= 1; 
-                    // Request Instructions
-                    contain_ins <= 1;
-                    rd_ins_pm_reg <= 1;
+                    if(synchronized_processors) begin
+                        program_state <= REQUEST_INT_INS_STATE;
+                        // 
+                        active_stack_clk <= 1;
+                        // Recovery rd_prev_interrupt_program (because x1 is reserved register, compiler will not put x1 to register destination (rd)
+                        rd_prev_interrupt_program <= 1; 
+                        // Request Instructions
+                        contain_ins <= 1;
+                        rd_ins_pm_reg <= 1;
+                    end
                 end
                 DETECT_HIGHER_INT_STATE: begin
                     if(interrupt_handling_1) begin
