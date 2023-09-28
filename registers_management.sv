@@ -12,6 +12,8 @@ module registers_management
     input   wire [REGISTER_WIDTH - 1:0] processor_registers_2   [0:REGISTER_AMOUNT - 1],
     input   wire                        processor_idle_1,
     input   wire                        processor_idle_2,
+    output  wire                        synchronization_processor_1,
+    output  wire                        synchronization_processor_2,
     // Multi-processor manager
     input   wire                        boot_renew_register_1,
     input   wire                        boot_renew_register_2,
@@ -19,6 +21,7 @@ module registers_management
     output  wire                        new_data_register       [0:REGISTER_AMOUNT - 1],  
     input   wire                        main_program_state,        
     input   wire [REGISTER_WIDTH - 1:0] ra_register,
+    output  wire                        synchronized_processors,
     // To Processor & Multi-processor manager
     output  wire [REGISTER_WIDTH - 1:0] registers_renew         [0:REGISTER_AMOUNT - 1],
     
@@ -27,15 +30,20 @@ module registers_management
     
     reg [0:REGISTER_AMOUNT - 1] new_data_register_reg_main;
     reg [0:REGISTER_AMOUNT - 1] new_data_register_reg_sub;
-    reg [1:0] processor_main_updater_state;
-    reg [1:0] processor_sub_updater_state;
-    wire processor_idle_1_rising;
-    wire processor_idle_2_rising;
-    reg [REG_CTN_WIDTH - 1:0]  register_num_buf_1;
-    reg [REG_CTN_WIDTH - 1:0]  register_num_buf_2;
+    reg [1:0]                   processor_main_updater_state;
+    reg [1:0]                   processor_sub_updater_state;
+    wire                        processor_idle_1_rising;
+    wire                        processor_idle_2_rising;
+    reg [REG_CTN_WIDTH - 1:0]   register_num_buf_1;
+    reg [REG_CTN_WIDTH - 1:0]   register_num_buf_2;
+    reg                         synchronized_processor_1;
+    reg                         synchronized_processor_2;
+    reg                         synchronization_processor_1_reg;
+    reg                         synchronization_processor_2_reg;
     
     localparam IDLE_STATE = 0;
     localparam UPDATING_STATE = 1;
+    localparam SYNCHRONIZATION_STATE = 2;
     
     for(genvar i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
     if(i == 1) begin
@@ -47,7 +55,9 @@ module registers_management
         assign registers_renew[i] = (main_program_state) ? ((new_data_register[i]) ? processor_registers_1[i] : processor_registers_2[i]) : processor_registers_1[i];
     end
     end
-    
+    assign synchronization_processor_1 = synchronization_processor_1_reg;
+    assign synchronization_processor_2 = synchronization_processor_2_reg;
+    assign synchronized_processors = synchronized_processor_1 & synchronized_processor_2;
     
     edge_detector process_1_finish_detector
                             (    
@@ -69,6 +79,8 @@ module registers_management
         if(!rst_n) begin
             new_data_register_reg_main[0:REGISTER_AMOUNT - 1] <= {32{1'b1}}; 
             processor_main_updater_state <= IDLE_STATE;
+            synchronized_processor_1 <= 1;
+            synchronization_processor_1_reg <= 0;
         end
         else begin
             case(processor_main_updater_state) 
@@ -76,8 +88,15 @@ module registers_management
                     if(boot_renew_register_1 == 1) begin
                         processor_main_updater_state <= UPDATING_STATE;
                         register_num_buf_1 <= register_num;
+                        synchronized_processor_2 <= 0;
                     end
-                    else processor_main_updater_state <= IDLE_STATE;
+                    else begin
+                        if(synchronized_processor_1 == 0 & processor_sub_updater_state == IDLE_STATE) begin
+                            processor_main_updater_state <= SYNCHRONIZATION_STATE;
+                            synchronization_processor_1_reg <= 1;
+                            synchronized_processor_1 <= 1;
+                        end
+                    end
                 end
                 UPDATING_STATE : begin
                     if(processor_idle_1_rising) begin
@@ -86,6 +105,10 @@ module registers_management
                         new_data_register_reg_main[register_num_buf_1] <= ~new_data_register_reg_sub[register_num_buf_1];
                     end
                     else processor_main_updater_state <= UPDATING_STATE;
+                end
+                SYNCHRONIZATION_STATE: begin
+                    processor_main_updater_state <= IDLE_STATE;
+                    synchronization_processor_1_reg <= 0;
                 end
                 default: begin
                     
@@ -98,6 +121,8 @@ module registers_management
         if(!rst_n) begin
             new_data_register_reg_sub[0:REGISTER_AMOUNT - 1] <= {32{1'b0}};
             processor_sub_updater_state <= IDLE_STATE;
+            synchronized_processor_2 <= 1;
+            synchronization_processor_2_reg <= 0;
         end
         else begin
             case(processor_sub_updater_state) 
@@ -105,8 +130,15 @@ module registers_management
                     if(boot_renew_register_2 == 1) begin
                         processor_sub_updater_state <= UPDATING_STATE;
                         register_num_buf_2 <= register_num;
+                        synchronized_processor_1 <= 0;
                     end
-                    else processor_sub_updater_state <= IDLE_STATE;
+                    else begin
+                        if(synchronized_processor_2 == 0 & processor_main_updater_state == IDLE_STATE) begin
+                            processor_sub_updater_state <= SYNCHRONIZATION_STATE;
+                            synchronization_processor_2_reg <= 1;
+                            synchronized_processor_2 <= 1;
+                        end
+                    end
                 end
                 UPDATING_STATE: begin
                     if(processor_idle_2_rising) begin
@@ -115,6 +147,10 @@ module registers_management
                         new_data_register_reg_sub[register_num_buf_2] <= new_data_register_reg_main[register_num_buf_2];
                     end
                     else processor_sub_updater_state <= UPDATING_STATE;
+                end
+                SYNCHRONIZATION_STATE: begin
+                    processor_sub_updater_state <= IDLE_STATE;
+                    synchronization_processor_2_reg <= 0;
                 end
                 default: begin
                 
