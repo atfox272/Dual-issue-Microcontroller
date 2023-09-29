@@ -1,4 +1,4 @@
-module registers_management
+module Registers_management
     #(
     parameter REGISTER_AMOUNT   = 32,
     parameter REGISTER_WIDTH    = 64,
@@ -54,7 +54,7 @@ module registers_management
     end
     else begin
         assign new_data_register[i] = new_data_register_reg_main[i] ^ new_data_register_reg_sub[i];
-        assign registers_renew[i] = (main_program_state) ? ((new_data_register[i]) ? processor_registers_1[i] : processor_registers_2[i]) : processor_registers_1[i];
+        assign registers_renew[i] = (new_data_register[i]) ? processor_registers_1[i] : processor_registers_2[i];
     end
     end
     assign synchronization_processor_1 = synchronization_processor_1_reg;
