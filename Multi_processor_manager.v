@@ -104,7 +104,6 @@ module Multi_processor_manager
     output  wire    [REG_SPACE_WIDTH - 1:0]     register_num,
     output  wire                                boot_renew_register_1,
     output  wire                                boot_renew_register_2,
-    output  wire                                main_program_state,
     output  wire    [DOUBLEWORD_WIDTH - 1:0]    ra_register,
     input   wire    [0:REGISTER_AMOUNT - 1]     processing_register_table,
     // Interrupt control
@@ -137,8 +136,6 @@ module Multi_processor_manager
     wire[REG_SPACE_WIDTH - 1:0] rs1_cur;
     wire[REG_SPACE_WIDTH - 1:0] rs2_cur;
     wire[REG_SPACE_WIDTH - 1:0] rd_cur;
-    reg [REG_SPACE_WIDTH - 1:0] rd_prev;
-    reg [REG_SPACE_WIDTH - 1:0] rd_prev_interrupt_program;
     reg [1:0]                   processor_prev;             // 0-mpm, 1-main, 2-sub (processor_using log)
     reg rd_ins_pm_reg;
     wire parallel_blocking_Rtype_condition;
@@ -173,16 +170,17 @@ module Multi_processor_manager
     reg                                 boot_renew_register_1_reg;
     reg                                 boot_renew_register_2_reg;
     // LIFO 
-    reg  active_stack_clk;
-    reg wr_stack_ins;
-    reg rd_stack_ins;
+    reg                                 active_stack_clk;
+    reg                                 wr_stack_ins;
+    reg                                 rd_stack_ins;
+    wire                                program_stack_empty;
     reg  [PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 1:0] PC_info_in_stack;    // <program-type> + <PC>
     wire [PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 1:0] PC_info_out_stack;
     wire [PROGRAM_COUNTER_WIDTH - 1:0] program_type_out_stack;
     wire [ADDR_WIDTH_PM - 1:0] PC_out_stack;
     
     localparam INIT_STATE = 1;
-    localparam MAIN_PROGRAM_IDLE_STATE = 0;
+    localparam PROGRAM_IDLE_STATE = 0;
     localparam REQUEST_INS_STATE = 2;
     localparam DECODE_INS_STATE = 3;
     localparam PARALLEL_BLOCKING_STATE = 4;
@@ -194,20 +192,10 @@ module Multi_processor_manager
     localparam CONFIRM_FETCH_INSTRUCTION_P1_STATE = 7;
     localparam CONFIRM_FETCH_INSTRUCTION_P2_STATE = 8;
     localparam PC_INSCREASE_STATE = 10;
-    localparam DETECT_INTERRUPT_STATE = 11;
     localparam RESTORE_PC_STATE = 12;
-    localparam REQUEST_INT_INS_STATE = 13;
-    localparam DECODE_INT_INS_STATE = 14;
-    localparam FETCH_INT_INS_STATE = 15;
-    localparam CONFIRM_FETCH_INT_INS_STATE = 16;
-    localparam PIPELINE_BLOCKING_STATE = 17;
-    localparam EXECUTE_BTYPE_INT_INS_INTERNAL_STATE = 18;
-    localparam EXECUTE_JTYPE_INT_INS_INTERNAL_STATE = 19;
-    localparam EXECUTE_JALRTYPE_INT_INS_INTERNAL_STATE = 26;
-    localparam INT_PC_INSCREASE_STATE = 20;
-    localparam RECOVERY_INT_PC_STATE = 21;
-    localparam RECOVERY_MAIN_PC_STATE = 22;
-    localparam DETECT_HIGHER_INT_STATE = 23;
+    localparam DETECT_HIGHER_PRIO_PROGRAM_STATE = 11;
+    localparam RECOVERY_PC_STATE = 28;
+    localparam EXIT_STATE = 27;
     
     assign addr_rd_pm = PC;
     assign rd_ins_pm = rd_ins_pm_reg;
@@ -252,7 +240,6 @@ module Multi_processor_manager
     assign release_blocking_STORE_condition  = (processing_register_table[rs1_cur] == 0) &
                                                (processing_register_table[rs2_cur] == 0);
     
-    assign pipeline_blocking_condition = (rs1_cur == rd_prev_interrupt_program | rs2_cur == rd_prev_interrupt_program);
 
     
     // Interrupt control
@@ -262,7 +249,6 @@ module Multi_processor_manager
     assign interrupt_handling_1 = interrupt_handling_1_reg;
     assign interrupt_handling_2 = interrupt_handling_2_reg;
     assign interrupt_handling_3 = interrupt_handling_3_reg;
-    assign main_program_state = ~(interrupt_handling_1 | interrupt_handling_2 | interrupt_handling_3);
     
     // LIFO_out decode
     assign program_type_out_stack = PC_info_out_stack[PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 1 : PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 2];
@@ -272,12 +258,13 @@ module Multi_processor_manager
     LIFO_module #(
                 .DATA_WIDTH(PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM),
                 .LIFO_DEPTH(INTERRUPT_BUFFER)
-                ) interrupt_buffer (
+                ) program_buffer (
                 .active_clk(active_stack_clk),
                 .data_bus_in(PC_info_in_stack),
                 .data_bus_out(PC_info_out_stack),
                 .wr_ins(wr_stack_ins),
                 .rd_ins(rd_stack_ins),
+                .empty(program_stack_empty),
                 .rst_n(rst_n)
                 );
                             
@@ -288,7 +275,6 @@ module Multi_processor_manager
             PC <= MAIN_PROGRAM_ADDR;
             // Init reg
             x1 <= 0;
-            rd_prev <= 1;   // (because x1 is reserved register, compiler will not put x1 to register destination (rd))
             contain_ins <= 0;
             rd_ins_pm_reg <= 0;
             boot_processor_1_reg <= 0;
@@ -297,7 +283,6 @@ module Multi_processor_manager
             PC_info_in_stack <= 0;
             wr_stack_ins <= 0;
             rd_stack_ins <= 0;
-            rd_prev_interrupt_program <= 0;
             register_num_reg <= 0;
             boot_renew_register_1_reg <= 0;
             boot_renew_register_2_reg <= 0;
@@ -314,11 +299,11 @@ module Multi_processor_manager
             case(program_state)
                 INIT_STATE: begin
                     if(main_state == RUNNING_PROGRAM_STATE) begin
-                        program_state <= MAIN_PROGRAM_IDLE_STATE;
+                        program_state <= PROGRAM_IDLE_STATE;
                     end
                     else program_state <= INIT_STATE;
                 end
-                MAIN_PROGRAM_IDLE_STATE: begin
+                PROGRAM_IDLE_STATE: begin
                     if(contain_ins == 0) begin
                         program_state <= REQUEST_INS_STATE;
                         contain_ins <= 1;
@@ -341,6 +326,10 @@ module Multi_processor_manager
                         rd_ins_pm_reg <= 0;
                     end
                     else program_state <= REQUEST_INS_STATE;
+                    // Recovery state of Stack 
+                    active_stack_clk <= 0;
+                    rd_stack_ins <= 0;
+                    wr_stack_ins <= 0;
                 end
                 DECODE_INS_STATE: begin
                     case(opcode_space) 
@@ -349,7 +338,6 @@ module Multi_processor_manager
                                 program_state <= PARALLEL_BLOCKING_STATE;
                             end
                             else program_state <= FETCH_INSTRUCTION_STATE;
-                            rd_prev <= rd_cur;
                             register_num_reg <= rd_cur;
                         end
                         I_TYPE_ENCODE: begin
@@ -357,7 +345,6 @@ module Multi_processor_manager
                                 program_state <= PARALLEL_BLOCKING_STATE;
                             end
                             else program_state <= FETCH_INSTRUCTION_STATE;
-                            rd_prev <= rd_cur;
                             register_num_reg <= rd_cur;
                         end
                         LOAD_ENCODE: begin
@@ -365,7 +352,6 @@ module Multi_processor_manager
                                 program_state <= PARALLEL_BLOCKING_STATE;
                             end
                             else program_state <= FETCH_INSTRUCTION_STATE;
-                            rd_prev <= rd_cur;
                             register_num_reg <= rd_cur;
                         end
                         STORE_ENCODE: begin
@@ -418,7 +404,60 @@ module Multi_processor_manager
                         JALR_TYPE_ENCODE: begin
                             program_state <= EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE;
                         end
-                        default: program_state <= FETCH_INSTRUCTION_STATE;
+                        SYSTEM_ENCODE: begin
+                            case (funct3_space) 
+                                RETI_ENCODE: begin
+                                    if(program_stack_empty) begin
+                                        program_state <= EXIT_STATE;
+                                    end
+                                    else begin
+                                        program_state <= RECOVERY_PC_STATE;
+                                        PC <= PC_out_stack;
+                                        rd_stack_ins <= 1;
+                                        // Reset Instruction buffer
+                                        contain_ins <= 0;
+                                        case(program_type_out_stack) 
+                                            MAIN_PROGRAM_ENCODE: begin
+                                                interrupt_handling_1_reg <= 0;
+                                                interrupt_handling_2_reg <= 0;
+                                                interrupt_handling_3_reg <= 0;
+                                            end
+                                            INT1_PROGRAM_ENCODE: begin
+                                                interrupt_handling_1_reg <= 1;
+                                                interrupt_handling_2_reg <= 0;
+                                                interrupt_handling_3_reg <= 0;
+                                            end
+                                            INT2_PROGRAM_ENCODE: begin
+                                                interrupt_handling_1_reg <= 0;
+                                                interrupt_handling_2_reg <= 1;
+                                                interrupt_handling_3_reg <= 0;
+                                            end
+                                            INT3_PROGRAM_ENCODE: begin
+                                                interrupt_handling_1_reg <= 0;
+                                                interrupt_handling_2_reg <= 0;
+                                                interrupt_handling_3_reg <= 1;
+                                            end
+                                            default: begin
+                                            
+                                            end
+                                        endcase 
+                                        RETI_1_reg <= (interrupt_handling_1) ? 1'b1 : 1'b0;
+                                        RETI_2_reg <= (interrupt_handling_2) ? 1'b1 : 1'b0;
+                                        RETI_3_reg <= (interrupt_handling_3) ? 1'b1 : 1'b0;
+                                    end
+                                end
+                                BREAK_ENCODE: begin
+                                // Send all data in Memory and Registers to UART_TX
+                                end
+                                EXIT_ENCODE: begin
+                                    program_state <= EXIT_STATE;
+                                end
+                                default: begin
+                                
+                                end
+                            endcase
+                        end
+                        default: program_state <= program_state;
                     endcase 
                 end
                 PARALLEL_BLOCKING_STATE: begin
@@ -494,7 +533,7 @@ module Multi_processor_manager
                         case(funct3_space)
                             BEQ_ENCODE: begin
                                 if(registers_renew[rs1_cur] == registers_renew[rs2_cur]) begin
-                                    program_state <= DETECT_INTERRUPT_STATE;
+                                    program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                     PC <= {52'b00, immediate_3_space, immediate_1_space};
                                 end
                                 else begin
@@ -503,7 +542,7 @@ module Multi_processor_manager
                             end
                             BNE_ENCODE: begin
                                 if(registers_renew[rs1_cur] != registers_renew[rs2_cur]) begin
-                                    program_state <= DETECT_INTERRUPT_STATE;
+                                    program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                     PC <= {52'b00, immediate_3_space, immediate_1_space};
                                 end
                                 else begin
@@ -512,7 +551,7 @@ module Multi_processor_manager
                             end
                             BLT_ENCODE: begin
                                 if(registers_renew[rs1_cur] < registers_renew[rs2_cur]) begin
-                                    program_state <= DETECT_INTERRUPT_STATE;
+                                    program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                     PC <= {52'b00, immediate_3_space, immediate_1_space};
                                 end
                                 else begin
@@ -521,7 +560,7 @@ module Multi_processor_manager
                             end
                             BGE_ENCODE: begin
                                 if(registers_renew[rs1_cur] > registers_renew[rs2_cur]) begin
-                                    program_state <= DETECT_INTERRUPT_STATE;
+                                    program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                     PC <= {52'b00, immediate_3_space, immediate_1_space};
                                 end
                                 else begin
@@ -539,7 +578,7 @@ module Multi_processor_manager
                 end
                 EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE: begin
                     if(synchronized_processors) begin
-                        program_state <= DETECT_INTERRUPT_STATE;
+                        program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                         x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
                         PC <= PC + jump_offset_space[ADDR_WIDTH_PM - 1:0];
                         contain_ins <= 0;
@@ -549,7 +588,7 @@ module Multi_processor_manager
                 end
                 EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE: begin
                     if(synchronized_processors) begin
-                        program_state <= DETECT_INTERRUPT_STATE;
+                        program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                         PC <= x1;
                         contain_ins <= 0;
                     end
@@ -557,301 +596,24 @@ module Multi_processor_manager
                     processor_prev <= 0;    // 0-mpm
                 end
                 PC_INSCREASE_STATE: begin
-                    program_state <= DETECT_INTERRUPT_STATE;
+                    program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                     PC <= PC + 4;
                 end
-                DETECT_INTERRUPT_STATE: begin
-                    if(interrupt_flag_1) begin
-                        program_state <= RESTORE_PC_STATE;
-                        // Assign Interrupt address
-                        PC <= INT1_PROGRAM_ADDR;
-                        // Prepare data to push in stack
-                        PC_info_in_stack <= {MAIN_PROGRAM_ENCODE[1:0],PC};
-                        wr_stack_ins <= 1;
-                        // Interrupt control
-                        interrupt_handling_1_reg <= 1;
-                        interrupt_handling_2_reg <= 0;
-                        interrupt_handling_3_reg <= 0;
-                    end
-                    else if(interrupt_flag_2) begin
-                        program_state <= RESTORE_PC_STATE;
-                        // Assign Interrupt address
-                        PC <= INT2_PROGRAM_ADDR;
-                        // Prepare data to push in stack
-                        PC_info_in_stack <= {MAIN_PROGRAM_ENCODE[1:0],PC};
-                        wr_stack_ins <= 1;
-                        // Interrupt control
-                        interrupt_handling_1_reg <= 0;
-                        interrupt_handling_2_reg <= 1;
-                        interrupt_handling_3_reg <= 0;
-                    end
-                    else if(interrupt_flag_3) begin
-                        program_state <= RESTORE_PC_STATE;
-                        // Assign Interrupt address
-                        PC <= INT3_PROGRAM_ADDR;
-                        // Prepare data to push in stack
-                        PC_info_in_stack <= {MAIN_PROGRAM_ENCODE[1:0],PC};
-                        wr_stack_ins <= 1;
-                        // Interrupt control
-                        interrupt_handling_1_reg <= 0;
-                        interrupt_handling_2_reg <= 0;
-                        interrupt_handling_3_reg <= 1;
-                    end
-                    else begin
-                        program_state <= MAIN_PROGRAM_IDLE_STATE;
-                    end
-                end
-                RESTORE_PC_STATE: begin
-                    if(synchronized_processors) begin
-                        program_state <= REQUEST_INT_INS_STATE;
-                        contain_ins <= 1;
-                        // Write PC to Stack
-                        active_stack_clk <= 1;
-                        // Request Instruction
-                        rd_ins_pm_reg <= 1;
-                    end
-                end
-                REQUEST_INT_INS_STATE: begin
-                    if(rd_idle_pm) begin
-                        program_state <= DECODE_INT_INS_STATE;
-                        // Store instruction to buffer
-                        _2_instructions_buf <= data_bus_rd_pm;
-                        rd_ins_pm_reg <= 0;
-                    end
-                    else program_state <= program_state;
-                    // Recovery state of Stack 
-                    active_stack_clk <= 0;
-                    rd_stack_ins <= 0;
-                    wr_stack_ins <= 0;
-                end
-                DECODE_INT_INS_STATE: begin
-                    case(opcode_space) 
-                        R_TYPE_ENCODE: begin
-                            if(processor_idle_1) begin
-                                program_state <= CONFIRM_FETCH_INT_INS_STATE;
-                                boot_processor_1_reg <= 1;
-                            end
-                            // Update rd_prev_interrupt_program
-                            rd_prev_interrupt_program <= rd_cur;
-                        end
-                        I_TYPE_ENCODE: begin
-                            if(processor_idle_1) begin
-                                program_state <= CONFIRM_FETCH_INT_INS_STATE;
-                                boot_processor_1_reg <= 1;
-                            end
-                            // Update rd_prev_interrupt_program
-                            rd_prev_interrupt_program <= rd_cur;
-                        end
-                        LOAD_ENCODE: begin
-                            if(processor_idle_1) begin
-                                program_state <= CONFIRM_FETCH_INT_INS_STATE;
-                                boot_processor_1_reg <= 1;
-                            end
-                            // Update rd_prev_interrupt_program
-                            rd_prev_interrupt_program <= rd_cur;
-                        end
-                        STORE_ENCODE: begin
-                            if(processor_idle_1) begin
-                                program_state <= CONFIRM_FETCH_INT_INS_STATE;
-                                boot_processor_1_reg <= 1;
-                            end
-                        end
-                        // Execute immediate
-                        B_TYPE_ENCODE: begin
-                            if(pipeline_blocking_condition) begin
-                                if(processor_idle_1) program_state <= EXECUTE_BTYPE_INT_INS_INTERNAL_STATE;
-                                else program_state <= PIPELINE_BLOCKING_STATE;
-                            end
-                        end
-                        J_TYPE_ENCODE: begin
-                            if(pipeline_blocking_condition) begin
-                                if(processor_idle_1) program_state <= EXECUTE_JTYPE_INT_INS_INTERNAL_STATE;
-                                else program_state <= PIPELINE_BLOCKING_STATE;
-                            end
-                        end
-                        JAL_TYPE_ENCODE: begin
-                            if(pipeline_blocking_condition) begin
-                                if(processor_idle_1) program_state <= EXECUTE_JTYPE_INT_INS_INTERNAL_STATE;
-                                else program_state <= PIPELINE_BLOCKING_STATE;
-                            end
-                        end
-                        JALR_TYPE_ENCODE: begin
-                            if(pipeline_blocking_condition) begin
-                                if(processor_idle_1) program_state <= EXECUTE_JALRTYPE_INT_INS_INTERNAL_STATE;
-                                else program_state <= PIPELINE_BLOCKING_STATE;
-                            end
-                        end
-                        SYSTEM_ENCODE: begin
-                            case(funct3_space) 
-                                RETI_ENCODE: begin
-                                    if(processor_idle_1) begin
-                                        case(program_type_out_stack)
-                                            MAIN_PROGRAM_ENCODE: begin
-                                                program_state <= RECOVERY_MAIN_PC_STATE;
-                                                PC <= PC_out_stack;
-                                                rd_stack_ins <= 1;
-                                                // Interrupt control
-                                                interrupt_handling_1_reg <= 0;
-                                                interrupt_handling_2_reg <= 0;
-                                                interrupt_handling_3_reg <= 0;
-                                            end
-                                            INT1_PROGRAM_ENCODE: begin
-                                                program_state <= RECOVERY_INT_PC_STATE;
-                                                PC <= PC_out_stack;
-                                                rd_stack_ins <= 1;
-                                                // Interrupt control
-                                                interrupt_handling_1_reg <= 1;
-                                                interrupt_handling_2_reg <= 0;
-                                                interrupt_handling_3_reg <= 0;
-                                            end
-                                            INT2_PROGRAM_ENCODE: begin
-                                                program_state <= RECOVERY_INT_PC_STATE;
-                                                PC <= PC_out_stack;
-                                                rd_stack_ins <= 1;
-                                                // Interrupt control
-                                                interrupt_handling_1_reg <= 0;
-                                                interrupt_handling_2_reg <= 1;
-                                                interrupt_handling_3_reg <= 0;
-                                            end
-                                            INT3_PROGRAM_ENCODE: begin
-                                                program_state <= RECOVERY_INT_PC_STATE;
-                                                PC <= PC_out_stack;
-                                                rd_stack_ins <= 1;
-                                                // Interrupt control
-                                                interrupt_handling_1_reg <= 0;
-                                                interrupt_handling_2_reg <= 0;
-                                                interrupt_handling_3_reg <= 1;
-                                            end
-                                        endcase
-                                        contain_ins <= 0;
-                                    end
-                                end
-                                EXIT_ENCODE: begin
-                                
-                                end
-                                BREAK_ENCODE: begin
-                                
-                                end
-                                default: begin
-                                
-                                end
-                            endcase 
-                            
-                        end
-                        default: program_state <= program_state;
-                    endcase 
-                end
-                PIPELINE_BLOCKING_STATE: begin
-                    if(processor_idle_1) begin
-                        program_state <= (opcode_space == B_TYPE_ENCODE) ? EXECUTE_BTYPE_INT_INS_INTERNAL_STATE : EXECUTE_JTYPE_INT_INS_INTERNAL_STATE;
-                    end
-                end
-                CONFIRM_FETCH_INT_INS_STATE: begin
-                    if(processor_idle_1 == 0) begin
-                        program_state <= INT_PC_INSCREASE_STATE;
-                        // Recovery state
-                        boot_processor_1_reg <= 0;
-                    end
-                end
-                EXECUTE_BTYPE_INT_INS_INTERNAL_STATE: begin
-                    if(synchronized_processors) begin
-                        case(funct3_space)
-                            BEQ_ENCODE: begin
-                                if(registers_renew[rs1_cur] == registers_renew[rs2_cur]) begin
-                                    program_state <= DETECT_HIGHER_INT_STATE;
-                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
-                                end
-                                else begin
-                                    program_state <= INT_PC_INSCREASE_STATE;
-                                end 
-                            end
-                            BNE_ENCODE: begin
-                                if(registers_renew[rs1_cur] != registers_renew[rs2_cur]) begin
-                                    program_state <= DETECT_HIGHER_INT_STATE;
-                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
-                                end
-                                else begin
-                                    program_state <= INT_PC_INSCREASE_STATE;
-                                end 
-                            end
-                            BLT_ENCODE: begin
-                                if(registers_renew[rs1_cur] < registers_renew[rs2_cur]) begin
-                                    program_state <= DETECT_HIGHER_INT_STATE;
-                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
-                                end
-                                else begin
-                                    program_state <= INT_PC_INSCREASE_STATE;
-                                end 
-                            end
-                            BGE_ENCODE: begin
-                                if(registers_renew[rs1_cur] > registers_renew[rs2_cur]) begin
-                                    program_state <= DETECT_HIGHER_INT_STATE;
-                                    PC <= {52'b00, immediate_3_space, immediate_1_space};
-                                end
-                                else begin
-                                    program_state <= INT_PC_INSCREASE_STATE;
-                                end 
-                            end
-                            default: begin
-                            
-                            end
-                        endcase
-                        contain_ins <= 0;
-                    end
-                end
-                EXECUTE_JTYPE_INT_INS_INTERNAL_STATE: begin
-                    if(synchronized_processors) begin
-                        program_state <= DETECT_HIGHER_INT_STATE;
-                        x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
-                        PC <= PC + {39'b00, jump_offset_space};
-                        contain_ins <= 0;
-                    end
-                end
-                EXECUTE_JALRTYPE_INT_INS_INTERNAL_STATE: begin
-                    if(synchronized_processors) begin
-                        program_state <= DETECT_HIGHER_INT_STATE;
-                        PC <= x1;
-                        contain_ins <= 0;
-                    end
-                end
-                INT_PC_INSCREASE_STATE: begin
-                    program_state <= DETECT_HIGHER_INT_STATE;
-                    PC <= PC + 4;
-                end
-                RECOVERY_MAIN_PC_STATE: begin
-                    if(synchronized_processors) begin
-                        program_state <= MAIN_PROGRAM_IDLE_STATE;
-                        // 
-                        active_stack_clk <= 1;
-                    end
-                end
-                RECOVERY_INT_PC_STATE: begin
-                    if(synchronized_processors) begin
-                        program_state <= REQUEST_INT_INS_STATE;
-                        // 
-                        active_stack_clk <= 1;
-                        // Recovery rd_prev_interrupt_program (because x1 is reserved register, compiler will not put x1 to register destination (rd)
-                        rd_prev_interrupt_program <= 1; 
-                        // Request Instructions
-                        contain_ins <= 1;
-                        rd_ins_pm_reg <= 1;
-                    end
-                end
-                DETECT_HIGHER_INT_STATE: begin
+                DETECT_HIGHER_PRIO_PROGRAM_STATE: begin
                     if(interrupt_handling_1) begin
                         if(contain_ins) begin
-                            program_state <= DECODE_INT_INS_STATE;
+                            program_state <= DECODE_INS_STATE;
                             // 
                             contain_ins <= contain_ins - 1;
                         end
                         else begin
-                            program_state <= REQUEST_INT_INS_STATE;
+                            program_state <= REQUEST_INS_STATE;
                             // Request Instruction
                             contain_ins <= 1;
                             rd_ins_pm_reg <= 1;
                         end
                     end
-                    if(interrupt_handling_2) begin
+                    else if(interrupt_handling_2) begin
                         if(interrupt_flag_1) begin
                             program_state <= RESTORE_PC_STATE;
                             // Assign Interrupt address
@@ -863,24 +625,22 @@ module Multi_processor_manager
                             interrupt_handling_1_reg <= 1;
                             interrupt_handling_2_reg <= 0;
                             interrupt_handling_3_reg <= 0;
-                            // Change program pre-process
-                            rd_prev_interrupt_program <= 1; 
                         end
                         else begin
                            if(contain_ins) begin
-                                program_state <= DECODE_INT_INS_STATE;
+                                program_state <= DECODE_INS_STATE;
                                 // 
                                 contain_ins <= contain_ins - 1;
                             end
                             else begin
-                                program_state <= REQUEST_INT_INS_STATE;
+                                program_state <= REQUEST_INS_STATE;
                                 // Request Instruction
                                 contain_ins <= 1;
                                 rd_ins_pm_reg <= 1;
                             end 
                         end
                     end
-                    if(interrupt_handling_3) begin
+                    else if(interrupt_handling_3) begin
                         if(interrupt_flag_1) begin
                             program_state <= RESTORE_PC_STATE;
                             // Assign Interrupt address
@@ -891,9 +651,7 @@ module Multi_processor_manager
                             // Interrupt control
                             interrupt_handling_1_reg <= 1;
                             interrupt_handling_2_reg <= 0;
-                            interrupt_handling_3_reg <= 0;
-                            // Change program pre-process
-                            rd_prev_interrupt_program <= 1; 
+                            interrupt_handling_3_reg <= 0; 
                         end
                         else if(interrupt_flag_2) begin
                             program_state <= RESTORE_PC_STATE;
@@ -906,23 +664,83 @@ module Multi_processor_manager
                             interrupt_handling_1_reg <= 0;
                             interrupt_handling_2_reg <= 1;
                             interrupt_handling_3_reg <= 0;
-                            // Change program pre-process
-                            rd_prev_interrupt_program <= 1;
                         end
                         else begin
                            if(contain_ins) begin
-                                program_state <= DECODE_INT_INS_STATE;
+                                program_state <= DECODE_INS_STATE;
                                 // 
                                 contain_ins <= contain_ins - 1;
                             end
                             else begin
-                                program_state <= REQUEST_INT_INS_STATE;
+                                program_state <= REQUEST_INS_STATE;
                                 // Request Instruction
                                 contain_ins <= 1;
                                 rd_ins_pm_reg <= 1;
                             end 
                         end
                     end
+                    else begin      // In main program
+                        if(interrupt_flag_1) begin
+                            program_state <= RESTORE_PC_STATE;
+                            // Assign Interrupt address
+                            PC <= INT1_PROGRAM_ADDR;
+                            // Prepare data to push in stack
+                            PC_info_in_stack <= {MAIN_PROGRAM_ENCODE[1:0],PC};
+                            wr_stack_ins <= 1;
+                            // Interrupt control
+                            interrupt_handling_1_reg <= 1;
+                            interrupt_handling_2_reg <= 0;
+                            interrupt_handling_3_reg <= 0;
+                        end
+                        else if(interrupt_flag_2) begin
+                            program_state <= RESTORE_PC_STATE;
+                            // Assign Interrupt address
+                            PC <= INT2_PROGRAM_ADDR;
+                            // Prepare data to push in stack
+                            PC_info_in_stack <= {MAIN_PROGRAM_ENCODE[1:0],PC};
+                            wr_stack_ins <= 1;
+                            // Interrupt control
+                            interrupt_handling_1_reg <= 0;
+                            interrupt_handling_2_reg <= 1;
+                            interrupt_handling_3_reg <= 0;
+                        end
+                        else if(interrupt_flag_3) begin
+                            program_state <= RESTORE_PC_STATE;
+                            // Assign Interrupt address
+                            PC <= INT3_PROGRAM_ADDR;
+                            // Prepare data to push in stack
+                            PC_info_in_stack <= {MAIN_PROGRAM_ENCODE[1:0],PC};
+                            wr_stack_ins <= 1;
+                            // Interrupt control
+                            interrupt_handling_1_reg <= 0;
+                            interrupt_handling_2_reg <= 0;
+                            interrupt_handling_3_reg <= 1;
+                        end
+                        else begin
+                            program_state <= PROGRAM_IDLE_STATE;
+                        end
+                    end
+                end
+                RECOVERY_PC_STATE: begin
+                    program_state <= PROGRAM_IDLE_STATE;
+                    active_stack_clk <= 1;
+                    // Recovery RETI state
+                    RETI_1_reg <= 0;
+                    RETI_2_reg <= 0;
+                    RETI_3_reg <= 0;
+                end
+                RESTORE_PC_STATE: begin
+                    if(synchronized_processors) begin
+                        program_state <= REQUEST_INS_STATE;
+                        contain_ins <= 1;
+                        // Write PC to Stack
+                        active_stack_clk <= 1;
+                        // Request Instruction
+                        rd_ins_pm_reg <= 1;
+                    end
+                end
+                EXIT_STATE: begin
+                
                 end
                 default: begin
                 
