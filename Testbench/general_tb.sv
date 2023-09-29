@@ -20,8 +20,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 //`define NORMAL_TESTCASE
-`define PARALLEL_TESTCASE
+//`define PARALLEL_TESTCASE
 //`define PREVENT_OUTDATED_DATA_TESTCASE
+`define INTERRUPT_TESTCASE
 
 module general_tb;
 parameter DATA_WIDTH            = 8;
@@ -145,13 +146,26 @@ parameter DATA_WIDTH            = 8;
     wire    [REG_SPACE_WIDTH - 1:0]     register_num;
     wire                                boot_renew_register_1;
     wire                                boot_renew_register_2;
-    wire                                main_program_state; 
     wire                                synchronized_processors;
     wire    [0:REGISTER_AMOUNT - 1]     processing_register_table;  
     // Interrupt control
-    wire                                interrupt_flag_1 = 1'b0;
-    wire                                interrupt_flag_2 = 1'b0;
-    wire                                interrupt_flag_3 = 1'b0;
+    wire    interrupt_flag_1;
+    wire    interrupt_flag_2;
+    wire    interrupt_flag_3;
+    wire    RETI_1;
+    wire    RETI_2;
+    wire    RETI_3;
+    wire    interrupt_handling_1;
+    wire    interrupt_handling_2;
+    wire    interrupt_handling_3;
+    // Interrupt unit
+    reg     interrupt_request_1;
+    reg     interrupt_request_2;
+    reg     interrupt_request_3;
+    // Confuration register
+    wire    interrupt_enable_1 = 1'b1;
+    wire    interrupt_enable_2 = 1'b1;
+    wire    interrupt_enable_3 = 1'b1;
     
     // Registers management
     wire                                new_data_register       [0:REGISTER_AMOUNT - 1];
@@ -309,7 +323,7 @@ parameter DATA_WIDTH            = 8;
                         // Debug
                         ,.debug_2(debug_2)
                         );   
-    registers_management#(
+    Registers_management#(
                         )registers_management(
                         .clk(clk),
                         .processor_registers_1(processor_registers_1),
@@ -320,7 +334,6 @@ parameter DATA_WIDTH            = 8;
                         .boot_renew_register_2(boot_renew_register_2),
                         .register_num(register_num),
                         .new_data_register(new_data_register),
-                        .main_program_state(main_program_state),
                         .registers_renew(registers_renew),
                         .ra_register(ra_register),
                         .processing_register_table(processing_register_table),
@@ -354,19 +367,22 @@ parameter DATA_WIDTH            = 8;
                         .register_num(register_num),
                         .boot_renew_register_1(boot_renew_register_1),
                         .boot_renew_register_2(boot_renew_register_2),
-                        .main_program_state(main_program_state),
                         .synchronized_processors(synchronized_processors),
                         .processing_register_table(processing_register_table),
                         // Interrup control
                         .interrupt_flag_1(interrupt_flag_1),
                         .interrupt_flag_2(interrupt_flag_2),
                         .interrupt_flag_3(interrupt_flag_3),
+                        .RETI_1(RETI_1),
+                        .RETI_2(RETI_2),
+                        .RETI_3(RETI_3),
                         // Hardware support instruction
                         .rd_idle_dm(rd_idle_dm),
                         .wr_idle_dm(wr_idle_dm),
                         
                         .rst_n(rst_n)
                         );
+                        
     Sync_primitive  #(
                     )synchronization_primitive(
                     .clk(clk),
@@ -418,6 +434,26 @@ parameter DATA_WIDTH            = 8;
     
                     .rst_n(rst_n)
                     );
+    Interrupt_control
+                    #(
+                    )interrupt_control(
+                    .interrupt_flag_1(interrupt_flag_1),
+                    .interrupt_flag_2(interrupt_flag_2),
+                    .interrupt_flag_3(interrupt_flag_3),
+                    .RETI_1(RETI_1),
+                    .RETI_2(RETI_2),
+                    .RETI_3(RETI_3),
+                    .interrupt_handling_1(interrupt_handling_1),
+                    .interrupt_handling_2(interrupt_handling_2),
+                    .interrupt_handling_3(interrupt_handling_3),
+                    .interrupt_request_1(interrupt_request_1),
+                    .interrupt_request_2(interrupt_request_2),
+                    .interrupt_request_3(interrupt_request_3),
+                    .interrupt_enable_1(interrupt_enable_1),
+                    .interrupt_enable_2(interrupt_enable_2),
+                    .interrupt_enable_3(interrupt_enable_3),
+                    .rst_n(rst_n)
+                    );                
     ram_module      #(
                     .ADDR_DEPTH(DATA_MEMORY_SIZE),
                     .RESERVED_REG_AMOUNT(1'b1)
@@ -443,6 +479,9 @@ parameter DATA_WIDTH            = 8;
         clk <= 0;
         TX_use_ex <= 0;
         data_bus_in_tx_ex <= 0;
+        interrupt_request_1 <= 0;
+        interrupt_request_2 <= 0;
+        interrupt_request_3 <= 0;
         rst_n <= 1;
         #1 rst_n <= 0;
         #9 rst_n <= 1;
@@ -457,14 +496,14 @@ parameter DATA_WIDTH            = 8;
     parameter SLL_INS_17    = 17'b00000000010110011;// SLL:     <5-rd><5-rs1><5-rs2>
     parameter SRL_INS_17    = 17'b00000001010110011;// SRL:     <5-rd><5-rs1><5-rs2>
     parameter MUL_INS_17    = 17'b00000010000110011;// MUL:     <5-rd><5-rs1><5-rs2>
-    // Load 
+    // Load                                                     dest  base  offset
     parameter LB_INS_10     = 10'b0000000011;       // LB:      <5-rd><5rs1><12-imm>
     parameter LW_INS_10     = 10'b0100000011;       // LW:      <5-rd><5rs1><12-imm>
     parameter LD_INS_10     = 10'b0110000011;       // LD:      <5-rd><5rs1><12-imm>
-    // Store
-    parameter SB_INS_10     = 10'b0000100011;       // SB:      <5-immh><5-rd><5rs1><7-imml>
-    parameter SW_INS_10     = 10'b0100100011;       // SW:      <5-immh><5-rd><5rs1><7-imml>
-    parameter SD_INS_10     = 10'b0110100011;       // SD:      <5-immh><5-rd><5rs1><7-imml>
+    // Store                                                    offset  base   src   offset
+    parameter SB_INS_10     = 10'b0000100011;       // SB:      <5-immh><5-rs1><5rs2><7-imml>
+    parameter SW_INS_10     = 10'b0100100011;       // SW:      <5-immh><5-rs1><5rs2><7-imml>
+    parameter SD_INS_10     = 10'b0110100011;       // SD:      <5-immh><5-rs1><5rs2><7-imml>
     
     parameter J_INS_7       = 7'b1100111;           // J:       <25-imm>
     parameter JAL_INS_7     = 7'b1101111;           // J:       <25-imm>
@@ -472,19 +511,23 @@ parameter DATA_WIDTH            = 8;
     
     parameter FENCE_INS_10  = 10'b0100101111;       // FENCE:   Don't care
     
+    parameter RETI_INS_10   = 10'b0111110111;       // RETI:   Don't care
+    
         int i;
     reg [31:0] instruction;
     initial begin : FAKE_RPOGRAM_BLOCK
         #11;
         
-        // Skip interrupt-program
-        for(i = 0; i < 48; i = i + 1) begin
-            instruction <= {5'd10,5'd0,5'd10,ADDI_INS_10};
-            begin 
-                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
-            end
-        end
+        
         `ifdef PARALLEL_TESTCASE
+            // Skip interrupt-program
+            for(i = 0; i < 48; i = i + 1) begin
+                instruction <= {5'd10,5'd0,5'd10,ADDI_INS_10};
+                begin 
+                    #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                end
+            end
+            
             // PC = 0xC0
             instruction <= {5'd09,5'd0,12'd4095,ADDI_INS_10};      // x9 = x0 + 4095     = 4095
             begin
@@ -504,7 +547,7 @@ parameter DATA_WIDTH            = 8;
             end
             
             // PC = 0xCC
-            instruction <= {5'd10,5'd09,5'd08,ADD_INS_17};      // x10 = x9 + x8    = 512 + 65536
+            instruction <= {5'd10,5'd09,5'd08,ADD_INS_17};      // x10 = x9 + x8    = 4095 + 4095
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
@@ -529,6 +572,14 @@ parameter DATA_WIDTH            = 8;
         `endif
         
         `ifdef PREVENT_OUTDATED_DATA_TESTCASE
+            // Skip interrupt-program
+            for(i = 0; i < 48; i = i + 1) begin
+                instruction <= {5'd10,5'd0,5'd10,ADDI_INS_10};
+                begin 
+                    #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                end
+            end
+            
             // PC = 0xC0
             instruction <= {5'd09,5'd0,12'd4095,ADDI_INS_10};      // x9 = x0 + 4095     = 4095
             begin
@@ -580,6 +631,14 @@ parameter DATA_WIDTH            = 8;
         `endif
         
         `ifdef NORMAL_TESTCASE
+            // Skip interrupt-program
+            for(i = 0; i < 48; i = i + 1) begin
+                instruction <= {5'd10,5'd0,5'd10,ADDI_INS_10};
+                begin 
+                    #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                end
+            end
+            
         
             // PC = 0xC0
             instruction <= {5'd09,5'd0,12'd09,ADDI_INS_10};      // x9 = x0 + 9     = 9
@@ -684,6 +743,179 @@ parameter DATA_WIDTH            = 8;
             end
         
     `endif
+
+
+//    parameter ADD_INS_17    = 17'b00000000000110011;// ADD:     <5-rd><5-rs1><5-rs2>
+//    parameter ADDI_INS_10   = 10'b0000010011;       // ADDI:    <5-rd><5rs1><12-imm>
+//    parameter SUB_INS_17    = 17'b10000000000110011;// SUB:     <5-rd><5-rs1><5-rs2>
+//    parameter SLL_INS_17    = 17'b00000000010110011;// SLL:     <5-rd><5-rs1><5-rs2>
+//    parameter SRL_INS_17    = 17'b00000001010110011;// SRL:     <5-rd><5-rs1><5-rs2>
+//    parameter MUL_INS_17    = 17'b00000010000110011;// MUL:     <5-rd><5-rs1><5-rs2>
+//    // Load                                                     dest  base  offset
+//    parameter LB_INS_10     = 10'b0000000011;       // LB:      <5-rd><5rs1><12-imm>
+//    parameter LW_INS_10     = 10'b0100000011;       // LW:      <5-rd><5rs1><12-imm>
+//    parameter LD_INS_10     = 10'b0110000011;       // LD:      <5-rd><5rs1><12-imm>
+//    // Store                                                    offset  base   src   offset
+//    parameter SB_INS_10     = 10'b0000100011;       // SB:      <5-immh><5-rs1><5rs2><7-imml>
+//    parameter SW_INS_10     = 10'b0100100011;       // SW:      <5-immh><5-rs1><5rs2><7-imml>
+//    parameter SD_INS_10     = 10'b0110100011;       // SD:      <5-immh><5-rs1><5rs2><7-imml>
+    
+//    parameter J_INS_7       = 7'b1100111;           // J:       <25-imm>
+//    parameter JAL_INS_7     = 7'b1101111;           // J:       <25-imm>
+//    parameter JALR_INS_7    = 7'b1101011;           // J:       <25-imm>
+    
+//    parameter FENCE_INS_10  = 10'b0100101111;       // FENCE:   Don't care
+    
+//    parameter RETI_INS_10   = 10'b0111110111;       // RETI:   Don't care
+    `ifdef INTERRUPT_TESTCASE
+        // ISR 1 ////////////////////////////////////////////////////////////////////////////////////////
+        // PC = 0x00 - 1
+            instruction <= {5'd00,5'd00,5'd09,7'd50,SB_INS_10};      // Restore x9 to 0x50 (Store x9 to 0x50)
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x04 - 2
+            instruction <= {5'd09,5'd00,12'd60,LB_INS_10};           // Load global data (at 0x60) to x9
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x08 - 3
+            instruction <= {5'd09,5'd09,12'd01,ADDI_INS_10};        // x9 = x9 + 1     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x0C - 4
+            instruction <= {5'd00,5'd00,5'd09,7'd60,SB_INS_10};     // Store x9 to 0x60
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x10 - 5
+            instruction <= {5'd09,5'd00,12'd50,LB_INS_10};         // Recovery previous x9 from 0x50
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x14 - 6
+            instruction <= {5'd00,5'd00,12'd00,RETI_INS_10};      // RETI
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        for(int i = 0; i < 10; i = i + 1) begin    
+        // PC = 0x18 - 7
+            instruction <= {5'd00,5'd00,12'd00,10'd00};      
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        end
+        /////////////////////////////////////////////////////////////////////////////////////////////////   
+        
+        // ISR 2 //////////////////////////////////////////////////////////////////////////////////////// 
+        // PC = 0x40 - 1
+            instruction <= {5'd00,5'd00,5'd09,7'd100,SB_INS_10};      // Restore x9 to 0x50 (Store x9 to 0x100)
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x44 - 2
+            instruction <= {5'd09,5'd00,12'd120,LB_INS_10};           // Load global data (at 0x120) to x9
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x48 - 3
+            instruction <= {5'd09,5'd09,12'd02,ADDI_INS_10};        // x9 = x9 + 2     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x4C - 4
+            instruction <= {5'd00,5'd00,5'd09,7'd120,SB_INS_10};     // Store x9 to 0x120
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x50 - 5
+            instruction <= {5'd09,5'd00,12'd100,LB_INS_10};         // Recovery previous x9 from 0x100
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x54 - 6
+            instruction <= {5'd00,5'd00,12'd00,RETI_INS_10};      // RETI
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        for(int i = 0; i < 10; i = i + 1) begin    
+        // PC = 0x58 - 7
+            instruction <= {5'd00,5'd00,12'd00,10'd00};      
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        end
+        ///////////////////////////////////////////////////////////////////////////////////////////////// 
+        
+        // ISR 3 //////////////////////////////////////////////////////////////////////////////////////// 
+        // PC = 0x80 - 1
+            instruction <= {5'd00,5'd00,5'd09,7'd30,SB_INS_10};      // Restore x9 to 0x50 (Store x9 to 0x30)
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x84 - 2
+            instruction <= {5'd09,5'd00,12'd40,LB_INS_10};           // Load global data (at 0x40) to x9
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x88 - 3
+            instruction <= {5'd09,5'd09,12'd03,ADDI_INS_10};        // x9 = x9 + 3    
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x8C - 4
+            instruction <= {5'd00,5'd00,5'd09,7'd40,SB_INS_10};     // Store x9 to 0x40
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x90 - 5
+            instruction <= {5'd09,5'd00,12'd30,LB_INS_10};         // Recovery previous x9 from 0x30
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x94 - 6
+            instruction <= {5'd00,5'd00,12'd00,RETI_INS_10};      // RETI
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        for(int i = 0; i < 10; i = i + 1) begin    
+        // PC = 0x98 - 7
+            instruction <= {5'd00,5'd00,12'd00,10'd00};      
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        end
+        ///////////////////////////////////////////////////////////////////////////////////////////////// 
+        
+        // MAIN ///////////////////////////////////////////////////////////////////////////////////////// 
+        // PC = 0xC0
+            instruction <= {5'd09,5'd00,12'd09,ADDI_INS_10};      // x9 = x0 + 9     = 9
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xC4
+            instruction <= {25'd00,J_INS_7};                    // While(1);
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        ///////////////////////////////////////////////////////////////////////////////////////////////// 
+    `endif
     
         // Finish program
         TX_use_ex <= 0;
@@ -692,6 +924,27 @@ parameter DATA_WIDTH            = 8;
         #2 TX_use_ex <= 0;
         end
         
+    initial begin   : INTERRUPT_EVENT
+        #47429;
+        
+        interrupt_request_3 <= 0;
+        #1 interrupt_request_3 <= 1;
+        #2 interrupt_request_3 <= 0;
+        
+        #10;
+        
+        interrupt_request_2 <= 0;
+        #1 interrupt_request_2 <= 1;
+        #2 interrupt_request_2 <= 0;
+        
+        #10;
+        
+        interrupt_request_1 <= 0;
+        #1 interrupt_request_1 <= 1;
+        #2 interrupt_request_1 <= 0;
+        
+        
+    end    
     initial begin   : STOP_BLOCK
         #62200 $stop;
     end
