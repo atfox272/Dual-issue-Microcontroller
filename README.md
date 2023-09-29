@@ -46,12 +46,13 @@ Dual-core Microcontroller ver1.0
 ## 3. Instruction requirement:
   + add instruction (R-type & I-type)
   + sub instruction (R-type)
-  + mul instruction (R-type & I-type)
+  + mul instruction (R-type)
   + and/or/xor/shift instruction (R-type & I-type)
   + load/store instruction  (BYTE - WORD - DOUBLEWORD)
-  + conditional branch instruction 
-  + jump instruction
-
+  + conditional branch instruction (BEQ - BNE - BLT = BGE)
+  + jump instruction (J - JAL - JALR)
+  + Hardware support instruction (MISC-MEM FENCE instruction)
+    
 ## 4. Idea notation:
 
 ### a. Processor_1:
