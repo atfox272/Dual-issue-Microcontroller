@@ -76,8 +76,8 @@ Dual-core Microcontroller ver1.0
 
 #### i. Interface:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/558f4497-57f7-4a06-b8d7-3d063ceaac7d)
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/e7b2b0e6-6810-4824-a306-c2592add3641)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/6064626b-6645-4a39-b84b-af5d8831e6c3)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/3dddbce4-5c5f-47e8-b2e9-703f42b1a010)
 
 
 
