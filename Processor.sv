@@ -65,7 +65,7 @@ module Processor
     parameter OPT_SPACE_LSB         = 10,               // Option space    
     parameter OPT_SPACE_WIDTH       = OPT_SPACE_MSB - OPT_SPACE_LSB + 1,
     parameter IMM_4_SPACE_MSB       = 16,               // Option space
-    parameter IMM_4_SPACE_LSB       = 12,               // Option space    
+    parameter IMM_4_SPACE_LSB       = 11,               // Option space    
     parameter IMM_4_SPACE_WIDTH     = IMM_4_SPACE_MSB - IMM_4_SPACE_LSB + 1,
     // Opcode encoder
     parameter R_TYPE_ENCODE         = 7'b0110011,       // R-type
@@ -133,12 +133,12 @@ module Processor
     parameter I2C_MAPPING               = 4, 
     parameter ADDDR_MAPPING_WIDTH       = $clog2(ADDR_MAPPING_PERIPHERAL),
     // Protocol peripheral communication 
-    parameter AMOUNT_SND_BYTE           = 24,  
+    parameter AMOUNT_SND_BYTE           = 16,  
     parameter AMOUNT_RCV_BYTE           = 16,
     parameter AMOUNT_SND_WIDTH          = $clog2(AMOUNT_SND_BYTE),
     parameter AMOUNT_RCV_WIDTH          = $clog2(AMOUNT_RCV_BYTE),
     //ALU parameter 
-    parameter OPCODE_ALU_WIDTH      = 17
+    parameter OPCODE_ALU_WIDTH          = 17
     )(
     input clk,
     
@@ -183,8 +183,8 @@ module Processor
     // For sub Processor ///////////////////////////////////////////////
     // Data_bus block
     output  wire [ADDDR_MAPPING_WIDTH - 1:0]protocol_address_mapping,
-    output  wire [DOUBLEWORD_WIDTH*2 - 1:0] data_snd_protocol_per,
-    input   wire [DOUBLEWORD_WIDTH*3 - 1:0] data_rcv_protocol_per,
+    output  wire [DOUBLEWORD_WIDTH*2 - 1:0] data_snd_protocol_per,      // Maximum size of packet is 128bytes
+    input   wire [DOUBLEWORD_WIDTH*2 - 1:0] data_rcv_protocol_per,
     output  wire                            send_protocol_clk,
     output  wire                            receive_protocol_clk,
     output  wire [AMOUNT_SND_WIDTH - 1:0]   amount_snd_byte_protocol,
@@ -759,7 +759,7 @@ module Processor
         localparam EXECUTE_RD_ACCESS_INSTRUCTION_STATE = 5;
         localparam EXECUTE_WR_PRE_ACCESS_INSTRUCTION_STATE = 6;
         localparam EXECUTE_WR_ACCESS_INSTRUCTION_STATE = 7;
-        localparam ADDRESS_MAPPING_PROT_STATE = 8;
+        localparam ADDRESS_MAPPING_PROT_STATE = 11;
         localparam SEND_REQUEST_PROTOCOL_STATE = 9;
         localparam RECEIVE_REQUEST_PROTOCOL_STATE = 10;
         
@@ -785,6 +785,7 @@ module Processor
         assign immediate_2_space = fetch_instruction_reg[IMM_2_SPACE_MSB:IMM_2_SPACE_LSB];
         assign immediate_3_space = fetch_instruction_reg[IMM_3_SPACE_MSB:IMM_3_SPACE_LSB];
         assign immediate_4_space = fetch_instruction_reg[IMM_4_SPACE_MSB:IMM_4_SPACE_LSB];
+        assign option_space = fetch_instruction_reg[OPT_SPACE_MSB:OPT_SPACE_LSB];
         assign rd2_space = rs1_space;
         assign rd3_space = rs2_space;
         assign rs3_space = rd1_space;
@@ -795,7 +796,8 @@ module Processor
             assign processor_registers[index_register] = registers_owner[index_register];
         end
         // Protocol management 
-        assign data_snd_protocol_per = {rs3_buffer, rs2_buffer, rs1_buffer};
+        assign protocol_address_mapping = protocol_address_mapping_reg;
+        assign data_snd_protocol_per = {rs3_buffer, rs1_buffer};
         assign send_protocol_clk = send_protocol_clk_reg;
         assign receive_protocol_clk = receive_protocol_clk_reg;
         assign amount_snd_byte_protocol = amount_snd_byte_protocol_reg;
@@ -890,6 +892,9 @@ module Processor
                                     fetch_instruction_reg <= fetch_instruction; 
                                 end
                                 else running_program_state_reg <= IDLE_STATE;
+                                // Reset clk
+                                send_protocol_clk_reg <= 0;
+                                receive_protocol_clk_reg <= 0;
                             end
                     FETCH_INSTRUCTION_STATE: begin
                             
@@ -1026,16 +1031,27 @@ module Processor
                                         running_program_state_reg <= ADDRESS_MAPPING_PROT_STATE;
                                         case(funct3_space) 
                                             UART_ENCODE: begin
-                                                if(option_space) begin  // TX
-                                                    protocol_address_mapping_reg <= UART_TX_MAPPING;
-                                                    // Confirm data
-                                                    rs1_buffer <= registers_renew[rs1_space];
-                                                    rs2_buffer <= registers_renew[rs2_space];
-                                                    rs3_buffer <= registers_renew[rs3_space];
-                                                end
-                                                else begin              // RX
-                                                    protocol_address_mapping_reg <= UART_RX_MAPPING;
-                                                end
+                                                case(option_space)
+                                                    2'b00: begin    // Only receive
+                                                        protocol_address_mapping_reg <= UART_RX_MAPPING;
+                                                    end
+                                                    2'b01: begin    // Only transmit
+                                                        protocol_address_mapping_reg <= UART_TX_MAPPING;
+                                                        // Confirm data
+                                                        rs1_buffer <= registers_renew[rs1_space];
+                                                        rs2_buffer <= registers_renew[rs2_space];
+                                                        rs3_buffer <= registers_renew[rs3_space];
+                                                    end
+                                                    2'b10: begin    // Full-duplex
+                                                    
+                                                    end
+                                                    2'b11: begin
+                                                    
+                                                    end
+                                                    default: begin
+                                                    
+                                                    end
+                                                endcase
                                             end
                                             SPI_ENCODE: begin
                                                 protocol_address_mapping_reg <= SPI_MAPPING;
@@ -1124,7 +1140,7 @@ module Processor
                                 if(snd_protocol_available) begin
                                     running_program_state_reg <= IDLE_STATE;
                                     send_protocol_clk_reg <= 1;
-                                    amount_snd_byte_protocol_reg <= immediate_4_space;
+                                    amount_snd_byte_protocol_reg <= rs2_buffer[AMOUNT_SND_WIDTH - 1:0];
                                 end
                             end
                             UART_RX_MAPPING: begin
