@@ -49,8 +49,11 @@ module Multi_processor_manager
     parameter IMM_3_SPACE_LSB       = 27,
     parameter IMM_3_SPACE_WIDTH     = IMM_3_SPACE_MSB - IMM_3_SPACE_LSB + 1,// Opcode encoder
     parameter JUMP_OFS_SPACE_MSB    = 31,
-    parameter JUMP_OFS_SPACE_LSB    = 7,// Opcode encoder
+    parameter JUMP_OFS_SPACE_LSB    = 7,
     parameter JUMP_OFS_SPACE_WIDTH  = JUMP_OFS_SPACE_MSB - JUMP_OFS_SPACE_LSB + 1,// Opcode encoder
+    parameter OPT_SPACE_MSB         = 11,               // Option space
+    parameter OPT_SPACE_LSB         = 10,               // Option space    
+    parameter OPT_SPACE_WIDTH       = OPT_SPACE_MSB - OPT_SPACE_LSB + 1,
     // Opcode encoder
     parameter R_TYPE_ENCODE         = 7'b0110011,       // R-type
     parameter I_TYPE_ENCODE         = 7'b0010011,       // I-type
@@ -60,8 +63,10 @@ module Multi_processor_manager
     parameter B_TYPE_ENCODE         = 7'b1100011,       // B-type   
     parameter LOAD_ENCODE           = 7'b0000011,       // LOAD-type
     parameter STORE_ENCODE          = 7'b0100011,       // STORE-type
-    parameter MISC_MEM_ENCODE       = 7'b0101111,       // STORE-type
-    parameter SYSTEM_ENCODE         = 7'b1110111,       // Return interrupt
+    parameter MISC_MEM_ENCODE       = 7'b0101111,       // Hardware-supportive memory type
+    parameter PROTOCOL_ENCODE       = 7'b1000001,       // Protocol-type
+    parameter IO_TYPE_ENCODE        = 7'b1100001,       // IO-type
+    parameter SYSTEM_ENCODE         = 7'b1110111,       // System-type
     // Funct3 enoder (for B-type)
     parameter BEQ_ENCODE           = 3'b000,
     parameter BNE_ENCODE           = 3'b001,
@@ -73,6 +78,10 @@ module Multi_processor_manager
     parameter RETI_ENCODE          = 3'b011,
     // Funct3 encoder (for MISC-MEM type)
     parameter FENCE_ENCODE         = 3'b010,
+    // Funct3 encoder (for Protocol-type)
+    parameter UART_ENCODE          = 3'b000,
+    parameter SPI_ENCODE           = 3'b010,
+    parameter I2C_ENCODE           = 3'b011,
     // NOT MODIFY
     parameter ADDR_WIDTH_PM         = $clog2(PROGRAM_MEMORY_SIZE),
     parameter REG_SPACE_WIDTH       = $clog2(REGISTER_AMOUNT),
@@ -101,9 +110,10 @@ module Multi_processor_manager
     // Registers management
     input   wire    [DOUBLEWORD_WIDTH - 1:0]    registers_renew [0:REGISTER_AMOUNT - 1],
     input   wire                                synchronized_processors,
-    output  wire    [REG_SPACE_WIDTH - 1:0]     register_num,
+    output  wire    [REG_SPACE_WIDTH*3 - 1:0]   register_num,
     output  wire                                boot_renew_register_1,
     output  wire                                boot_renew_register_2,
+    output  wire                                boot_renew_3registers_2,
     output  wire    [DOUBLEWORD_WIDTH - 1:0]    ra_register,
     input   wire    [0:REGISTER_AMOUNT - 1]     processing_register_table,
     // Interrupt control
@@ -135,17 +145,17 @@ module Multi_processor_manager
     reg contain_ins;
     wire[REG_SPACE_WIDTH - 1:0] rs1_cur;
     wire[REG_SPACE_WIDTH - 1:0] rs2_cur;
-    wire[REG_SPACE_WIDTH - 1:0] rd_cur;
+    wire[REG_SPACE_WIDTH - 1:0] rd1_cur;
+    wire[REG_SPACE_WIDTH - 1:0] rd2_cur;
+    wire[REG_SPACE_WIDTH - 1:0] rd3_cur;
     reg [1:0]                   processor_prev;             // 0-mpm, 1-main, 2-sub (processor_using log)
     reg rd_ins_pm_reg;
     wire parallel_blocking_Rtype_condition;
     wire parallel_blocking_Itype_condition;
-    wire pipeline_blocking_Rtype_condition;
-    wire pipeline_blocking_Itype_condition;
+    wire parallel_blocking_STORE_condition;
     wire release_blocking_Rtype_condition;
     wire release_blocking_Itype_condition;
     wire release_blocking_STORE_condition;
-    wire release_blocking_condition;
     // Processor 
     reg boot_processor_1_reg;
     reg boot_processor_2_reg;
@@ -165,10 +175,14 @@ module Multi_processor_manager
     wire[IMM_2_SPACE_WIDTH - 1:0]       immediate_2_space;
     wire[IMM_3_SPACE_WIDTH - 1:0]       immediate_3_space;
     wire[JUMP_OFS_SPACE_WIDTH - 1:0]    jump_offset_space;
+    wire[OPT_SPACE_WIDTH - 1:0]         option_space;
     // Registers management
-    reg [REG_SPACE_WIDTH - 1:0]         register_num_reg;
+    reg [REG_SPACE_WIDTH - 1:0]         register1_num_reg;
+    reg [REG_SPACE_WIDTH - 1:0]         register2_num_reg;
+    reg [REG_SPACE_WIDTH - 1:0]         register3_num_reg;
     reg                                 boot_renew_register_1_reg;
     reg                                 boot_renew_register_2_reg;
+    reg                                 boot_renew_3registers_2_reg;
     // LIFO 
     reg                                 active_stack_clk;
     reg                                 wr_stack_ins;
@@ -184,18 +198,19 @@ module Multi_processor_manager
     localparam REQUEST_INS_STATE = 2;
     localparam DECODE_INS_STATE = 3;
     localparam PARALLEL_BLOCKING_STATE = 4;
-    localparam PARALLEL_BLOCKING_EX_INTERNAL_STATE = 24;
+    localparam PARALLEL_BLOCKING_EX_INTERNAL_STATE = 13;
     localparam FETCH_INSTRUCTION_STATE = 5;
+    localparam FETCH_SPEC_INSTRUCTION_STATE = 17;
     localparam EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE = 6;
     localparam EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE = 9;
-    localparam EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE = 25;
+    localparam EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE = 14;
     localparam CONFIRM_FETCH_INSTRUCTION_P1_STATE = 7;
     localparam CONFIRM_FETCH_INSTRUCTION_P2_STATE = 8;
     localparam PC_INSCREASE_STATE = 10;
     localparam RESTORE_PC_STATE = 12;
     localparam DETECT_HIGHER_PRIO_PROGRAM_STATE = 11;
-    localparam RECOVERY_PC_STATE = 28;
-    localparam EXIT_STATE = 27;
+    localparam RECOVERY_PC_STATE = 15;
+    localparam EXIT_STATE = 16;
     
     assign addr_rd_pm = PC;
     assign rd_ins_pm = rd_ins_pm_reg;
@@ -209,36 +224,35 @@ module Multi_processor_manager
     assign opcode_space = cur_instruction[OPCODE_SPACE_MSB:OPCODE_SPACE_LSB];
     assign funct10_space = cur_instruction[FUNCT10_SPACE_MSB:FUNCT10_SPACE_LSB];
     assign funct3_space = cur_instruction[FUNCT3_SPACE_MSB:FUNCT3_SPACE_LSB];
-    assign rd_cur = cur_instruction[RD_SPACE_MSB:RD_SPACE_LSB];
+    assign rd1_cur = cur_instruction[RD_SPACE_MSB:RD_SPACE_LSB];
     assign rs1_cur = cur_instruction[RS1_SPACE_MSB:RS1_SPACE_LSB];
     assign rs2_cur = cur_instruction[RS2_SPACE_MSB:RS2_SPACE_LSB];
     assign immediate_1_space = cur_instruction[IMM_1_SPACE_MSB:IMM_1_SPACE_LSB];
     assign immediate_2_space = cur_instruction[IMM_2_SPACE_MSB:IMM_2_SPACE_LSB];
     assign immediate_3_space = cur_instruction[IMM_3_SPACE_MSB:IMM_3_SPACE_LSB];
     assign jump_offset_space = cur_instruction[JUMP_OFS_SPACE_MSB:JUMP_OFS_SPACE_LSB];
-    
+    assign option_space = cur_instruction[OPT_SPACE_MSB:OPT_SPACE_LSB];
+    assign rd2_cur = rs1_cur;
+    assign rd3_cur = rs2_cur;
     // register management 
-    assign register_num = register_num_reg;
+    assign register_num = {register3_num_reg, register2_num_reg, register1_num_reg};
     assign boot_renew_register_1 = boot_renew_register_1_reg;
     assign boot_renew_register_2 = boot_renew_register_2_reg;
+    assign boot_renew_3registers_2 = boot_renew_3registers_2_reg;
     assign ra_register = x1;
     // Condition
     assign parallel_blocking_Rtype_condition = (processing_register_table[rs1_cur] == 1) | 
                                                (processing_register_table[rs2_cur] == 1) |
-                                               (processing_register_table[rd_cur]  == 1);
-    assign release_blocking_Rtype_condition  = (processing_register_table[rs1_cur] == 0) & 
-                                               (processing_register_table[rs2_cur] == 0) &
-                                               (processing_register_table[rd_cur]  == 0);
+                                               (processing_register_table[rd1_cur]  == 1);
+    assign release_blocking_Rtype_condition  = ~parallel_blocking_Rtype_condition;
                                                
     assign parallel_blocking_Itype_condition = (processing_register_table[rs1_cur] == 1) |
-                                               (processing_register_table[rd_cur]  == 1);
-    assign release_blocking_Itype_condition  = (processing_register_table[rs1_cur] == 0) &
-                                               (processing_register_table[rd_cur]  == 0);
+                                               (processing_register_table[rd1_cur]  == 1);
+    assign release_blocking_Itype_condition  = ~parallel_blocking_Itype_condition;
     
     assign parallel_blocking_STORE_condition = (processing_register_table[rs1_cur] == 1) |
                                                (processing_register_table[rs2_cur] == 1);
-    assign release_blocking_STORE_condition  = (processing_register_table[rs1_cur] == 0) &
-                                               (processing_register_table[rs2_cur] == 0);
+    assign release_blocking_STORE_condition  = ~parallel_blocking_STORE_condition;
     
 
     
@@ -283,9 +297,12 @@ module Multi_processor_manager
             PC_info_in_stack <= 0;
             wr_stack_ins <= 0;
             rd_stack_ins <= 0;
-            register_num_reg <= 0;
+            register1_num_reg <= 0;
+            register2_num_reg <= 0;
+            register3_num_reg <= 0;
             boot_renew_register_1_reg <= 0;
             boot_renew_register_2_reg <= 0;
+            boot_renew_3registers_2_reg <= 0;
             RETI_1_reg <= 0;
             RETI_2_reg <= 0;
             RETI_3_reg <= 0;
@@ -338,21 +355,21 @@ module Multi_processor_manager
                                 program_state <= PARALLEL_BLOCKING_STATE;
                             end
                             else program_state <= FETCH_INSTRUCTION_STATE;
-                            register_num_reg <= rd_cur;
+                            register1_num_reg <= rd1_cur;
                         end
                         I_TYPE_ENCODE: begin
                             if(parallel_blocking_Itype_condition) begin
                                 program_state <= PARALLEL_BLOCKING_STATE;
                             end
                             else program_state <= FETCH_INSTRUCTION_STATE;
-                            register_num_reg <= rd_cur;
+                            register1_num_reg <= rd1_cur;
                         end
                         LOAD_ENCODE: begin
                             if(parallel_blocking_Itype_condition) begin
                                 program_state <= PARALLEL_BLOCKING_STATE;
                             end
                             else program_state <= FETCH_INSTRUCTION_STATE;
-                            register_num_reg <= rd_cur;
+                            register1_num_reg <= rd1_cur;
                         end
                         STORE_ENCODE: begin
                             if(parallel_blocking_STORE_condition) begin
@@ -457,6 +474,34 @@ module Multi_processor_manager
                                 end
                             endcase
                         end
+                        PROTOCOL_ENCODE: begin
+                            case(funct3_space)
+                                UART_ENCODE: begin
+                                    if(parallel_blocking_Rtype_condition) begin
+                                        program_state <= PARALLEL_BLOCKING_STATE;
+                                    end
+                                    else program_state <= FETCH_SPEC_INSTRUCTION_STATE;
+                                    // Boot_renew_register
+                                    if(~option_space) begin  // RX <rd1 rd2 rd3 imm ...>
+                                        register1_num_reg <= rd1_cur;
+                                        register2_num_reg <= rd2_cur;
+                                        register3_num_reg <= rd3_cur;
+                                    end
+                                    else begin              // TX <rs3 rs1 rs2 imm ...>
+                                       
+                                    end
+                                end
+                                SPI_ENCODE: begin
+                                
+                                end
+                                I2C_ENCODE: begin
+                                
+                                end
+                                default: begin
+                                
+                                end
+                            endcase
+                        end
                         default: program_state <= program_state;
                     endcase 
                 end
@@ -487,6 +532,11 @@ module Multi_processor_manager
                                 program_state <= EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE;
                             end
                         end
+                        PROTOCOL_ENCODE: begin
+                            if(release_blocking_Rtype_condition) begin
+                                program_state <= FETCH_SPEC_INSTRUCTION_STATE;
+                            end
+                        end
                         default: begin
                         
                         end
@@ -510,6 +560,16 @@ module Multi_processor_manager
                         processor_prev <= 2;    // 2-sub processor
                     end
                 end
+                FETCH_SPEC_INSTRUCTION_STATE: begin
+                    if(processor_idle_2) begin
+                        program_state <= CONFIRM_FETCH_INSTRUCTION_P2_STATE;
+                        // Boot
+                        boot_processor_2_reg <= 1;
+                        boot_renew_3registers_2_reg <= 1;
+                        // Log 
+                        processor_prev <= 2;
+                    end
+                end 
                 CONFIRM_FETCH_INSTRUCTION_P1_STATE: begin
                     if(processor_idle_1 == 0) begin
                         program_state <= PC_INSCREASE_STATE;
@@ -525,6 +585,7 @@ module Multi_processor_manager
                         // Reset boot 
                         boot_processor_2_reg <= 0;
                         boot_renew_register_2_reg <= 0;
+                        boot_renew_3registers_2_reg <= 0;
                     end
                     else program_state <= CONFIRM_FETCH_INSTRUCTION_P2_STATE;
                 end
