@@ -59,8 +59,8 @@ Dual-core Microcontroller ver1.0
 
 #### i. State:
 * Main processor:
-
-* ![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/86486bad-80e2-4063-bea4-7710ab93bb42)
+  
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/6c4e1334-19dc-492a-9996-0caf2c2ce499)
 
 #### ii. Testing case:
 * LOAD_PROGRAM:
