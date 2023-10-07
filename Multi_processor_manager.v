@@ -65,7 +65,7 @@ module Multi_processor_manager
     parameter STORE_ENCODE          = 7'b0100011,       // STORE-type
     parameter MISC_MEM_ENCODE       = 7'b0101111,       // Hardware-supportive memory type
     parameter PROTOCOL_ENCODE       = 7'b1000001,       // Protocol-type
-    parameter IO_TYPE_ENCODE        = 7'b1100001,       // IO-type
+    parameter GPIO_ENCODE           = 7'b1110101,       // GPIO-type
     parameter SYSTEM_ENCODE         = 7'b1110111,       // System-type
     // Funct3 enoder (for B-type)
     parameter BEQ_ENCODE           = 3'b000,
@@ -195,22 +195,22 @@ module Multi_processor_manager
     
     localparam INIT_STATE = 1;
     localparam PROGRAM_IDLE_STATE = 0;
-    localparam REQUEST_INS_STATE = 2;
-    localparam DECODE_INS_STATE = 3;
-    localparam PARALLEL_BLOCKING_STATE = 4;
-    localparam PARALLEL_BLOCKING_EX_INTERNAL_STATE = 13;
-//    localparam FETCH_INSTRUCTION_STATE = 5;
-//    localparam FETCH_SPEC_INSTRUCTION_STATE = 17;
-    localparam EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE = 6;
-    localparam EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE = 9;
-    localparam EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE = 14;
-//    localparam CONFIRM_FETCH_INSTRUCTION_P1_STATE = 7;
-//    localparam CONFIRM_FETCH_INSTRUCTION_P2_STATE = 8;
-//    localparam PC_INSCREASE_STATE = 10;
+    localparam FETCH_INS_STATE = 2;
+    localparam DISPATCH_INS_STATE = 3;
+    localparam PARALLEL_BLOCKING_B_TYPE_STATE = 4;
+    localparam PARALLEL_BLOCKING_R_TYPE_STATE = 5;
+    localparam PARALLEL_BLOCKING_I_TYPE_STATE = 6;
+    localparam PARALLEL_BLOCKING_STORE_STATE = 7;
+    localparam PARALLEL_BLOCKING_PROTOCOL_STATE = 16;
+    localparam PARALLEL_BLOCKING_GPIO_STATE = 17;
+    localparam PARALLEL_BLOCKING_EX_INTERNAL_STATE = 8;
+    localparam EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE = 9;
+    localparam EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE = 10;
+    localparam EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE = 11;
     localparam RESTORE_PC_STATE = 12;
-    localparam DETECT_HIGHER_PRIO_PROGRAM_STATE = 11;
-    localparam RECOVERY_PC_STATE = 15;
-    localparam EXIT_STATE = 16;
+    localparam DETECT_HIGHER_PRIO_PROGRAM_STATE = 13;
+    localparam RECOVERY_PC_STATE = 14;
+    localparam EXIT_STATE = 15;
     
     assign addr_rd_pm = PC;
     assign rd_ins_pm = rd_ins_pm_reg;
@@ -322,13 +322,13 @@ module Multi_processor_manager
             end
             PROGRAM_IDLE_STATE: begin
                 if(contain_ins == 0) begin
-                    program_state <= REQUEST_INS_STATE;
+                    program_state <= FETCH_INS_STATE;
                     contain_ins <= 1;
                     // Request 
                     rd_ins_pm_reg <= 1;
                 end
                 else begin
-                    program_state <= DECODE_INS_STATE;
+                    program_state <= DISPATCH_INS_STATE;
                     contain_ins <= contain_ins - 1;
                 end
                 // Recovery state
@@ -336,23 +336,23 @@ module Multi_processor_manager
                 rd_stack_ins <= 0;
                 wr_stack_ins <= 0;
             end
-            REQUEST_INS_STATE: begin
+            FETCH_INS_STATE: begin
                 if(rd_idle_pm) begin
-                    program_state <= DECODE_INS_STATE;
+                    program_state <= DISPATCH_INS_STATE;
                     _2_instructions_buf <= data_bus_rd_pm;
                     rd_ins_pm_reg <= 0;
                 end
-                else program_state <= REQUEST_INS_STATE;
+                else program_state <= FETCH_INS_STATE;
                 // Recovery state of Stack 
                 active_stack_clk <= 0;
                 rd_stack_ins <= 0;
                 wr_stack_ins <= 0;
             end
-            DECODE_INS_STATE: begin
+            DISPATCH_INS_STATE: begin
                 case(opcode_space) 
                     R_TYPE_ENCODE: begin
                         if(parallel_blocking_Rtype_condition) begin
-                            program_state <= PARALLEL_BLOCKING_STATE;
+                            program_state <= PARALLEL_BLOCKING_R_TYPE_STATE;
                         end
                         else begin                             
                             if(processor_idle_1) begin
@@ -378,7 +378,7 @@ module Multi_processor_manager
                     end
                     I_TYPE_ENCODE: begin
                         if(parallel_blocking_Itype_condition) begin
-                            program_state <= PARALLEL_BLOCKING_STATE;
+                            program_state <= PARALLEL_BLOCKING_I_TYPE_STATE;
                         end
                         else begin
                             if(processor_idle_1) begin
@@ -404,11 +404,9 @@ module Multi_processor_manager
                     end
                     LOAD_ENCODE: begin
                         if(parallel_blocking_Itype_condition) begin
-                            program_state <= PARALLEL_BLOCKING_STATE;
+                            program_state <= PARALLEL_BLOCKING_I_TYPE_STATE;
                         end
                         else begin 
-//                                program_state <= FETCH_INSTRUCTION_STATE;
-                            
                             if(processor_idle_1) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                 PC <= PC + 4;
@@ -432,7 +430,7 @@ module Multi_processor_manager
                     end
                     STORE_ENCODE: begin
                         if(parallel_blocking_STORE_condition) begin
-                            program_state <= PARALLEL_BLOCKING_STATE;
+                            program_state <= PARALLEL_BLOCKING_STORE_STATE;
                         end
                         else begin 
                             if(processor_idle_1) begin
@@ -487,7 +485,7 @@ module Multi_processor_manager
                     // Execute immediate
                     B_TYPE_ENCODE: begin
                         if(parallel_blocking_STORE_condition) begin // Same format as STORE instruction
-                            program_state <= PARALLEL_BLOCKING_STATE;
+                            program_state <= PARALLEL_BLOCKING_B_TYPE_STATE;
                         end
                         else program_state <= EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE;
                         
@@ -581,7 +579,7 @@ module Multi_processor_manager
                         case(funct3_space)
                             UART_ENCODE: begin
                                 if(parallel_blocking_Rtype_condition) begin
-                                    program_state <= PARALLEL_BLOCKING_STATE;
+                                    program_state <= PARALLEL_BLOCKING_PROTOCOL_STATE;
                                 end
                                 else begin 
                                     if(processor_idle_2) begin
@@ -612,82 +610,71 @@ module Multi_processor_manager
                             end
                         endcase
                     end
+                    GPIO_ENCODE: begin
+                        if(parallel_blocking_Rtype_condition) begin
+                            program_state <= PARALLEL_BLOCKING_GPIO_STATE;
+                        end
+                        else begin
+                            if(processor_idle_1) begin
+                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                                PC <= PC + 4;
+                                // Boot
+                                boot_processor_1_reg <= 1;
+                                boot_renew_register_1_reg <= 1;
+                                // Log 
+                                processor_prev <= 1;    // 1-main processor
+                            end
+                        end
+                        register1_num_reg <= rd1_cur;        
+                    end
                     default: program_state <= program_state;
                 endcase 
             end
-            PARALLEL_BLOCKING_STATE: begin
-                case(opcode_space) 
-                    R_TYPE_ENCODE: begin
-                        if(release_blocking_Rtype_condition) begin
-//                                program_state <= FETCH_INSTRUCTION_STATE;
-                            
-                            if(processor_idle_1) begin
-                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
-                                // Boot
-                                boot_processor_1_reg <= 1;
-                                boot_renew_register_1_reg <= 1;
-                                // Log 
-                                processor_prev <= 1;    // 1-main processor
-                            end
-                            else if(processor_idle_2)begin  
-                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
-                                // Boot
-                                boot_processor_2_reg <= 1;
-                                boot_renew_register_2_reg <= 1;
-                                // Log 
-                                processor_prev <= 2;    // 2-sub processor
-                            end
+            PARALLEL_BLOCKING_R_TYPE_STATE: begin
+                if(release_blocking_Rtype_condition) begin
+                    if(processor_idle_1) begin
+                        program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                        PC <= PC + 4;
+                        // Boot
+                        boot_processor_1_reg <= 1;
+                        boot_renew_register_1_reg <= 1;
+                        // Log 
+                        processor_prev <= 1;    // 1-main processor
+                    end
+                    else if(processor_idle_2)begin  
+                        program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                        PC <= PC + 4;
+                        // Boot
+                        boot_processor_2_reg <= 1;
+                        boot_renew_register_2_reg <= 1;
+                        // Log 
+                        processor_prev <= 2;    // 2-sub processor
+                    end
+                end
+            end
+            PARALLEL_BLOCKING_I_TYPE_STATE: begin
+                    if(release_blocking_Itype_condition) begin
+                        if(processor_idle_1) begin
+                            program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                            PC <= PC + 4;
+                            // Boot
+                            boot_processor_1_reg <= 1;
+                            boot_renew_register_1_reg <= 1;
+                            // Log 
+                            processor_prev <= 1;    // 1-main processor
+                        end
+                        else if(processor_idle_2)begin  
+                            program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                            PC <= PC + 4;
+                            // Boot
+                            boot_processor_2_reg <= 1;
+                            boot_renew_register_2_reg <= 1;
+                            // Log 
+                            processor_prev <= 2;    // 2-sub processor
                         end
                     end
-                    I_TYPE_ENCODE: begin
-                        if(release_blocking_Itype_condition) begin
-//                                program_state <= FETCH_INSTRUCTION_STATE;
-                            if(processor_idle_1) begin
-                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
-                                // Boot
-                                boot_processor_1_reg <= 1;
-                                boot_renew_register_1_reg <= 1;
-                                // Log 
-                                processor_prev <= 1;    // 1-main processor
-                            end
-                            else if(processor_idle_2)begin  
-                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
-                                // Boot
-                                boot_processor_2_reg <= 1;
-                                boot_renew_register_2_reg <= 1;
-                                // Log 
-                                processor_prev <= 2;    // 2-sub processor
-                            end
-                        end
-                    end
-                    LOAD_ENCODE: begin
-                        if(release_blocking_Itype_condition) begin
-//                                program_state <= FETCH_INSTRUCTION_STATE;
-                            if(processor_idle_1) begin
-                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
-                                // Boot
-                                boot_processor_1_reg <= 1;
-                                boot_renew_register_1_reg <= 1;
-                                // Log 
-                                processor_prev <= 1;    // 1-main processor
-                            end
-                            else if(processor_idle_2)begin  
-                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
-                                // Boot
-                                boot_processor_2_reg <= 1;
-                                boot_renew_register_2_reg <= 1;
-                                // Log 
-                                processor_prev <= 2;    // 2-sub processor
-                            end
-                        end
-                    end
-                    STORE_ENCODE: begin
+            end
+            PARALLEL_BLOCKING_STORE_STATE: begin
                         if(release_blocking_STORE_condition) begin
 //                                program_state <= FETCH_INSTRUCTION_STATE;
                             if(processor_idle_1) begin
@@ -709,15 +696,14 @@ module Multi_processor_manager
                                 processor_prev <= 2;    // 2-sub processor
                             end
                         end
-                    end
-                    B_TYPE_ENCODE: begin
-                        if(release_blocking_STORE_condition) begin
-                            program_state <= EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE;
-                        end
-                    end
-                    PROTOCOL_ENCODE: begin
+            end
+            PARALLEL_BLOCKING_B_TYPE_STATE: begin
+                if(release_blocking_STORE_condition) begin
+                    program_state <= EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE;
+                end
+            end
+            PARALLEL_BLOCKING_PROTOCOL_STATE: begin
                         if(release_blocking_Rtype_condition) begin
-//                                program_state <= FETCH_SPEC_INSTRUCTION_STATE;
                             if(processor_idle_2) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                 PC <= PC + 4;
@@ -734,11 +720,19 @@ module Multi_processor_manager
                                 processor_prev <= 2;
                             end
                         end
-                    end
-                    default: begin
-                    
-                    end
-                endcase
+            end
+            PARALLEL_BLOCKING_GPIO_STATE: begin
+                        if(release_blocking_Rtype_condition) begin
+                            if(processor_idle_1) begin
+                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                                PC <= PC + 4;
+                                // Boot
+                                boot_processor_1_reg <= 1;
+                                boot_renew_register_1_reg <= 1;
+                                // Log 
+                                processor_prev <= 1;    // 1-main processor
+                            end
+                        end
             end
             EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE: begin
                 if(synchronized_processors) begin
@@ -820,12 +814,12 @@ module Multi_processor_manager
                 boot_renew_3registers_2_reg <= 0;
                 if(interrupt_handling_1) begin
                     if(contain_ins) begin
-                        program_state <= DECODE_INS_STATE;
+                        program_state <= DISPATCH_INS_STATE;
                         // 
                         contain_ins <= contain_ins - 1;
                     end
                     else begin
-                        program_state <= REQUEST_INS_STATE;
+                        program_state <= FETCH_INS_STATE;
                         // Request Instruction
                         contain_ins <= 1;
                         rd_ins_pm_reg <= 1;
@@ -846,12 +840,12 @@ module Multi_processor_manager
                     end
                     else begin
                        if(contain_ins) begin
-                            program_state <= DECODE_INS_STATE;
+                            program_state <= DISPATCH_INS_STATE;
                             // 
                             contain_ins <= contain_ins - 1;
                         end
                         else begin
-                            program_state <= REQUEST_INS_STATE;
+                            program_state <= FETCH_INS_STATE;
                             // Request Instruction
                             contain_ins <= 1;
                             rd_ins_pm_reg <= 1;
@@ -885,12 +879,12 @@ module Multi_processor_manager
                     end
                     else begin
                        if(contain_ins) begin
-                            program_state <= DECODE_INS_STATE;
+                            program_state <= DISPATCH_INS_STATE;
                             // 
                             contain_ins <= contain_ins - 1;
                         end
                         else begin
-                            program_state <= REQUEST_INS_STATE;
+                            program_state <= FETCH_INS_STATE;
                             // Request Instruction
                             contain_ins <= 1;
                             rd_ins_pm_reg <= 1;
@@ -949,7 +943,7 @@ module Multi_processor_manager
             end
             RESTORE_PC_STATE: begin
                 if(synchronized_processors) begin
-                    program_state <= REQUEST_INS_STATE;
+                    program_state <= FETCH_INS_STATE;
                     contain_ins <= 1;
                     // Write PC to Stack
                     active_stack_clk <= 1;
