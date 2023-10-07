@@ -78,6 +78,7 @@ module Processor
     parameter STORE_ENCODE          = 7'b0100011,       // STORE-type
     parameter MISC_MEM_ENCODE       = 7'b0101111,       // Hardware-supportive memory type
     parameter PROTOCOL_ENCODE       = 7'b1000001,       // Protocol-type
+    parameter GPIO_ENCODE           = 7'b1110101,       // GPIO-type
     parameter SYSTEM_ENCODE         = 7'b1110111,       // System-type
     // Funct3 enoder (for B-type)
     parameter BEQ_ENCODE           = 3'b000,
@@ -118,7 +119,9 @@ module Processor
     parameter BYTE_WIDTH_ENCODE     = 3'b000,  
     parameter WORD_WIDTH_ENCODE     = 3'b010,  
     parameter DWORD_WIDTH_ENCODE    = 3'b011,
-    
+    // Funct3 encoder (for I/O type)
+    parameter READ_GPIO_ENCODE      = 3'b000,
+    parameter WRITE_GPIO_ENCODE     = 3'b001,
     
     // Finish program condition 
     parameter FINISH_PROGRAM_OPCODE  = 7'b0001011,      // Detect finish_program_opcode (this opcode is RESERVED)
@@ -137,6 +140,15 @@ module Processor
     parameter AMOUNT_RCV_BYTE           = 16,
     parameter AMOUNT_SND_WIDTH          = $clog2(AMOUNT_SND_BYTE),
     parameter AMOUNT_RCV_WIDTH          = $clog2(AMOUNT_RCV_BYTE),
+    // I/O peripheral 
+    parameter GPIO_PORT_A_NUM           = 4,
+    parameter GPIO_PORT_B_NUM           = 4,
+    parameter GPIO_PORT_C_NUM           = 4,
+    parameter GPIO_PORT_A_MAP           = 0,
+    parameter GPIO_PORT_B_MAP           = 1,
+    parameter GPIO_PORT_C_MAP           = 2,
+    parameter GPIO_PORT_AMOUNT          = 3,
+    parameter GPIO_PORT_WIDTH           = $clog2(GPIO_PORT_AMOUNT),
     //ALU parameter 
     parameter OPCODE_ALU_WIDTH          = 17
     )(
@@ -176,6 +188,10 @@ module Processor
     input   wire                            wr_idle_pm,
     output  wire    [ADDR_WIDTH_PM - 1:0]   addr_wr_pm,
     output  wire                            wr_ins_pm,
+    // GPIO 
+    input   wire    [0:GPIO_PORT_A_NUM - 1] GPIO_PORT_A,
+    input   wire    [0:GPIO_PORT_B_NUM - 1] GPIO_PORT_B,
+    input   wire    [0:GPIO_PORT_C_NUM - 1] GPIO_PORT_C,
     // Common 
     output  wire    [1:0]                   main_state,
     //////////////////////////////////////////////////////////////////////
@@ -258,16 +274,19 @@ module Processor
         reg [OPCODE_ALU_WIDTH - 1:0]        alu_opcode;
         reg                                 alu_use;
         wire                                alu_idle;
+        // GPIO 
+        wire[GPIO_PORT_WIDTH - 1:0]         pin_rs2_align;
+        wire[GPIO_PORT_WIDTH - 1:0]         port_rs1_align;
         
         // Main state encoder
         localparam IDLE_STATE = 0;
-        localparam LOAD_PROGRAM_STATE = 1;
+        localparam STORE_PROGRAM_STATE = 1;
         localparam RUNNING_PROGRAM_STATE = 2;
         // Load program state
         localparam RD_FIFO_STATE = 1;
         localparam WR_RAM_STATE = 2;
         // Running program state 
-        localparam FETCH_INSTRUCTION_STATE = 1;
+        localparam DECODE_INSTRUCTION_STATE = 1;
         localparam EXECUTE_INSTRUCTION_STATE = 2;
         localparam EXECUTE_ADDR_INSTRUCTION_STATE = 3;
         localparam EXECUTE_WR_ADDR_INSTRUCTION_STATE = 8;
@@ -282,7 +301,7 @@ module Processor
         // Finish program condition
         assign finish_program_condition = finish_program_condition_1 | finish_program_condition_2;
         assign finish_program_condition_1 = (data_bus_out_uart_1[6:0] == FINISH_PROGRAM_OPCODE & RX_flag_1 == 1) & (_4byte_counter == 0);   // (_4byte_counter == 0) <=> Opdcode location
-        assign start_counting_finish_program_condition = (main_state_reg == LOAD_PROGRAM_STATE) & (RX_flag_1 == 0);        // MCU in LOAD_PROGRAM_STATE & RX_module is empty 
+        assign start_counting_finish_program_condition = (main_state_reg == STORE_PROGRAM_STATE) & (RX_flag_1 == 0);        // MCU in STORE_PROGRAM_STATE & RX_module is empty 
         // Program Memory 
         assign data_bus_wr_pm = data_bus_wr_pm_reg;
         assign addr_wr_pm = addr_wr_pm_reg;
@@ -314,7 +333,9 @@ module Processor
         for(genvar index_register = 0; index_register < REGISTER_AMOUNT; index_register = index_register + 1) begin
             assign processor_registers[index_register] = registers_owner[index_register];
         end
-        
+        // GPIO block 
+        assign pin_rs2_align  = registers_renew[rs2_space][GPIO_PORT_WIDTH - 1:0];
+        assign port_rs1_align = registers_renew[rs1_space][GPIO_PORT_WIDTH - 1:0];
         // ALU block
         always @* begin
             case(opcode_space) 
@@ -390,9 +411,6 @@ module Processor
                 load_program_state_reg <= IDLE_STATE;
                 running_program_state_reg <= IDLE_STATE;
                 
-                RX_use_1_reg <= 0;
-                // Reste counter for instruction
-                _4byte_counter <= 0;
                 // Reset buffer interact with Program-memory
                 data_bus_wr_pm_reg <= 8'h00;
                 addr_wr_pm_reg <= START_WR_ADDR_PM;
@@ -401,9 +419,10 @@ module Processor
                 for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
                     registers_owner[i] <= REGISTER_DEFAULT[i];
                 end
-                // Reset buffer interact ALU block
+                // Reset buffer
+                RX_use_1_reg <= 0;
+                _4byte_counter <= 0;
                 alu_use <= 0;
-                // Reset buffer interact with RAM 
                 addr_rd_reg <= 0;
                 rd_ins_reg <= 0;
                 data_type_rd_reg <= 0;
@@ -419,12 +438,12 @@ module Processor
                 case(main_state_reg) 
                     IDLE_STATE: begin
                         if(RX_flag_1) begin
-                            main_state_reg <= LOAD_PROGRAM_STATE;
+                            main_state_reg <= STORE_PROGRAM_STATE;
                         end 
                         else main_state_reg <= IDLE_STATE;              // Polling RX_1 data 
                         RX_use_1_reg <= 0;
                     end
-                    LOAD_PROGRAM_STATE: begin
+                    STORE_PROGRAM_STATE: begin
                         case(load_program_state_reg) 
                             IDLE_STATE: begin
                                 if(finish_program_condition) begin              // Finish program
@@ -481,121 +500,125 @@ module Processor
                         case(running_program_state_reg) 
                             IDLE_STATE: begin
                                 if(boot_processor) begin
-                                    running_program_state_reg <= FETCH_INSTRUCTION_STATE;
+                                    running_program_state_reg <= DECODE_INSTRUCTION_STATE;
                                     
                                     fetch_instruction_reg <= fetch_instruction; 
                                 end
                                 else running_program_state_reg <= IDLE_STATE;
                             end
-                            FETCH_INSTRUCTION_STATE: begin
+                            DECODE_INSTRUCTION_STATE: begin
                             
                                 case(opcode_space) 
                                     R_TYPE_ENCODE: begin
                                         // Confirm data
                                         rs1_buffer <= registers_renew[rs1_space];
                                         rs2_buffer <= registers_renew[rs2_space];
-                                        case(funct10_space) 
-                                            ADD_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SUB_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SLT_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SLTU_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SRL_ENCODE: begin
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SLL_ENCODE: begin
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            AND_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            XOR_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            OR_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            MUL_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            default: begin
-                                                running_program_state_reg <= IDLE_STATE;
-                                            end
-                                        endcase
+                                        running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+                                        alu_use <= 1;
+//                                        case(funct10_space) 
+//                                            ADD_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SUB_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SLT_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SLTU_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SRL_ENCODE: begin
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SLL_ENCODE: begin
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            AND_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            XOR_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            OR_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            MUL_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            default: begin
+//                                                running_program_state_reg <= IDLE_STATE;
+//                                            end
+//                                        endcase
                                     end
                                     I_TYPE_ENCODE: begin
                                         // Confirm data
                                         rs1_buffer <= registers_renew[rs1_space];
-                                        case(funct3_space) 
-                                            ADDI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end               
-                                            SLLI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SRLI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end  
-                                            SLTI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SLTIU_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            XORI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            ORI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            ANDI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end    
-                                            default: begin
-                                                running_program_state_reg <= IDLE_STATE;
-                                            end
-                                        endcase 
+                                        alu_use <= 1;
+                                        running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                        case(funct3_space) 
+//                                            ADDI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end               
+//                                            SLLI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SRLI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end  
+//                                            SLTI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SLTIU_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            XORI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            ORI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            ANDI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end    
+//                                            default: begin
+//                                                running_program_state_reg <= IDLE_STATE;
+//                                            end
+//                                        endcase 
                                     end    
                                     J_TYPE_ENCODE: begin
                                     // Processor don't process J-type instruction
@@ -614,6 +637,30 @@ module Processor
                                         rs1_buffer <= registers_renew[rs1_space];
                                         alu_use <= 1;
                                         running_program_state_reg <= EXECUTE_WR_ADDR_INSTRUCTION_STATE;
+                                    end
+                                    GPIO_ENCODE: begin        
+                                        running_program_state_reg <= IDLE_STATE;
+                                        case(funct3_space) 
+                                            READ_GPIO_ENCODE: begin
+                                                case(port_rs1_align)
+                                                    GPIO_PORT_A_MAP: begin
+                                                       registers_owner[rd_space] <= {63'd0, GPIO_PORT_A[pin_rs2_align]};
+                                                    end
+                                                    GPIO_PORT_B_MAP: begin
+                                                       registers_owner[rd_space] <= {63'd0, GPIO_PORT_B[pin_rs2_align]};
+                                                    end
+                                                    GPIO_PORT_C_MAP: begin
+                                                       registers_owner[rd_space] <= {63'd0, GPIO_PORT_C[pin_rs2_align]};
+                                                    end
+                                                    default: begin
+                                                    
+                                                    end
+                                                endcase 
+                                            end
+                                            default: begin
+                                            
+                                            end
+                                        endcase
                                     end
                                 endcase 
                             end
@@ -751,7 +798,7 @@ module Processor
         
         // Running program state 
         localparam IDLE_STATE = 0;
-        localparam FETCH_INSTRUCTION_STATE = 1;
+        localparam DECODE_INSTRUCTION_STATE = 1;
         localparam EXECUTE_INSTRUCTION_STATE = 2;
         localparam EXECUTE_ADDR_INSTRUCTION_STATE = 3;
         localparam EXECUTE_WR_ADDR_INSTRUCTION_STATE = 8;
@@ -887,7 +934,7 @@ module Processor
                 case(running_program_state_reg) 
                     IDLE_STATE: begin
                                 if(boot_processor) begin
-                                    running_program_state_reg <= FETCH_INSTRUCTION_STATE;
+                                    running_program_state_reg <= DECODE_INSTRUCTION_STATE;
                                     
                                     fetch_instruction_reg <= fetch_instruction; 
                                 end
@@ -896,115 +943,119 @@ module Processor
                                 send_protocol_clk_reg <= 0;
                                 receive_protocol_clk_reg <= 0;
                             end
-                    FETCH_INSTRUCTION_STATE: begin
+                    DECODE_INSTRUCTION_STATE: begin
                             
                                 case(opcode_space) 
                                     R_TYPE_ENCODE: begin
                                         // Confirm data
                                         rs1_buffer <= registers_renew[rs1_space];
                                         rs2_buffer <= registers_renew[rs2_space];
-                                        case(funct10_space) 
-                                            ADD_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SUB_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SLT_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SLTU_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SRL_ENCODE: begin
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SLL_ENCODE: begin
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            AND_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            XOR_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            OR_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            MUL_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            default: begin
-                                                running_program_state_reg <= IDLE_STATE;
-                                            end
-                                        endcase
+                                        alu_use <= 1;
+                                        running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                        case(funct10_space) 
+//                                            ADD_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SUB_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SLT_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SLTU_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SRL_ENCODE: begin
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SLL_ENCODE: begin
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            AND_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            XOR_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            OR_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            MUL_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            default: begin
+//                                                running_program_state_reg <= IDLE_STATE;
+//                                            end
+//                                        endcase
                                     end
                                     I_TYPE_ENCODE: begin
                                         // Confirm data
                                         rs1_buffer <= registers_renew[rs1_space];
-                                        case(funct3_space) 
-                                            ADDI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end               
-                                            SLLI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SRLI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end  
-                                            SLTI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            SLTIU_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            XORI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            ORI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end
-                                            ANDI_ENCODE: begin
-                                                // ALU signal here
-                                                alu_use <= 1;
-                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                                            end    
-                                            default: begin
-                                                running_program_state_reg <= IDLE_STATE;
-                                            end
-                                        endcase 
+                                        alu_use <= 1;
+                                        running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                        case(funct3_space) 
+//                                            ADDI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end               
+//                                            SLLI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SRLI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end  
+//                                            SLTI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            SLTIU_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            XORI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            ORI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end
+//                                            ANDI_ENCODE: begin
+//                                                // ALU signal here
+//                                                alu_use <= 1;
+//                                                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
+//                                            end    
+//                                            default: begin
+//                                                running_program_state_reg <= IDLE_STATE;
+//                                            end
+//                                        endcase 
                                     end    
                                     J_TYPE_ENCODE: begin
                                     // Processor don't process J-type instruction
@@ -1134,7 +1185,7 @@ module Processor
                                 wr_ins_reg <= 0;
                             end
                     ADDRESS_MAPPING_PROT_STATE: begin
-                        running_program_state_reg <= SEND_REQUEST_PROTOCOL_STATE;
+//                        running_program_state_reg <= SEND_REQUEST_PROTOCOL_STATE;
                         case(protocol_address_mapping_reg) 
                             UART_TX_MAPPING: begin
                                 if(snd_protocol_available) begin
