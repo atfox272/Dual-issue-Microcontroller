@@ -19,11 +19,11 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-`define NORMAL_TESTCASE
+//`define NORMAL_TESTCASE
 //`define PARALLEL_TESTCASE
 //`define PREVENT_OUTDATED_DATA_TESTCASE
 //`define INTERRUPT_TESTCASE
-//`define PERIPHERAL_TESTCASE
+`define PERIPHERAL_TESTCASE
 //`define INTERRUPT_HANDLER_TESTCASE
 //`define GPIO_TESTCASE
 
@@ -69,10 +69,10 @@ module general_tb;
                                                                       8'b00000000,  // address 0x03  (DEBUGGER) 
                                                                       8'b00100011,  // address 0x04  (UART_1_RX_CONFIG)
                                                                       8'b00100011,  // address 0x05  (UART_1_TX_CONFIG)
-                                                                      8'b00000000,  // address 0x06  (COM_PERIPHERAL)
+                                                                      8'b00001100,  // address 0x06  (COM_PERIPHERAL)
                                                                       8'b00000000,  // address 0x07  (NOTHING)
-                                                                      8'b00100011,  // address 0x08  (UART_2_RX_CONFIG)
-                                                                      8'b00100011,  // address 0x09  (UART_2_TX_CONFIG)
+                                                                      8'b10000111,  // address 0x08  (UART_2_RX_CONFIG)
+                                                                      8'b10000111,  // address 0x09  (UART_2_TX_CONFIG)
                                                                       8'b11111000,  // address 0x0A  (SPI_CONFIG)
                                                                       8'b00000000,  // address 0x0B  (I2C_CONFIG)
                                                                       8'b00000000,  // address 0x0C  (EXTERNAL_INT_CONFIG)
@@ -248,40 +248,36 @@ module general_tb;
     
     assign RX_1 = TX_ex ;
     
-    com_uart    #(
-                .SLEEP_MODE(0),
-                .FIFO_DEPTH(13'd4096),
-                .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
-                )
-                uart_ex
-                (
-                .clk(clk),
-                .TX(TX_ex),
-                .TX_use(TX_use_ex),
-                .data_bus_in(data_bus_in_tx_ex),
-                .TX_config_register(TX_config_register_ex),
-                .rst_n(rst_n)
-                );
-                
-    com_uart    #(
-                .SLEEP_MODE(0), 
-                .RX_FLAG_CONFIG(1'b1), /// Internal FIFO
-                .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
-                )             
-                uart_1
-                (
-                .clk(clk),
-                .data_bus_out(data_bus_out_uart_1),
-                .RX_use(RX_use_1),
-                .RX_flag(RX_flag_1),
-                .RX_config_register(RX_config_register_1),
-                .RX(RX_1),
-                .rst_n(rst_n)
-                ); 
-//                wire    [DOUBLEWORD_WIDTH - 1:0]    data_bus_rd_pm;
-//    wire                                rd_idle_pm;
-//    wire    [ADDR_WIDTH_PM - 1:0]       addr_rd_pm;
-//    wire                                rd_ins_pm;
+    com_uart            #(
+                        .SLEEP_MODE(0),
+                        .FIFO_DEPTH(13'd4096),
+                        .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
+                        )
+                        uart_ex
+                        (
+                        .clk(clk),
+                        .TX(TX_ex),
+                        .TX_use(TX_use_ex),
+                        .data_bus_in(data_bus_in_tx_ex),
+                        .TX_config_register(TX_config_register_ex),
+                        .rst_n(rst_n)
+                        );
+                        
+    com_uart            #(
+                        .SLEEP_MODE(0), 
+                        .RX_FLAG_CONFIG(1'b1), /// Internal FIFO
+                        .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
+                        )             
+                        uart_1
+                        (
+                        .clk(clk),
+                        .data_bus_out(data_bus_out_uart_1),
+                        .RX_use(RX_use_1),
+                        .RX_flag(RX_flag_1),
+                        .RX_config_register(RX_config_register_1),
+                        .RX(RX_1),
+                        .rst_n(rst_n)
+                        ); 
     ram_module          #(
                         .ADDR_DEPTH(PROGRAM_MEMORY_SIZE),
                         .RESERVED_REG_AMOUNT(1'b1)
@@ -394,10 +390,16 @@ module general_tb;
                         .synchronization_processor(synchronization_processor_2),
                         // Protocol interface
                         .protocol_address_mapping(protocol_address_mapping),
+                        // -- send
                         .data_snd_protocol_per(data_snd_protocol_per),
                         .send_protocol_clk(send_protocol_clk),
                         .amount_snd_byte_protocol(amount_snd_byte_protocol),
                         .snd_protocol_available(snd_protocol_available),
+                        // -- receive
+                        .data_rcv_protocol_per(data_rcv_protocol_per),
+                        .receive_protocol_clk(receive_protocol_clk),
+                        .amount_rcv_byte_protocol(amount_rcv_byte_protocol),
+                        .rcv_protocol_available(rcv_protocol_available),
                         
                         .rst_n(rst_n)
                         
@@ -467,115 +469,213 @@ module general_tb;
                         .rst_n(rst_n)
                         );
                         
-    Sync_primitive  #(
-                    )synchronization_primitive(
-                    .clk(clk),
-                    // Processor 1
-                    // - read
-                    .data_bus_rd_p1(data_bus_rd_p1),
-                    .addr_rd_p1(addr_rd_p1),
-                    .data_type_rd_p1(data_type_rd_p1),
-                    .rd_idle_p1(rd_idle_p1),
-                    .rd_ins_p1(rd_ins_p1),
-                    .rd_access_p1(rd_access_p1),
-                    .rd_finish_p1(rd_finish_p1),
-                    // - write
-                    .data_bus_wr_p1(data_bus_wr_p1),
-                    .addr_wr_p1(addr_wr_p1),
-                    .data_type_wr_p1(data_type_wr_p1),
-                    .wr_idle_p1(wr_idle_p1),
-                    .wr_ins_p1(wr_ins_p1),
-                    .wr_access_p1(wr_access_p1),
-                    // Processor 2
-                    // - read
-                    .data_bus_rd_p2(data_bus_rd_p2),
-                    .addr_rd_p2(addr_rd_p2),
-                    .data_type_rd_p2(data_type_rd_p2),
-                    .rd_idle_p2(rd_idle_p2),
-                    .rd_ins_p2(rd_ins_p2),
-                    .rd_access_p2(rd_access_p2),
-                    .rd_finish_p2(rd_finish_p2),
-                    // - write
-                    .data_bus_wr_p2(data_bus_wr_p2),
-                    .addr_wr_p2(addr_wr_p2),
-                    .data_type_wr_p2(data_type_wr_p2),
-                    .wr_idle_p2(wr_idle_p2),
-                    .wr_ins_p2(wr_ins_p2),
-                    .wr_access_p2(wr_access_p2),
-                    // Data memory
-                    // -- read
-                    .data_bus_rd_dm(data_bus_rd_dm),
-                    .addr_rd_dm(addr_rd_dm),
-                    .data_type_rd_dm(data_type_rd_dm),
-                    .rd_idle_dm(rd_idle_dm),
-                    .rd_ins_dm(rd_ins_dm),
-                    // -- write
-                    .data_bus_wr_dm(data_bus_wr_dm),
-                    .addr_wr_dm(addr_wr_dm),
-                    .data_type_wr_dm(data_type_wr_dm),
-                    .wr_idle_dm(wr_idle_dm),
-                    .wr_ins_dm(wr_ins_dm),
-    
-                    .rst_n(rst_n)
-                    );
+    Sync_primitive      #(
+                        )synchronization_primitive(
+                        .clk(clk),
+                        // Processor 1
+                        // - read
+                        .data_bus_rd_p1(data_bus_rd_p1),
+                        .addr_rd_p1(addr_rd_p1),
+                        .data_type_rd_p1(data_type_rd_p1),
+                        .rd_idle_p1(rd_idle_p1),
+                        .rd_ins_p1(rd_ins_p1),
+                        .rd_access_p1(rd_access_p1),
+                        .rd_finish_p1(rd_finish_p1),
+                        // - write
+                        .data_bus_wr_p1(data_bus_wr_p1),
+                        .addr_wr_p1(addr_wr_p1),
+                        .data_type_wr_p1(data_type_wr_p1),
+                        .wr_idle_p1(wr_idle_p1),
+                        .wr_ins_p1(wr_ins_p1),
+                        .wr_access_p1(wr_access_p1),
+                        // Processor 2
+                        // - read
+                        .data_bus_rd_p2(data_bus_rd_p2),
+                        .addr_rd_p2(addr_rd_p2),
+                        .data_type_rd_p2(data_type_rd_p2),
+                        .rd_idle_p2(rd_idle_p2),
+                        .rd_ins_p2(rd_ins_p2),
+                        .rd_access_p2(rd_access_p2),
+                        .rd_finish_p2(rd_finish_p2),
+                        // - write
+                        .data_bus_wr_p2(data_bus_wr_p2),
+                        .addr_wr_p2(addr_wr_p2),
+                        .data_type_wr_p2(data_type_wr_p2),
+                        .wr_idle_p2(wr_idle_p2),
+                        .wr_ins_p2(wr_ins_p2),
+                        .wr_access_p2(wr_access_p2),
+                        // Data memory
+                        // -- read
+                        .data_bus_rd_dm(data_bus_rd_dm),
+                        .addr_rd_dm(addr_rd_dm),
+                        .data_type_rd_dm(data_type_rd_dm),
+                        .rd_idle_dm(rd_idle_dm),
+                        .rd_ins_dm(rd_ins_dm),
+                        // -- write
+                        .data_bus_wr_dm(data_bus_wr_dm),
+                        .addr_wr_dm(addr_wr_dm),
+                        .data_type_wr_dm(data_type_wr_dm),
+                        .wr_idle_dm(wr_idle_dm),
+                        .wr_ins_dm(wr_ins_dm),
+        
+                        .rst_n(rst_n)
+                        );
     Interrupt_control
-                    #(
-                    )interrupt_control(
-                    .interrupt_flag_1(interrupt_flag_1),
-                    .interrupt_flag_2(interrupt_flag_2),
-                    .interrupt_flag_3(interrupt_flag_3),
-                    .RETI_1(RETI_1),
-                    .RETI_2(RETI_2),
-                    .RETI_3(RETI_3),
-                    .interrupt_handling_1(interrupt_handling_1),
-                    .interrupt_handling_2(interrupt_handling_2),
-                    .interrupt_handling_3(interrupt_handling_3),
-                    .interrupt_request_1(interrupt_request_1),
-                    .interrupt_request_2(interrupt_request_2),
-                    .interrupt_request_3(interrupt_request_3),
-                    .interrupt_enable_1(interrupt_enable_1),
-                    .interrupt_enable_2(interrupt_enable_2),
-                    .interrupt_enable_3(interrupt_enable_3),
-                    .rst_n(rst_n)
-                    );                
-    ram_module      #(
-                    .ADDR_DEPTH(DATA_MEMORY_SIZE),
-                    .RESERVED_REG_AMOUNT(RESERVED_REG_AMOUNT),
-                    .RESERVED_REG_DEFAULT(RESERVED_REG_DEFAULT)
-                    )data_memory(
-                    .clk(clk),
-                    // -- write
-                    .data_bus_wr(data_bus_wr_dm),
-                    .data_type_wr(data_type_wr_dm),    // Write byte (8bit)
-                    .addr_wr(addr_wr_dm),
-                    .wr_ins(wr_ins_dm),
-                    .wr_idle(wr_idle_dm),
-                    // -- read
-                    .data_bus_rd(data_bus_rd_dm),
-                    .rd_idle(rd_idle_dm),
-                    .addr_rd(addr_rd_dm),
-                    .rd_ins(rd_ins_dm),
-                    .data_type_rd(data_type_rd_dm),
-                    // -- reserved register
-                    .reserved_registers(reserved_registers),
-                    .rst_n(rst_n)
-                    //Debug 
-                    ,.registers_wire(data_memory_wire)
-                    );
+                        #(
+                        )interrupt_control(
+                        .interrupt_flag_1(interrupt_flag_1),
+                        .interrupt_flag_2(interrupt_flag_2),
+                        .interrupt_flag_3(interrupt_flag_3),
+                        .RETI_1(RETI_1),
+                        .RETI_2(RETI_2),
+                        .RETI_3(RETI_3),
+                        .interrupt_handling_1(interrupt_handling_1),
+                        .interrupt_handling_2(interrupt_handling_2),
+                        .interrupt_handling_3(interrupt_handling_3),
+                        .interrupt_request_1(interrupt_request_1),
+                        .interrupt_request_2(interrupt_request_2),
+                        .interrupt_request_3(interrupt_request_3),
+                        .interrupt_enable_1(interrupt_enable_1),
+                        .interrupt_enable_2(interrupt_enable_2),
+                        .interrupt_enable_3(interrupt_enable_3),
+                        .rst_n(rst_n)
+                        );                
+    ram_module          #(
+                        .ADDR_DEPTH(DATA_MEMORY_SIZE),
+                        .RESERVED_REG_AMOUNT(RESERVED_REG_AMOUNT),
+                        .RESERVED_REG_DEFAULT(RESERVED_REG_DEFAULT)
+                        )data_memory(
+                        .clk(clk),
+                        // -- write
+                        .data_bus_wr(data_bus_wr_dm),
+                        .data_type_wr(data_type_wr_dm),    // Write byte (8bit)
+                        .addr_wr(addr_wr_dm),
+                        .wr_ins(wr_ins_dm),
+                        .wr_idle(wr_idle_dm),
+                        // -- read
+                        .data_bus_rd(data_bus_rd_dm),
+                        .rd_idle(rd_idle_dm),
+                        .addr_rd(addr_rd_dm),
+                        .rd_ins(rd_ins_dm),
+                        .data_type_rd(data_type_rd_dm),
+                        // -- reserved register
+                        .reserved_registers(reserved_registers),
+                        .rst_n(rst_n)
+                        //Debug 
+                        ,.registers_wire(data_memory_wire)
+                        );
+    
+    // UART_2
+    wire [DATA_WIDTH - 1:0] data_bus_in_uart_2;
+    wire                    TX_use_2;
+    wire                    TX_available_2;
+    wire [DATA_WIDTH - 1:0] TX_config_register_2 = reserved_registers[8'h09];  
+    wire                    TX_enable_2          = reserved_registers[8'h06][3];
+    wire                    TX_complete_2;
+    wire                    TX_2;                  
+                    
+    wire [DATA_WIDTH - 1:0] data_bus_out_uart_2;                
+    wire                    RX_use_2;                
+    wire                    RX_available_2;                
+    wire [DATA_WIDTH - 1:0] RX_config_register_2 = reserved_registers[8'h08];   
+    wire                    RX_enable_2          = reserved_registers[8'h06][2];             
+    wire                    RX_2;
+    // external UART_2
+    wire [DATA_WIDTH - 1:0] data_bus_in_uart_ex_2;
+    wire                    TX_use_ex_2;
+    wire                    TX_flag_ex_2;
+    wire                    TX_complete_ex_2;
+    wire                    TX_ex_2;                  
+                    
+    wire [DATA_WIDTH - 1:0] data_bus_out_uart_ex_2;                
+    wire                    RX_use_ex_2;                
+    wire                    RX_flag_ex_2;                
+    wire                    RX_ex_2;  
+      
+    assign RX_ex_2 = TX_2;
+    assign RX_2 = TX_ex_2; 
+                 
     fifo_advanced_module #(
     
                     )fifo_advanced_module(
                     .clk(clk),
-                    
+                    // TX
+                    // -- to Processor
                     .snd_big_clk(send_protocol_clk),
                     .amount_byte_snd_big(amount_snd_byte_protocol),
                     .data_snd_big(data_snd_protocol_per),
                     .available_snd(snd_protocol_available),
-                    .data_snd_small(data_snd_small),
-                    .snd_small_clk(snd_small_clk),
+                    // -- to UART
+                    .data_snd_small(data_bus_in_uart_2),
+                    .snd_small_clk(TX_use_2),
+                    .snd_small_available(TX_available_2),
+                    // RX 
+                    // -- to Processor
+                    .rcv_big_clk(receive_protocol_clk),
+                    .amount_byte_rcv_big(amount_rcv_byte_protocol),
+                    .data_rcv_big(data_rcv_protocol_per),
+                    .available_rcv(rcv_protocol_available),
+                    // -- to UART
+                    .data_rcv_small(data_bus_out_uart_2),
+                    .rcv_small_clk(RX_use_2),
+                    .rcv_small_available(RX_available_2),
+                    .rst_n(rst_n)
+                    );              
+    // UART_2
+    com_uart        #(
+                    .SLEEP_MODE(1), 
+                    .RX_FLAG_CONFIG(1'b1), /// Internal FIFO
+                    .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
+                    )             
+                    uart_2
+                    (
+                    .clk(clk),
+                    // TX 
+                    .data_bus_in(data_bus_in_uart_2),
+                    .TX_use(TX_use_2),
+                    .TX_available(TX_available_2),
+                    .TX_complete(TX_complete_2),
+                    .TX_config_register(TX_config_register_2),
+                    .TX_enable(TX_enable_2),
+                    .TX(TX_2),
+                    // RX
+                    .data_bus_out(data_bus_out_uart_2),
+                    .RX_use(RX_use_2),
+                    .RX_available(RX_available_2),
+                    .RX_config_register(RX_config_register_2),
+                    .RX_enable(RX_enable_2),
+                    .RX(RX_2),
                     
                     .rst_n(rst_n)
-                    );
+                    ); 
+        
+        
+    // External UART_2
+    com_uart        #(
+                    .SLEEP_MODE(0), 
+                    .RX_FLAG_CONFIG(0), /// External FIFO
+                    .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
+                    )             
+                    uart_ex_2
+                    (
+                    .clk(clk),
+                    // TX 
+                    .data_bus_in(data_bus_in_uart_ex_2),
+                    .TX_use(TX_use_ex_2),
+                    .TX_flag(TX_flag_ex_2),
+                    .TX_complete(TX_complete_ex_2),
+                    .TX_config_register(RX_config_register_2),
+                    .TX(TX_ex_2),
+                    // RX
+                    .data_bus_out(data_bus_out_uart_ex_2),
+                    .RX_use(RX_use_ex_2),
+                    .RX_flag(RX_flag_ex_2),
+                    .RX_config_register(TX_config_register_2),
+                    .RX(RX_ex_2),
+                    
+                    .rst_n(rst_n)
+                    ); 
+                                            
     timer_INT_handler timer_interrupt_handler
                         (
                         .clk(clk),
@@ -872,29 +972,6 @@ module general_tb;
         
     `endif
 
-
-//    parameter ADD_INS_17    = 17'b00000000000110011;// ADD:     <5-rd><5-rs1><5-rs2>
-//    parameter ADDI_INS_10   = 10'b0000010011;       // ADDI:    <5-rd><5rs1><12-imm>
-//    parameter SUB_INS_17    = 17'b10000000000110011;// SUB:     <5-rd><5-rs1><5-rs2>
-//    parameter SLL_INS_17    = 17'b00000000010110011;// SLL:     <5-rd><5-rs1><5-rs2>
-//    parameter SRL_INS_17    = 17'b00000001010110011;// SRL:     <5-rd><5-rs1><5-rs2>
-//    parameter MUL_INS_17    = 17'b00000010000110011;// MUL:     <5-rd><5-rs1><5-rs2>
-//    // Load                                                     dest  base  offset
-//    parameter LB_INS_10     = 10'b0000000011;       // LB:      <5-rd><5rs1><12-imm>
-//    parameter LW_INS_10     = 10'b0100000011;       // LW:      <5-rd><5rs1><12-imm>
-//    parameter LD_INS_10     = 10'b0110000011;       // LD:      <5-rd><5rs1><12-imm>
-//    // Store                                                    offset  base   src   offset
-//    parameter SB_INS_10     = 10'b0000100011;       // SB:      <5-immh><5-rs1><5rs2><7-imml>
-//    parameter SW_INS_10     = 10'b0100100011;       // SW:      <5-immh><5-rs1><5rs2><7-imml>
-//    parameter SD_INS_10     = 10'b0110100011;       // SD:      <5-immh><5-rs1><5rs2><7-imml>
-    
-//    parameter J_INS_7       = 7'b1100111;           // J:       <25-imm>
-//    parameter JAL_INS_7     = 7'b1101111;           // J:       <25-imm>
-//    parameter JALR_INS_7    = 7'b1101011;           // J:       <25-imm>
-    
-//    parameter FENCE_INS_10  = 10'b0100101111;       // FENCE:   Don't care
-    
-//    parameter RETI_INS_10   = 10'b0111110111;       // RETI:   Don't care
     `ifdef INTERRUPT_TESTCASE
         // ISR 1 ////////////////////////////////////////////////////////////////////////////////////////
         // PC = 0x00 - 1
@@ -1627,6 +1704,11 @@ module general_tb;
     `endif
     
     initial begin   : STOP_BLOCK
+        `ifdef PERIPHERAL_TESTCASE
+        #70000 $stop;
+        #2750200 $stop;
+        `else
         #62200 $stop;
-    end
+        `endif
+    end 
 endmodule
