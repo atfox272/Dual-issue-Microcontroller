@@ -1,46 +1,27 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 09/29/2023 01:01:06 AM
-// Design Name: 
-// Module Name: general_tb
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-//`define NORMAL_TESTCASE
+`define NORMAL_TESTCASE
 //`define PARALLEL_TESTCASE
 //`define PREVENT_OUTDATED_DATA_TESTCASE
 //`define INTERRUPT_TESTCASE
-`define PERIPHERAL_TESTCASE
+//`define PERIPHERAL_TESTCASE
 //`define INTERRUPT_HANDLER_TESTCASE
 //`define GPIO_TESTCASE
 
 // Interrrupt option
 //`define PREEMPTIVE_CASE
-//
+
+`define DEBUG_DATA
 
 module general_tb;
     parameter DATA_WIDTH            = 8;
     parameter DOUBLEWORD_WIDTH      = 64;
-    parameter DATA_MEMORY_SIZE      = 256;      // 256 bytes (2Kb)
+    parameter DATA_MEMORY_SIZE      = 1024;      // 256 bytes (2Kb)
     
     parameter ADDR_WIDTH_DM         = $clog2(DATA_MEMORY_SIZE);
     parameter DATA_TYPE_WIDTH       = 2;
     
     parameter INSTRUCTION_WIDTH     = 32;   //32-bit instruction
-    parameter PROGRAM_MEMORY_SIZE   = 256;   
+    parameter PROGRAM_MEMORY_SIZE   = 1024;   
     // PM
     parameter ADDR_WIDTH_PM         = $clog2(PROGRAM_MEMORY_SIZE);
     parameter START_WR_ADDR_PM      = 8'h00;
@@ -61,7 +42,7 @@ module general_tb;
     parameter AMOUNT_RCV_WIDTH          = $clog2(AMOUNT_RCV_BYTE);
     // Interrupt handler 
     parameter PRESCALER_TIMER_WIDTH   = 3;
-    parameter REGISTER_TIMER_WIDTH    = 8;
+    parameter   REGISTER_TIMER_WIDTH    = 8;
     parameter      RESERVED_REG_AMOUNT                             =  17;
     parameter byte RESERVED_REG_DEFAULT[0:RESERVED_REG_AMOUNT - 1] = {8'b00000000,  // address 0x00  (PORT_A)
                                                                       8'b00000000,  // address 0x01  (PORT_B)
@@ -69,10 +50,10 @@ module general_tb;
                                                                       8'b00000000,  // address 0x03  (DEBUGGER) 
                                                                       8'b00100011,  // address 0x04  (UART_1_RX_CONFIG)
                                                                       8'b00100011,  // address 0x05  (UART_1_TX_CONFIG)
-                                                                      8'b00001100,  // address 0x06  (COM_PERIPHERAL)
+                                                                      8'b00000000,  // address 0x06  (COM_PERIPHERAL) // Do not enable (set 1) in initial state
                                                                       8'b00000000,  // address 0x07  (NOTHING)
-                                                                      8'b10000111,  // address 0x08  (UART_2_RX_CONFIG)
-                                                                      8'b10000111,  // address 0x09  (UART_2_TX_CONFIG)
+                                                                      8'b10001111,  // address 0x08  (UART_2_RX_CONFIG)
+                                                                      8'b10001111,  // address 0x09  (UART_2_TX_CONFIG)
                                                                       8'b11111000,  // address 0x0A  (SPI_CONFIG)
                                                                       8'b00000000,  // address 0x0B  (I2C_CONFIG)
                                                                       8'b00000000,  // address 0x0C  (EXTERNAL_INT_CONFIG)
@@ -216,13 +197,13 @@ module general_tb;
     
     wire [ADDDR_MAPPING_WIDTH - 1:0]    protocol_address_mapping;
     wire [DOUBLEWORD_WIDTH*2 - 1:0]     data_snd_protocol_per;
-//    wire [DOUBLEWORD_WIDTH*2 - 1:0]     data_rcv_protocol_per;
+    wire [DOUBLEWORD_WIDTH*2 - 1:0]     data_rcv_protocol_per;
     wire                                send_protocol_clk;
-//    wire                                receive_protocol_clk;
+    wire                                receive_protocol_clk;
     wire [AMOUNT_SND_WIDTH - 1:0]       amount_snd_byte_protocol;
-//    wire [AMOUNT_RCV_WIDTH - 1:0]       amount_rcv_byte_protocol;
+    wire [AMOUNT_RCV_WIDTH - 1:0]       amount_rcv_byte_protocol;
     reg                                 snd_protocol_available;
-//    reg                                 rcv_protocol_available;
+    reg                                 rcv_protocol_available;
     wire [DATA_WIDTH - 1:0]             data_snd_small;
     wire                                snd_small_clk;
     
@@ -278,7 +259,7 @@ module general_tb;
                         .RX(RX_1),
                         .rst_n(rst_n)
                         ); 
-    ram_module          #(
+    ram_pm              #(
                         .ADDR_DEPTH(PROGRAM_MEMORY_SIZE),
                         .RESERVED_REG_AMOUNT(1'b1)
                         )program_memory(
@@ -301,6 +282,8 @@ module general_tb;
                         
     Processor           #(
                         .MAIN_RPOCESSOR(1'b1),
+                        .DATA_MEMORY_SIZE(DATA_MEMORY_SIZE),
+                        .PROGRAM_MEMORY_SIZE(PROGRAM_MEMORY_SIZE),
                         .FINISH_PROGRAM_OPCODE(FINISH_PROGRAM_OPCODE),
                         .FINISH_PROGRAM_TIMER(FINISH_PROGRAM_TIMER)
                         )
@@ -357,6 +340,8 @@ module general_tb;
                         );                
     Processor           #(
                         .MAIN_RPOCESSOR(1'b0),
+                        .DATA_MEMORY_SIZE(DATA_MEMORY_SIZE),
+                        .PROGRAM_MEMORY_SIZE(PROGRAM_MEMORY_SIZE),
                         .FINISH_PROGRAM_OPCODE(FINISH_PROGRAM_OPCODE),
                         .FINISH_PROGRAM_TIMER(FINISH_PROGRAM_TIMER)
                         )
@@ -470,6 +455,7 @@ module general_tb;
                         );
                         
     Sync_primitive      #(
+                        .DATA_MEMORY_SIZE(DATA_MEMORY_SIZE)
                         )synchronization_primitive(
                         .clk(clk),
                         // Processor 1
@@ -540,7 +526,7 @@ module general_tb;
                         .interrupt_enable_3(interrupt_enable_3),
                         .rst_n(rst_n)
                         );                
-    ram_module          #(
+    ram                 #(
                         .ADDR_DEPTH(DATA_MEMORY_SIZE),
                         .RESERVED_REG_AMOUNT(RESERVED_REG_AMOUNT),
                         .RESERVED_REG_DEFAULT(RESERVED_REG_DEFAULT)
@@ -581,8 +567,8 @@ module general_tb;
     wire                    RX_enable_2          = reserved_registers[8'h06][2];             
     wire                    RX_2;
     // external UART_2
-    wire [DATA_WIDTH - 1:0] data_bus_in_uart_ex_2;
-    wire                    TX_use_ex_2;
+    reg  [DATA_WIDTH - 1:0] data_bus_in_uart_ex_2;
+    reg                     TX_use_ex_2;
     wire                    TX_flag_ex_2;
     wire                    TX_complete_ex_2;
     wire                    TX_ex_2;                  
@@ -595,6 +581,10 @@ module general_tb;
     assign RX_ex_2 = TX_2;
     assign RX_2 = TX_ex_2; 
                  
+    `ifdef DEBUG_DATA             
+    wire [128 - 1:0]      queue_snd_wire [0: 4 - 1];     
+    wire [128 - 1:0]      queue_rcv_wire [0: 4];     
+    `endif       
     fifo_advanced_module #(
     
                     )fifo_advanced_module(
@@ -619,6 +609,10 @@ module general_tb;
                     .data_rcv_small(data_bus_out_uart_2),
                     .rcv_small_clk(RX_use_2),
                     .rcv_small_available(RX_available_2),
+                    `ifdef DEBUG_DATA
+                    .queue_snd_wire(queue_snd_wire),
+                    .queue_rcv_wire(queue_rcv_wire),
+                    `endif
                     .rst_n(rst_n)
                     );              
     // UART_2
@@ -705,6 +699,8 @@ module general_tb;
         GPIO_PORT_A <= 0;
         GPIO_PORT_B <= 0;
         GPIO_PORT_C <= 0;
+        data_bus_in_uart_ex_2 <= 0;;
+        TX_use_ex_2 <= 0;
         rst_n <= 1;
         #1 rst_n <= 0;
         #9 rst_n <= 1;
@@ -935,36 +931,54 @@ module general_tb;
             end
             
             // PC = 0xEC
-            instruction <= {5'd00,5'd00,5'd10,7'd15,SW_INS_10}; // Store x10(17) data to 0x0F
+            instruction <= {5'd00,5'd00,5'd10,7'd16,SW_INS_10}; // Store x10(17) data to 0x10
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-    //        // PC = 0xF0
-    //        instruction <= {5'd00,5'd00,5'd07,7'd12,SW_INS_10}; // Store x7(79) data to 0x0C
-    //        begin
-    //            #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
-    //        end
-            
             // PC = 0xF0
-            instruction <= {5'd00,5'd00,12'd00,FENCE_INS_10};   // Fence memory access
+            instruction <= {5'd00,5'd00,5'd07,7'd12,SW_INS_10}; // Store x7(79) data to 0x0C
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
             // PC = 0xF4
-            instruction <= {5'd15,5'd00,12'd15,LB_INS_10};      // Load 15(x0) to x15 = 17
+            instruction <= {5'd00,5'd00,12'd00,FENCE_INS_10};   // Fence memory access
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
             // PC = 0xF8
+            instruction <= {5'd15,5'd00,12'd16,LB_INS_10};      // Load 16(x0) to x15 = 17
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0xFC
             instruction <= {5'd16,5'd00,12'd12,LB_INS_10};      // Load 12(x0) to x16 = 70
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-            // PC = FC
+            // PC = 0x100
+            instruction <= {5'd09,5'd00,-12'd05,ADDI_INS_10};        // x9 = x0 - 5     = -5
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x104
+            instruction <= {5'b111,5'd00,5'd09,7'b1101000,SW_INS_10}; // Store x9(-5) data to 0d1000
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x108
+            instruction <= {5'd20,5'd00,12'b1111101000,LB_INS_10};      // Load 1000(x0) to x20 = -5
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x10C
             instruction <= {25'd00,J_INS_7};                   // While(1) {};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
@@ -1132,7 +1146,18 @@ module general_tb;
                 end
             end
             
-        
+            // PC = 0xC0
+            instruction <= {5'd10,5'd0,12'b00001100,ADDI_INS_10};      // x9 = x0 + 9     = 9
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x0C 
+            instruction <= {5'd00,5'd00,5'd10,7'h06,SB_INS_10};     // Store x9 to 0x60
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
             // PC = 0xC0
             instruction <= {5'd09,5'd0,12'd9,ADDI_INS_10};      // x9 = x0 + 9     = 9
             begin
@@ -1169,7 +1194,7 @@ module general_tb;
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-                // PC = 0xD8
+            // PC = 0xD8
             instruction <= {5'd11,5'd09,5'd08,SUB_INS_17};      // x11 = x9 - x8    = 1
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
@@ -1703,12 +1728,43 @@ module general_tb;
     end
     `endif
     
+    `ifdef PERIPHERAL_TESTCASE
+    initial begin
+        #70000;
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h27;
+        #1 TX_use_ex_2 <= 1;
+        #3 TX_use_ex_2 <= 0;
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h02;
+        #1 TX_use_ex_2 <= 1;
+        #3 TX_use_ex_2 <= 0;
+        
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h21;
+        #1 TX_use_ex_2 <= 1;
+        #3 TX_use_ex_2 <= 0;
+        
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h10;
+        #1 TX_use_ex_2 <= 1;
+        #3 TX_use_ex_2 <= 0;
+    end
+    `endif
+    
     initial begin   : STOP_BLOCK
         `ifdef PERIPHERAL_TESTCASE
-        #70000 $stop;
+        #(70000 * 2) $stop;
         #2750200 $stop;
         `else
-        #62200 $stop;
+        #66200 $stop;
         `endif
     end 
 endmodule
