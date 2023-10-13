@@ -89,7 +89,7 @@ module Registers_management
                         synchronized_processor_2 <= 0;
                     end
                     else begin
-                        if(synchronized_processor_1 == 0 & processor_sub_updater_state == IDLE_STATE & processor_idle_1 == 1) begin
+                        if(synchronized_processor_1 == 0 & processor_sub_updater_state == IDLE_STATE & processor_idle_1 == 1 & boot_renew_register_2 == 0) begin
                             processor_main_updater_state <= IDLE_STATE;
                             synchronization_processor_1_reg <= 1;
                             synchronized_processor_1 <= 1;
@@ -146,7 +146,7 @@ module Registers_management
                         processing_register_table_reg[register_num[14:10]] <= 1'b1;
                         synchronized_processor_1 <= 0;
                     end
-                    else if(synchronized_processor_2 == 0 & processor_main_updater_state == IDLE_STATE & processor_idle_2 == 1) begin
+                    else if(synchronized_processor_2 == 0 & processor_main_updater_state == IDLE_STATE & processor_idle_2 == 1 & boot_renew_register_1 == 0) begin
                             processor_sub_updater_state <= IDLE_STATE;
                             synchronization_processor_2_reg <= 1;
                             synchronized_processor_2 <= 1;
