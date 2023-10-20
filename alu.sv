@@ -1,46 +1,29 @@
+
 `define DEBUG
-`define REVERT_RESULT
+//`define REVERT_RESULT
 module alu
     #(
-    parameter OPERAND_WIDTH     = 64,
-    
-    // 1-cycle arithmetic
-    parameter ADD_ALU_ENCODE    = 0, 
-    parameter SUB_ALU_ENCODE    = 1, 
-    parameter AND_ALU_ENCODE    = 2, 
-    parameter OR_ALU_ENCODE     = 3,
-    parameter XOR_ALU_ENCODE    = 4,
-    parameter SLT_ALU_ENCODE    = 5, 
-    parameter NAND_ALU_ENCODE   = 6, 
-    parameter NOR_ALU_ENCODE    = 7, 
-    
-    // multi-cycle arithmetic 
-    parameter MUL_ALU_ENCODE    = 8,
-    parameter DIV_ALU_ENCODE    = 9,
-    parameter SLL_ALU_ENCODE    = 10,
-    parameter SRL_ALU_ENCODE    = 11,
-    
-    parameter HIGHEST_ENCODE    = 12,
-    parameter OPCODE_WIDTH      = $clog2(HIGHEST_ENCODE)
+    `include "configuration.vh"
+    parameter OPERAND_WIDTH     = 64
     )
     (
     input   clk,
     
-    input   wire [OPERAND_WIDTH - 1:0]  operand_1,
-    input   wire [OPERAND_WIDTH - 1:0]  operand_2,
+    input   wire [OPERAND_WIDTH - 1:0]      operand_1,
+    input   wire [OPERAND_WIDTH - 1:0]      operand_2,
     `ifdef REVERT_RESULT
-    input   wire                        revert_result,
+    input   wire                            revert_result,
     `endif
-    input   wire [OPCODE_WIDTH - 1:0]   op_code,
+    input   wire [OPCODE_ALU_WIDTH - 1:0]   op_code,
     
-    input   wire                        alu_enable_comb,
-    input   wire                        alu_enable_seq,
-    output  wire                        alu_idle,
+    input   wire                            alu_enable_comb,
+    input   wire                            alu_enable_seq,
+    output  wire                            alu_idle,
     
-    output  wire [OPERAND_WIDTH - 1:0]  result_1cycle,
-    output  wire [OPERAND_WIDTH - 1:0]  result_multi_cycle,
-    output  wire                        overflow_flag,
-    output  wire                        invalid_flag,
+    output  wire [OPERAND_WIDTH - 1:0]      result_1cycle,
+    output  wire [OPERAND_WIDTH - 1:0]      result_multi_cycle,
+    output  wire                            overflow_flag,
+    output  wire                            invalid_flag,
     
     input   rst_n
     
@@ -49,20 +32,24 @@ module alu
     ,output alu_enable_seq_sync_wire
     `endif
     );
-    
     // Sequential circuit 
-    logic[OPERAND_WIDTH - 1:0]   operand_1_seq;
-    logic[OPERAND_WIDTH - 1:0]   operand_2_seq;
-    logic[OPCODE_WIDTH - 1:0]    op_code_seq;
-    logic[OPERAND_WIDTH - 1:0]   result_seq;
+    logic[OPERAND_WIDTH - 1:0]      operand_1_seq;
+    logic[OPERAND_WIDTH - 1:0]      operand_2_seq;
+    logic[OPCODE_ALU_WIDTH - 1:0]   op_code_seq;
+    logic[OPERAND_WIDTH - 1:0]      result_seq;
     // Combintional circuit
-    logic[OPERAND_WIDTH - 1:0]   operand_1_comb;
-    logic[OPERAND_WIDTH - 1:0]   operand_2_comb;
-    logic[OPCODE_WIDTH - 1:0]    op_code_comb;
-    logic[OPERAND_WIDTH - 1:0]   result_comb;
+    logic[OPERAND_WIDTH - 1:0]      operand_1_comb;
+    logic[OPERAND_WIDTH - 1:0]      operand_2_comb;
+    logic[OPCODE_ALU_WIDTH - 1:0]   op_code_comb;
+    logic[OPERAND_WIDTH - 1:0]      result_comb;
     
-    assign result_1cycle = result_comb;
-    assign result_multi_cycle = result_seq;
+    `ifdef REVERT_RESULT
+        assign result_1cycle = (revert_result) ? ~result_comb : result_comb;
+        assign result_multi_cycle = (revert_result) ? ~result_seq : result_seq;
+    `else
+        assign result_1cycle = result_comb;
+        assign result_multi_cycle = result_seq;
+    `endif
     
     always_comb begin
         assign operand_1_comb = (alu_enable_comb) ? operand_1 : {64{1'b0}};
