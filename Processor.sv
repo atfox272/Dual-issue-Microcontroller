@@ -400,8 +400,8 @@ module Processor
             assign processor_registers[index_register] = registers_owner[index_register];
         end
         // GPIO block 
-        assign pin_rs2_align  = registers_renew[rs2_space][GPIO_PORT_WIDTH - 1:0];
-        assign port_rs1_align = registers_renew[rs1_space][GPIO_PORT_WIDTH - 1:0];
+        assign pin_rs2_align  = rs2_regFile[GPIO_PORT_WIDTH - 1:0];
+        assign port_rs1_align = rs1_regFile[GPIO_PORT_WIDTH - 1:0];
        
         // ALU block
         assign alu_sign_extend_imm2 = {52{fetch_instruction_reg[IMM_2_SPACE_MSB]}}; 
@@ -725,7 +725,7 @@ module Processor
                                     end
                                     STORE_ENCODE: begin
                                         addr_wr_reg <= alu_result_1cycle;
-                                        data_bus_wr_reg <= registers_renew[rs2_space];
+                                        data_bus_wr_reg <= rs2_regFile;
                                         wr_ins_reg <= 1;
                                         // Data_type_wr is connected to instruction directly
                                         running_program_state_reg <= DMEM_WR_ACCESS_STATE;
@@ -813,6 +813,9 @@ module Processor
         reg [DOUBLEWORD_WIDTH - 1:0]        registers_owner    [0:REGISTER_AMOUNT - 1];
         wire[DOUBLEWORD_WIDTH - 1:0]        rs1_regFile;
         wire[DOUBLEWORD_WIDTH - 1:0]        rs2_regFile;
+        wire[DOUBLEWORD_WIDTH - 1:0]        rs3_regFile;
+        wire[DOUBLEWORD_WIDTH - 1:0]        rd_regFile;
+        wire[DOUBLEWORD_WIDTH - 1:0]        rd2_regFile;
         // Execute-program state
         reg [INSTRUCTION_WIDTH - 1:0]       fetch_instruction_reg;
         wire[OPCODE_SPACE_WIDTH - 1:0]      opcode_space;
@@ -948,6 +951,10 @@ module Processor
         // Register management
         assign rs1_regFile = registers_renew[rs1_space];
         assign rs2_regFile = registers_renew[rs2_space];
+        assign rs3_regFile = registers_renew[rs3_space];
+        assign rd_regFile = registers_renew[rd_space];
+        assign rd2_regFile = registers_renew[rd2_space];
+        
         for(genvar index_register = 0; index_register < REGISTER_AMOUNT; index_register = index_register + 1) begin
             assign processor_registers[index_register] = registers_owner[index_register];
         end
@@ -1203,7 +1210,7 @@ module Processor
                                     end
                                     STORE_ENCODE: begin
                                         addr_wr_reg <= alu_result_1cycle;
-                                        data_bus_wr_reg <= registers_renew[rs2_space];
+                                        data_bus_wr_reg <= rs2_regFile;
                                         wr_ins_reg <= 1;
                                         // Data_type_wr is connected to instruction directly
                                         running_program_state_reg <= DMEM_WR_ACCESS_STATE;
@@ -1222,15 +1229,15 @@ module Processor
                                                     2'b01: begin    // Only transmit
                                                         protocol_address_mapping_reg <= UART_TX_MAPPING;
                                                         // Confirm data
-                                                        rs1_buffer <= registers_renew[rs1_space];
-                                                        rs2_buffer <= registers_renew[rs2_space];
-                                                        rs3_buffer <= registers_renew[rs3_space];
+                                                        rs1_buffer <= rs1_regFile;
+                                                        rs2_buffer <= rs2_regFile;
+                                                        rs3_buffer <= rs3_regFile;
                                                     end
                                                     2'b10: begin    // Full-duplex
-                                                    
+                                                    // TODO: next version
                                                     end
                                                     2'b11: begin
-                                                    
+                                                    // TODO: next version
                                                     end
                                                     default: begin
                                                     
@@ -1285,7 +1292,6 @@ module Processor
                                 wr_ins_reg <= 0;
                             end
                             ADDRESS_MAPPING_PROT_STATE: begin
-//                        running_program_state_reg <= SEND_REQUEST_PROTOCOL_STATE;
                                 case(protocol_address_mapping_reg) 
                                     UART_TX_MAPPING: begin
                                         if(snd_protocol_available) begin
@@ -1302,12 +1308,18 @@ module Processor
                                             registers_owner[rd2_space] <= data_rcv_protocol_per[127:64];
                                             registers_owner[rd3_space] <= amount_rcv_byte_protocol;
                                         end
+                                        else begin  // Exception: Waiting or Skipping
+                                            running_program_state_reg <= DISPATH_STATE;
+                                            registers_owner[rd_space] <= rd_regFile;
+                                            registers_owner[rd2_space] <= rd2_regFile;
+                                            registers_owner[rd3_space] <= 0;    // Don't have data in this packet
+                                        end
                                     end
                                     SPI_MAPPING: begin
-                                    
+                                    // TODO: next version
                                     end
                                     I2C_MAPPING: begin
-                                    
+                                    // TODO: next version
                                     end
                                 endcase 
                             end
