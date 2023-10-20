@@ -1,7 +1,7 @@
 module Multi_processor_manager
     #(
     parameter INSTRUCTION_WIDTH     = 32,   //32-bit instruction
-    parameter PROGRAM_MEMORY_SIZE   = 256,
+    parameter PROGRAM_MEMORY_SIZE   = 1024,
     
     parameter REGISTER_AMOUNT       = 32,
     
@@ -55,12 +55,16 @@ module Multi_processor_manager
     parameter OPT_SPACE_LSB         = 10,               // Option space    
     parameter OPT_SPACE_WIDTH       = OPT_SPACE_MSB - OPT_SPACE_LSB + 1,
     // Opcode encoder
+    // -- Integer type
     parameter R_TYPE_ENCODE         = 7'b0110011,       // R-type
     parameter I_TYPE_ENCODE         = 7'b0010011,       // I-type
+    parameter LUI_TYPE_ENCODE       = 7'b0110111,       // LUI-type  
+    // -- Branching type 
     parameter J_TYPE_ENCODE         = 7'b1100111,       // J-type
     parameter JAL_TYPE_ENCODE       = 7'b1101111,       // J-type
     parameter JALR_TYPE_ENCODE      = 7'b1101011,       // J-type
     parameter B_TYPE_ENCODE         = 7'b1100011,       // B-type   
+    // -- Data transfer type 
     parameter LOAD_ENCODE           = 7'b0000011,       // LOAD-type
     parameter STORE_ENCODE          = 7'b0100011,       // STORE-type
     parameter MISC_MEM_ENCODE       = 7'b0101111,       // Hardware-supportive memory type
@@ -152,9 +156,11 @@ module Multi_processor_manager
     reg rd_ins_pm_reg;
     wire parallel_blocking_Rtype_condition;
     wire parallel_blocking_Itype_condition;
+    wire parallel_blocking_LUItype_condition;
     wire parallel_blocking_STORE_condition;
     wire release_blocking_Rtype_condition;
     wire release_blocking_Itype_condition;
+    wire release_blocking_LUItype_condition;
     wire release_blocking_STORE_condition;
     // Processor 
     reg boot_processor_1_reg;
@@ -195,20 +201,21 @@ module Multi_processor_manager
     
     localparam INIT_STATE = 1;
     localparam PROGRAM_IDLE_STATE = 0;
-    localparam FETCH_INS_STATE = 2;
-    localparam DISPATCH_INS_STATE = 3;
-    localparam PARALLEL_BLOCKING_B_TYPE_STATE = 4;
+    localparam FETCH_INS_STATE = 2;                                 // Fetch instruction
+    localparam DISPATCH_INS_STATE = 3;                              // Dispath instruction 
+    localparam PARALLEL_BLOCKING_B_TYPE_STATE = 4;                  // Parallel blocking
     localparam PARALLEL_BLOCKING_R_TYPE_STATE = 5;
     localparam PARALLEL_BLOCKING_I_TYPE_STATE = 6;
+    localparam PARALLEL_BLOCKING_LUI_TYPE_STATE = 18;
     localparam PARALLEL_BLOCKING_STORE_STATE = 7;
     localparam PARALLEL_BLOCKING_PROTOCOL_STATE = 16;
     localparam PARALLEL_BLOCKING_GPIO_STATE = 17;
     localparam PARALLEL_BLOCKING_EX_INTERNAL_STATE = 8;
-    localparam EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE = 9;
+    localparam EXECUTE_BTYPE_INSTRUCTION_INTERNAL_STATE = 9;        // Execute isntruction
     localparam EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE = 10;
     localparam EXECUTE_JALRTYPE_INSTRUCTION_INTERNAL_STATE = 11;
     localparam RESTORE_PC_STATE = 12;
-    localparam DETECT_HIGHER_PRIO_PROGRAM_STATE = 13;
+    localparam DETECT_HIGHER_PRIO_PROGRAM_STATE = 13;               // Detect interrupt
     localparam RECOVERY_PC_STATE = 14;
     localparam EXIT_STATE = 15;
     
@@ -249,6 +256,9 @@ module Multi_processor_manager
     assign parallel_blocking_Itype_condition = (processing_register_table[rs1_cur] == 1) |
                                                (processing_register_table[rd1_cur]  == 1);
     assign release_blocking_Itype_condition  = ~parallel_blocking_Itype_condition;
+                                                  
+    assign parallel_blocking_LUItype_condition = (processing_register_table[rd1_cur] == 1);
+    assign release_blocking_LUItype_condition  = ~parallel_blocking_LUItype_condition;
     
     assign parallel_blocking_STORE_condition = (processing_register_table[rs1_cur] == 1) |
                                                (processing_register_table[rs2_cur] == 1);
@@ -402,6 +412,31 @@ module Multi_processor_manager
                         end
                         register1_num_reg <= rd1_cur;
                     end
+                    LUI_TYPE_ENCODE: begin
+                        if(parallel_blocking_LUItype_condition) begin
+                            program_state <= PARALLEL_BLOCKING_LUI_TYPE_STATE;
+                        end
+                        else begin
+                            if(processor_idle_1) begin
+                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                                PC <= PC + 4;
+                                // Boot
+                                boot_processor_1_reg <= 1;
+                                boot_renew_register_1_reg <= 1;
+                                // Log 
+                                processor_prev <= 1;    // 1-main processor
+                            end
+                            else if(processor_idle_2)begin  
+                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                                PC <= PC + 4;
+                                // Boot
+                                boot_processor_2_reg <= 1;
+                                boot_renew_register_2_reg <= 1;
+                                // Log 
+                                processor_prev <= 2;    // 2-sub processor
+                            end 
+                        end
+                    end
                     LOAD_ENCODE: begin
                         if(parallel_blocking_Itype_condition) begin
                             program_state <= PARALLEL_BLOCKING_I_TYPE_STATE;
@@ -491,18 +526,18 @@ module Multi_processor_manager
                         
                     end
                     J_TYPE_ENCODE: begin
-//                        program_state <= EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE;
+                        // PC-relative
                         if(synchronized_processors) begin
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                             x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
-                            PC <= PC + jump_offset_space[ADDR_WIDTH_PM - 1:0];
+                            PC <= PC + {jump_offset_space[ADDR_WIDTH_PM - 1:0]};
                             contain_ins <= 0;
                         end
                         // Log 
                         processor_prev <= 0;    // 0-mpm
                     end
                     JAL_TYPE_ENCODE: begin
-//                        program_state <= EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE;                        
+                        // PC-relative                      
                         if(synchronized_processors) begin
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                             x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
@@ -674,6 +709,28 @@ module Multi_processor_manager
                         end
                     end
             end
+            PARALLEL_BLOCKING_LUI_TYPE_STATE: begin
+                if(release_blocking_LUItype_condition) begin
+                        if(processor_idle_1) begin
+                            program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                            PC <= PC + 4;
+                            // Boot
+                            boot_processor_1_reg <= 1;
+                            boot_renew_register_1_reg <= 1;
+                            // Log 
+                            processor_prev <= 1;    // 1-main processor
+                        end
+                        else if(processor_idle_2)begin  
+                            program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                            PC <= PC + 4;
+                            // Boot
+                            boot_processor_2_reg <= 1;
+                            boot_renew_register_2_reg <= 1;
+                            // Log 
+                            processor_prev <= 2;    // 2-sub processor
+                        end
+                    end
+            end 
             PARALLEL_BLOCKING_STORE_STATE: begin
                         if(release_blocking_STORE_condition) begin
 //                                program_state <= FETCH_INSTRUCTION_STATE;
