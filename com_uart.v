@@ -59,11 +59,13 @@ module com_uart
     // TX Flag 
     input   wire                        TX_use,     // CPu want to use TX, set LOW->HIGH
     output  wire                        TX_flag,
-    output  wire                        TX_complete,// Module has transmitted all data in buffer already    
+    output  wire                        TX_complete,// Module has transmitted all data in buffer already  
+    output  wire                        TX_available,  
     
     // RX Flag
     input   wire                        RX_use,
     output  wire                        RX_flag,
+    output  wire                        RX_available,
     
     input   wire    [DATA_WIDTH - 1:0]  data_bus_in,           // Take data from CPU and send it to another UART module
     output  wire    [DATA_WIDTH - 1:0]  data_bus_out,
@@ -108,9 +110,11 @@ module com_uart
     wire [DATA_WIDTH - 1:0] data_from_RX_ctrl;
     wire write_out_fifo;
     wire out_fifo_empty;
+//    wire out_fifo_full;
     wire [DATA_WIDTH - 1:0] data_bus_out_from_RX_fifo;
     assign data_bus_out = (RX_FLAG_CONFIG) ? data_bus_out_from_RX_fifo : data_from_RX_ctrl;
     assign RX_flag = (RX_FLAG_CONFIG) ? !out_fifo_empty : write_out_fifo;
+    assign RX_available = !out_fifo_empty;
     
     // Implement sleep mode for UART module
     reg RX_enable_sync;
@@ -130,9 +134,9 @@ module com_uart
                     .data_bus_out(data_bus_out_from_RX_fifo),
                     .write_ins(write_out_fifo),
                     .read_ins(RX_use),
-                    .enable(RX_enable_sync),
+                    .enable(1'b1),      // Do not modify (Hasn't debug yet)
                     .empty(out_fifo_empty),
-//                  .full(FIFO_full),
+//                    .full(out_fifo_full),
                     .rst_n(rst_n)
                     );
     
@@ -211,6 +215,7 @@ module com_uart
     assign tx_data_bit_config = TX_config_register[DATA_BIT_CONFIG_MSB:DATA_BIT_CONFIG_LSB];
     // TX state controller
     assign TX_flag = ctrl_idle_state;
+    assign TX_available = !FIFO_full;
     
     reg TX_enable_sync;
     wire tx_module_clk;
@@ -229,7 +234,7 @@ module com_uart
                     .data_bus_out(data_to_TX_ctrl),
                     .write_ins(TX_use),
                     .read_ins(ctrl_stop_state),
-                    .enable(TX_enable_sync),
+                    .enable(1'b1),  // Do not modify (Hasn't debug yet)
                     .empty(FIFO_empty),
                     .full(FIFO_full),
                     .rst_n(rst_n)
