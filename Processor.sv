@@ -132,6 +132,13 @@ module Processor
     // Funct3 encoder (for I/O type)
     parameter READ_GPIO_ENCODE      = 3'b000,
     parameter WRITE_GPIO_ENCODE     = 3'b001,
+    // Operator decode (Level_2 - Instruction decode - Operator decode)
+    parameter ARITHMETIC_1CYCLE             = 0,
+    parameter ARITHMETIC_MULTI_CYCLE        = 1,
+    parameter ARITHMETIC_1CYCLE_IMM         = 2,
+    parameter ARITHMETIC_MULTI_CYCLE_IMM    = 3,
+    parameter ARITHMETIC_1CYCLE_ADDR_LOAD   = 4,
+    parameter ARITHMETIC_1CYCLE_ADDR_STORE  = 5,
     
     // Finish program condition 
     parameter FINISH_PROGRAM_OPCODE  = 7'b0001011,      // Detect finish_program_opcode (this opcode is RESERVED)
@@ -248,11 +255,11 @@ module Processor
         wire      finish_program_condition_2;
         wire      start_counting_finish_program_condition;
         // Program Memory 
-        // Load-Program state
+        // Store-Program state
         reg [DATA_WIDTH - 1:0]          data_bus_wr_pm_reg;
         reg [ADDR_WIDTH_PM - 1:0]       addr_wr_pm_reg;
         reg                             wr_ins_pm_reg;
-        // Execute-program state
+        // Decode state
         reg [INSTRUCTION_WIDTH - 1:0]       fetch_instruction_reg;
         wire[OPCODE_SPACE_WIDTH - 1:0]      opcode_space;
         wire[FUNCT10_SPACE_WIDTH - 1:0]     funct10_space;
@@ -271,7 +278,14 @@ module Processor
         logic[DOUBLEWORD_WIDTH - 1:0]       data_bus_rd_sign_extend;
         logic[WORD_WIDTH - 1:0]             register_sign_extend_word;
         logic[BYTE_WIDTH*7 - 1:0]           register_sign_extend_7byte;
-        
+        // Operator decode (level_2)
+        // Instruction  \----------- R-type  ------   1cycle     -------- 0 
+        //                                 \------ multi-cycle   -------- 1
+        //              \----------- I-type  -----    1cycle     -------- 2
+        //                                 \------ multi-cycle   -------- 3
+        //              \----------- DMEM   -----  LOAD_calAddr  -------- 4  
+        //                                 \----   STORE_calAddr -------- 5
+        logic[2:0]                          operator_decode;
         // Synchronization primitive
         //  - read 
         reg  [ADDR_WIDTH_DM - 1:0]          addr_rd_reg;
@@ -393,168 +407,143 @@ module Processor
         assign alu_sign_extend_imm2 = {52{fetch_instruction_reg[IMM_2_SPACE_MSB]}}; 
         assign alu_sign_extend_imm3 = {52{fetch_instruction_reg[IMM_3_SPACE_MSB]}}; 
         always_comb begin
-            case(opcode_space) 
-                R_TYPE_ENCODE: begin    
-                    case(funct10_space) 
-                        ADD_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = ADD_ALU_ENCODE;
-                        end
-                        SUB_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = SUB_ALU_ENCODE;
-                        end
-                        AND_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = AND_ALU_ENCODE;
-                        end
-                        XOR_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = XOR_ALU_ENCODE;
-                        end
-                        OR_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = OR_ALU_ENCODE;
-                        end
-                        SLT_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = SLT_ALU_ENCODE;
-                        end
-                        SRL_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = SRL_ALU_ENCODE;
-                        end
-                        SLL_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = SLL_ALU_ENCODE;
-                        end
-                        MUL_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = MUL_ALU_ENCODE;
-                        end
-                        default: begin
-                            alu_operand_1 = 0;
-                            alu_operand_2 = 0;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 0;
-                            alu_opcode = 0;
-                        end
-                    endcase
+            case(operator_decode) 
+                ARITHMETIC_1CYCLE: begin    
+                    alu_operand_1 = rs1_regFile;
+                    alu_operand_2 = rs2_regFile;
+                    alu_enable_comb = 1;
+                    multi_cycle_type = 0;
                 end
-                I_TYPE_ENCODE: begin    
-                    alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
-                    case(funct3_space) 
-                        ADDI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = ADD_ALU_ENCODE;
-                        end
-                        ANDI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = AND_ALU_ENCODE;
-                        end
-                        XORI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = XOR_ALU_ENCODE;
-                        end
-                        ORI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = OR_ALU_ENCODE;
-                        end
-                        SLTI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = SLT_ALU_ENCODE;
-                        end
-                        SRLI_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = SRL_ALU_ENCODE;
-                        end
-                        SLLI_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = SLL_ALU_ENCODE;
-                        end
-                        default: begin
-                            alu_operand_1 = 0;
-                            alu_operand_2 = 0;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 0;
-                            alu_opcode = 0;
-                        end
-                    endcase
+                ARITHMETIC_MULTI_CYCLE: begin    
+                    alu_operand_1 = rs1_buffer;
+                    alu_operand_2 = rs2_buffer;
+                    alu_enable_comb = 0;
+                    multi_cycle_type = 1;
                 end
-                LOAD_ENCODE: begin      // result: address of target -> access Data memory to write value
+                ARITHMETIC_1CYCLE_IMM: begin    
                     alu_operand_1 = rs1_regFile;
                     alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
                     alu_enable_comb = 1;
                     multi_cycle_type = 0;
-                    alu_opcode = ADD_ALU_ENCODE;
                 end
-                STORE_ENCODE: begin
+                ARITHMETIC_MULTI_CYCLE_IMM: begin    
+                    alu_operand_1 = rs1_buffer;
+                    alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
+                    alu_enable_comb = 0;
+                    multi_cycle_type = 1;
+                end
+                ARITHMETIC_1CYCLE_ADDR_LOAD: begin    
+                    alu_operand_1 = rs1_regFile;
+                    alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
+                    alu_enable_comb = 1;
+                    multi_cycle_type = 0;
+                end
+                ARITHMETIC_1CYCLE_ADDR_STORE: begin    
                     alu_operand_1 = rs1_regFile;
                     alu_operand_2 = {alu_sign_extend_imm3, immediate_3_space, immediate_1_space};
                     alu_enable_comb = 1;
                     multi_cycle_type = 0;
-                    alu_opcode = ADD_ALU_ENCODE;
-                end
-                J_TYPE_ENCODE: begin
-                // Processor doesn't process J-type instruction
-                    alu_operand_1 = 64'h00;
-                    alu_operand_2 = 64'h00;
-                    alu_opcode = 17'b00;
-                end
-                B_TYPE_ENCODE: begin
-                // Processor doesn't process B-type instruction
-                    alu_operand_1 = 64'h00;
-                    alu_operand_2 = 64'h00;
-                    alu_opcode = 17'b00;
                 end
                 default: begin
                     alu_operand_1 = 64'h00;
                     alu_operand_2 = 64'h00;
                     alu_enable_comb = 0;
                     multi_cycle_type = 0;
+                end
+            endcase
+        end
+        always_comb begin
+            case(opcode_space) 
+                R_TYPE_ENCODE: begin    
+                    case(funct10_space) 
+                        ADD_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = ADD_ALU_ENCODE;
+                        end
+                        SUB_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = SUB_ALU_ENCODE;
+                        end
+                        AND_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = AND_ALU_ENCODE;
+                        end
+                        XOR_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = XOR_ALU_ENCODE;
+                        end
+                        OR_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = OR_ALU_ENCODE;
+                        end
+                        SLT_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = SLT_ALU_ENCODE;
+                        end
+                        SRL_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE;
+                            alu_opcode = SRL_ALU_ENCODE;
+                        end
+                        SLL_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE;
+                            alu_opcode = SLL_ALU_ENCODE;
+                        end
+                        MUL_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE;
+                            alu_opcode = MUL_ALU_ENCODE;
+                        end
+                        default: begin
+                            operator_decode = 0;
+                            alu_opcode = 0;
+                        end
+                    endcase
+                end
+                I_TYPE_ENCODE: begin    
+                    case(funct3_space) 
+                        ADDI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = ADD_ALU_ENCODE;
+                        end
+                        ANDI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = AND_ALU_ENCODE;
+                        end
+                        XORI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = XOR_ALU_ENCODE;
+                        end
+                        ORI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = OR_ALU_ENCODE;
+                        end
+                        SLTI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = SLT_ALU_ENCODE;
+                        end
+                        SRLI_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE_IMM;
+                            alu_opcode = SRL_ALU_ENCODE;
+                        end
+                        SLLI_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE_IMM;
+                            alu_opcode = SLL_ALU_ENCODE;
+                        end
+                        default: begin
+                            operator_decode = 0;
+                            alu_opcode = 0;
+                        end
+                    endcase
+                end
+                LOAD_ENCODE: begin      // result: address of target -> access Data memory to write value
+                    operator_decode = ARITHMETIC_1CYCLE_ADDR_LOAD;
+                    alu_opcode = ADD_ALU_ENCODE;
+                end
+                STORE_ENCODE: begin
+                    operator_decode = ARITHMETIC_1CYCLE_ADDR_STORE;
+                    alu_opcode = ADD_ALU_ENCODE;
+                end
+                default: begin
+                    operator_decode = 0;
                     alu_opcode = 0;
                 end
             endcase
@@ -849,6 +838,14 @@ module Processor
         logic[DOUBLEWORD_WIDTH - 1:0]       data_bus_rd_sign_extend;
         logic[WORD_WIDTH - 1:0]             register_sign_extend_word;
         logic[BYTE_WIDTH*7 - 1:0]           register_sign_extend_7byte;
+        // Operator decode (level_2) (register mapping - regFile or buffer)
+        // Instruction  \----------- R-type  ------   1cycle     -------- 0 
+        //                                 \------ multi-cycle   -------- 1
+        //              \----------- I-type  -----    1cycle     -------- 2
+        //                                 \------ multi-cycle   -------- 3
+        //              \----------- DMEM   -----  LOAD_calAddr  -------- 4  
+        //                                 \----   STORE_calAddr -------- 5
+        logic[2:0]                          operator_decode;
         // Protocol interface
         reg [ADDDR_MAPPING_WIDTH - 1:0]     protocol_address_mapping_reg;
         reg                                 send_protocol_clk_reg;
@@ -965,168 +962,143 @@ module Processor
         assign alu_sign_extend_imm2 = {52{fetch_instruction_reg[IMM_2_SPACE_MSB]}}; 
         assign alu_sign_extend_imm3 = {52{fetch_instruction_reg[IMM_3_SPACE_MSB]}}; 
         always_comb begin
-            case(opcode_space) 
-                R_TYPE_ENCODE: begin    
-                    case(funct10_space) 
-                        ADD_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = ADD_ALU_ENCODE;
-                        end
-                        SUB_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = SUB_ALU_ENCODE;
-                        end
-                        AND_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = AND_ALU_ENCODE;
-                        end
-                        XOR_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = XOR_ALU_ENCODE;
-                        end
-                        OR_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = OR_ALU_ENCODE;
-                        end
-                        SLT_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_operand_2 = rs2_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = SLT_ALU_ENCODE;
-                        end
-                        SRL_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = SRL_ALU_ENCODE;
-                        end
-                        SLL_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = SLL_ALU_ENCODE;
-                        end
-                        MUL_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = MUL_ALU_ENCODE;
-                        end
-                        default: begin
-                            alu_operand_1 = 0;
-                            alu_operand_2 = 0;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 0;
-                            alu_opcode = 0;
-                        end
-                    endcase
+            case(operator_decode) 
+                ARITHMETIC_1CYCLE: begin    
+                    alu_operand_1 = rs1_regFile;
+                    alu_operand_2 = rs2_regFile;
+                    alu_enable_comb = 1;
+                    multi_cycle_type = 0;
                 end
-                I_TYPE_ENCODE: begin    
-                    alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
-                    case(funct3_space) 
-                        ADDI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = ADD_ALU_ENCODE;
-                        end
-                        ANDI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = AND_ALU_ENCODE;
-                        end
-                        XORI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = XOR_ALU_ENCODE;
-                        end
-                        ORI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = OR_ALU_ENCODE;
-                        end
-                        SLTI_ENCODE: begin
-                            alu_operand_1 = rs1_regFile;
-                            alu_enable_comb = 1;
-                            multi_cycle_type = 0;
-                            alu_opcode = SLT_ALU_ENCODE;
-                        end
-                        SRLI_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = SRL_ALU_ENCODE;
-                        end
-                        SLLI_ENCODE: begin
-                            alu_operand_1 = rs1_buffer;
-                            alu_operand_2 = rs2_buffer;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 1;
-                            alu_opcode = SLL_ALU_ENCODE;
-                        end
-                        default: begin
-                            alu_operand_1 = 0;
-                            alu_operand_2 = 0;
-                            alu_enable_comb = 0;
-                            multi_cycle_type = 0;
-                            alu_opcode = 0;
-                        end
-                    endcase
+                ARITHMETIC_MULTI_CYCLE: begin    
+                    alu_operand_1 = rs1_buffer;
+                    alu_operand_2 = rs2_buffer;
+                    alu_enable_comb = 0;
+                    multi_cycle_type = 1;
                 end
-                LOAD_ENCODE: begin      // result: address of target -> access Data memory to write value
+                ARITHMETIC_1CYCLE_IMM: begin    
                     alu_operand_1 = rs1_regFile;
                     alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
                     alu_enable_comb = 1;
                     multi_cycle_type = 0;
-                    alu_opcode = ADD_ALU_ENCODE;
                 end
-                STORE_ENCODE: begin
+                ARITHMETIC_MULTI_CYCLE_IMM: begin    
+                    alu_operand_1 = rs1_buffer;
+                    alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
+                    alu_enable_comb = 0;
+                    multi_cycle_type = 1;
+                end
+                ARITHMETIC_1CYCLE_ADDR_LOAD: begin    
+                    alu_operand_1 = rs1_regFile;
+                    alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
+                    alu_enable_comb = 1;
+                    multi_cycle_type = 0;
+                end
+                ARITHMETIC_1CYCLE_ADDR_STORE: begin    
                     alu_operand_1 = rs1_regFile;
                     alu_operand_2 = {alu_sign_extend_imm3, immediate_3_space, immediate_1_space};
                     alu_enable_comb = 1;
                     multi_cycle_type = 0;
-                    alu_opcode = ADD_ALU_ENCODE;
-                end
-                J_TYPE_ENCODE: begin
-                // Processor doesn't process J-type instruction
-                    alu_operand_1 = 64'h00;
-                    alu_operand_2 = 64'h00;
-                    alu_opcode = 17'b00;
-                end
-                B_TYPE_ENCODE: begin
-                // Processor doesn't process B-type instruction
-                    alu_operand_1 = 64'h00;
-                    alu_operand_2 = 64'h00;
-                    alu_opcode = 17'b00;
                 end
                 default: begin
                     alu_operand_1 = 64'h00;
                     alu_operand_2 = 64'h00;
                     alu_enable_comb = 0;
                     multi_cycle_type = 0;
+                end
+            endcase
+        end
+        always_comb begin
+            case(opcode_space) 
+                R_TYPE_ENCODE: begin    
+                    case(funct10_space) 
+                        ADD_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = ADD_ALU_ENCODE;
+                        end
+                        SUB_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = SUB_ALU_ENCODE;
+                        end
+                        AND_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = AND_ALU_ENCODE;
+                        end
+                        XOR_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = XOR_ALU_ENCODE;
+                        end
+                        OR_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = OR_ALU_ENCODE;
+                        end
+                        SLT_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE;
+                            alu_opcode = SLT_ALU_ENCODE;
+                        end
+                        SRL_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE;
+                            alu_opcode = SRL_ALU_ENCODE;
+                        end
+                        SLL_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE;
+                            alu_opcode = SLL_ALU_ENCODE;
+                        end
+                        MUL_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE;
+                            alu_opcode = MUL_ALU_ENCODE;
+                        end
+                        default: begin
+                            operator_decode = 0;
+                            alu_opcode = 0;
+                        end
+                    endcase
+                end
+                I_TYPE_ENCODE: begin    
+                    case(funct3_space) 
+                        ADDI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = ADD_ALU_ENCODE;
+                        end
+                        ANDI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = AND_ALU_ENCODE;
+                        end
+                        XORI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = XOR_ALU_ENCODE;
+                        end
+                        ORI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = OR_ALU_ENCODE;
+                        end
+                        SLTI_ENCODE: begin
+                            operator_decode = ARITHMETIC_1CYCLE_IMM;
+                            alu_opcode = SLT_ALU_ENCODE;
+                        end
+                        SRLI_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE_IMM;
+                            alu_opcode = SRL_ALU_ENCODE;
+                        end
+                        SLLI_ENCODE: begin
+                            operator_decode = ARITHMETIC_MULTI_CYCLE_IMM;
+                            alu_opcode = SLL_ALU_ENCODE;
+                        end
+                        default: begin
+                            operator_decode = 0;
+                            alu_opcode = 0;
+                        end
+                    endcase
+                end
+                LOAD_ENCODE: begin      // result: address of target -> access Data memory to write value
+                    operator_decode = ARITHMETIC_1CYCLE_ADDR_LOAD;
+                    alu_opcode = ADD_ALU_ENCODE;
+                end
+                STORE_ENCODE: begin
+                    operator_decode = ARITHMETIC_1CYCLE_ADDR_STORE;
+                    alu_opcode = ADD_ALU_ENCODE;
+                end
+                default: begin
+                    operator_decode = 0;
                     alu_opcode = 0;
                 end
             endcase
