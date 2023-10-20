@@ -140,8 +140,10 @@ module Multi_processor_manager
     );
    
     // Internal register 
-    reg [DOUBLEWORD_WIDTH - 1:0] x1;   // register ra (return address)
-    reg [ADDR_WIDTH_PM - 1:0] PC;
+    reg [DOUBLEWORD_WIDTH - 1:0]    x1;   // register ra (return address)
+    wire[DOUBLEWORD_WIDTH - 1:0]    rs1_regFile;
+    wire[DOUBLEWORD_WIDTH - 1:0]    rs2_regFile;
+    reg [ADDR_WIDTH_PM - 1:0]       PC;
     // State machine
     reg [4:0] program_state;
     // reg
@@ -241,6 +243,9 @@ module Multi_processor_manager
     assign option_space = cur_instruction[OPT_SPACE_MSB:OPT_SPACE_LSB];
     assign rd2_cur = rs1_cur;
     assign rd3_cur = rs2_cur;
+    // Registers File 
+    assign rs1_regFile = registers_renew[rs1_cur];
+    assign rs2_regFile = registers_renew[rs2_cur];
     // register management 
     assign register_num = {register3_num_reg, register2_num_reg, register1_num_reg};
     assign boot_renew_register_1 = boot_renew_register_1_reg;
@@ -795,7 +800,7 @@ module Multi_processor_manager
                 if(synchronized_processors) begin
                     case(funct3_space)
                         BEQ_ENCODE: begin
-                            if(registers_renew[rs1_cur] == registers_renew[rs2_cur]) begin
+                            if(rs1_regFile == rs2_regFile) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                 PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
@@ -805,7 +810,7 @@ module Multi_processor_manager
                             end 
                         end
                         BNE_ENCODE: begin
-                            if(registers_renew[rs1_cur] != registers_renew[rs2_cur]) begin
+                            if(rs1_regFile != rs2_regFile) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                 PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
@@ -815,7 +820,7 @@ module Multi_processor_manager
                             end 
                         end
                         BLT_ENCODE: begin
-                            if(registers_renew[rs1_cur] < registers_renew[rs2_cur]) begin
+                            if(rs1_regFile < rs2_regFile) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                 PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
@@ -825,7 +830,7 @@ module Multi_processor_manager
                             end 
                         end
                         BGE_ENCODE: begin
-                            if(registers_renew[rs1_cur] > registers_renew[rs2_cur]) begin
+                            if(rs1_regFile > rs2_regFile) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                 PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
