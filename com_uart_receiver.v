@@ -39,7 +39,7 @@ module com_uart_receiver(
     assign data_in_buffer = data_in_shifting;
     always @(negedge timer_baudrate, negedge rst_n) begin
         if(!rst_n) begin
-            counter <= data_packet_bit;
+            counter <= 0;
             state_counter <= IDLE_STATE;
             data_in_shifting <= default_data;
             valid_data_packet <= default_valid_packet;
@@ -47,7 +47,10 @@ module com_uart_receiver(
         else begin
             case (state_counter) 
                 INIT_STATE: state_counter <= START_STATE;
-                IDLE_STATE: state_counter <= START_STATE;
+                IDLE_STATE: begin
+                    state_counter <= START_STATE;
+                    counter <= data_packet_bit;
+                end
                 START_STATE: begin
                     // State contrller
                     state_counter <= DATA_STATE;
