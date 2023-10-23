@@ -1,5 +1,5 @@
 `include "configuration.vh"
-`define DEBUG
+//`define DEBUG
 module Processor
     #(
     parameter           MAIN_RPOCESSOR          = 1,            // Main processor - Sub processor
@@ -200,7 +200,7 @@ module Processor
     output  wire [DATA_WIDTH - 1:0]         data_bus_in_uart_1,
     output  wire                            TX_use_1,
     // Program memory
-    output  wire    [DATA_WIDTH - 1:0]      data_bus_wr_pm,
+    output  wire [DOUBLEWORD_WIDTH - 1:0]   data_bus_wr_pm,
     input   wire                            wr_idle_pm,
     output  wire    [ADDR_WIDTH_PM - 1:0]   addr_wr_pm,
     output  wire                            wr_ins_pm,
@@ -309,6 +309,9 @@ module Processor
         logic                               multi_cycle_type;
         wire                                alu_idle;
         // GPIO 
+        wire                                GPIO_PORT_A_mapping;
+        wire                                GPIO_PORT_B_mapping;
+        wire                                GPIO_PORT_C_mapping;
         wire[GPIO_PORT_WIDTH - 1:0]         pin_rs2_align;
         wire[GPIO_PORT_WIDTH - 1:0]         port_rs1_align;
         
@@ -336,7 +339,7 @@ module Processor
         assign finish_program_condition_1 = (data_bus_out_uart_1[6:0] == FINISH_PROGRAM_OPCODE & RX_flag_1 == 1) & (_4byte_counter == 0);   // (_4byte_counter == 0) <=> Opdcode location
         assign start_counting_finish_program_condition = (main_state_reg == STORE_PROGRAM_STATE) & (RX_flag_1 == 0);        // MCU in STORE_PROGRAM_STATE & RX_module is empty 
         // Program Memory 
-        assign data_bus_wr_pm = data_bus_wr_pm_reg;
+        assign data_bus_wr_pm = {{56{1'b0}}, data_bus_wr_pm_reg};
         assign addr_wr_pm = addr_wr_pm_reg;
         assign wr_ins_pm = wr_ins_pm_reg;
         // Synchronization primitive
@@ -400,6 +403,9 @@ module Processor
             assign processor_registers[index_register] = registers_owner[index_register];
         end
         // GPIO block 
+        assign GPIO_PORT_A_mapping = GPIO_PORT_A[pin_rs2_align];
+        assign GPIO_PORT_B_mapping = GPIO_PORT_B[pin_rs2_align];
+        assign GPIO_PORT_C_mapping = GPIO_PORT_C[pin_rs2_align];
         assign pin_rs2_align  = rs2_regFile[GPIO_PORT_WIDTH - 1:0];
         assign port_rs1_align = rs1_regFile[GPIO_PORT_WIDTH - 1:0];
        
@@ -561,6 +567,9 @@ module Processor
                     .alu_enable_comb(alu_enable_comb),
                     .alu_enable_seq(alu_enable_seq),
                     .alu_idle(alu_idle),
+//                    .revert_result(),
+                    .overflow_flag(),
+                    .invalid_flag(),
                     .rst_n(rst_n)
                     ); 
                     
@@ -674,7 +683,12 @@ module Processor
                                     
                                     fetch_instruction_reg <= fetch_instruction; 
                                 end
-                                else running_program_state_reg <= DISPATH_STATE;
+                                // Synchronization data in register
+                                if(synchronization_processor) begin
+                                    for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+                                        registers_owner[i] <= registers_renew[i];
+                                    end
+                                end
                             end
                             EXECUTE_INSTRUCTION_STATE: begin
                             
@@ -736,13 +750,13 @@ module Processor
                                             READ_GPIO_ENCODE: begin
                                                 case(port_rs1_align)
                                                     GPIO_PORT_A_MAP: begin
-                                                       registers_owner[rd_space] <= {63'd0, GPIO_PORT_A[pin_rs2_align]};
+                                                       registers_owner[rd_space] <= {63'd0, GPIO_PORT_A_mapping};
                                                     end
                                                     GPIO_PORT_B_MAP: begin
-                                                       registers_owner[rd_space] <= {63'd0, GPIO_PORT_B[pin_rs2_align]};
+                                                       registers_owner[rd_space] <= {63'd0, GPIO_PORT_B_mapping};
                                                     end
                                                     GPIO_PORT_C_MAP: begin
-                                                       registers_owner[rd_space] <= {63'd0, GPIO_PORT_C[pin_rs2_align]};
+                                                       registers_owner[rd_space] <= {63'd0, GPIO_PORT_C_mapping};
                                                     end
                                                     default: begin
                                                     
@@ -796,13 +810,13 @@ module Processor
             end
         end
         // Synchronization reigsters block
-        always @(posedge clk) begin
-            if(synchronization_processor) begin
-                for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
-                    registers_owner[i] <= registers_renew[i];
-                end
-            end
-        end
+//        always @(posedge clk) begin
+//            if(synchronization_processor) begin
+//                for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+//                    registers_owner[i] <= registers_renew[i];
+//                end
+//            end
+//        end
         `ifdef DEBUG
         // Debug area
         assign debug_1 = {32'b0, alu_result_1cycle};
@@ -1123,6 +1137,9 @@ module Processor
                     .alu_enable_comb(alu_enable_comb),
                     .alu_enable_seq(alu_enable_seq),
                     .alu_idle(alu_idle),
+//                    .revert_result(),
+                    .overflow_flag(),
+                    .invalid_flag(),
                     .rst_n(rst_n)
                     ); 
                     
@@ -1160,6 +1177,12 @@ module Processor
                                     fetch_instruction_reg <= fetch_instruction; 
                                 end
                                 else running_program_state_reg <= DISPATH_STATE;
+                                // Synchronize data in register 
+                                if(synchronization_processor) begin
+                                    for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+                                        registers_owner[i] <= registers_renew[i];
+                                    end
+                                end
                                 // Reset clk
                                 send_protocol_clk_reg <= 0;
                                 receive_protocol_clk_reg <= 0;
@@ -1309,10 +1332,10 @@ module Processor
                                             registers_owner[rd3_space] <= amount_rcv_byte_protocol;
                                         end
                                         else begin  // Exception: Waiting or Skipping
-                                            running_program_state_reg <= DISPATH_STATE;
-                                            registers_owner[rd_space] <= rd_regFile;
-                                            registers_owner[rd2_space] <= rd2_regFile;
-                                            registers_owner[rd3_space] <= 0;    // Don't have data in this packet
+//                                            running_program_state_reg <= DISPATH_STATE;
+//                                            registers_owner[rd_space] <= rd_regFile;
+//                                            registers_owner[rd2_space] <= rd2_regFile;
+//                                            registers_owner[rd3_space] <= 0;    // Don't have data in this packet
                                         end
                                     end
                                     SPI_MAPPING: begin
@@ -1333,13 +1356,13 @@ module Processor
             end
         end
         // Synchronization reigsters block
-        always @(posedge clk) begin
-            if(synchronization_processor) begin
-                for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
-                    registers_owner[i] <= registers_renew[i];
-                end
-            end
-        end
+//        always @(posedge clk) begin
+//            if(synchronization_processor) begin
+//                for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+//                    registers_owner[i] <= registers_renew[i];
+//                end
+//            end
+//        end
         `ifdef DEBUG
         // Debug area
         assign debug_2 = {32'b0, 32'b0};
