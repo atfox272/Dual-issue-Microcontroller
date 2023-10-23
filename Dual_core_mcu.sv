@@ -90,6 +90,7 @@ module Dual_core_mcu
     parameter REG_SPACE_WIDTH       = $clog2(REGISTER_AMOUNT),
     `ifdef DEBUG
     parameter CLOCK_DIVIDER_UNIQUE_1= 5,
+    parameter FINISH_RECEIVE_TIMER  = 500000,
     `endif
     // Change main_state
     parameter FINISH_PROGRAM_OPCODE  = 7'b0001011,
@@ -127,8 +128,8 @@ module Dual_core_mcu
     input   wire                        rst_n
     
     `ifdef DEBUG
-    ,output  wire    [DATA_WIDTH - 1:0]      program_memory_wire [0: PROGRAM_MEMORY_SIZE - 1]
-    ,output  wire    [DATA_WIDTH - 1:0]      data_memory_wire [0: DATA_MEMORY_SIZE - 1]
+//    ,output  wire    [DATA_WIDTH - 1:0]      program_memory_wire [0: PROGRAM_MEMORY_SIZE - 1]
+//    ,output  wire    [DATA_WIDTH - 1:0]      data_memory_wire [0: DATA_MEMORY_SIZE - 1]
     `endif
     );
     
@@ -234,7 +235,7 @@ module Dual_core_mcu
     wire [DATA_WIDTH - 1:0]             reserved_registers  [0:RESERVED_REG_AMOUNT - 1];
     
     // PROGRAM_MEMORY (pm)
-    wire [DATA_WIDTH - 1:0]             data_bus_wr_pm;
+    wire [DOUBLEWORD_WIDTH - 1:0]       data_bus_wr_pm;
     wire [DOUBLEWORD_WIDTH - 1:0]       data_bus_rd_pm;
     wire [ADDR_WIDTH_PM - 1:0]          addr_wr_pm;
     wire [ADDR_WIDTH_PM - 1:0]          addr_rd_pm;
@@ -354,7 +355,9 @@ module Dual_core_mcu
     
     ////////////////////////////////////////////////////////////////////////////
     
-    Processor           #(
+   (* dont_touch = "yes" *) 
+                        Processor           
+                        #(
                         .MAIN_RPOCESSOR(1'b1),
                         .DATA_MEMORY_SIZE(DATA_MEMORY_SIZE),
                         .PROGRAM_MEMORY_SIZE(PROGRAM_MEMORY_SIZE),
@@ -412,7 +415,9 @@ module Dual_core_mcu
                         // Debug
 //                        ,.debug_1(debug_1)
                         );                
-    Processor           #(
+    (* dont_touch = "yes" *)  
+                        Processor           
+                        #(
                         .MAIN_RPOCESSOR(1'b0),
                         .DATA_MEMORY_SIZE(DATA_MEMORY_SIZE),
                         .PROGRAM_MEMORY_SIZE(PROGRAM_MEMORY_SIZE),
@@ -466,7 +471,9 @@ module Dual_core_mcu
 //                        ,.debug_2(debug_2)
                         );   
                             
-    Sync_primitive      #(
+    (* dont_touch = "yes" *)  
+                        Sync_primitive      
+                        #(
                         .DATA_MEMORY_SIZE(DATA_MEMORY_SIZE)
                         )synchronization_primitive(
                         .clk(clk),
@@ -518,7 +525,9 @@ module Dual_core_mcu
         
                         .rst_n(rst_n)
                         );
-    Registers_management#(
+    (* dont_touch = "yes" *)  
+                        Registers_management
+                        #(
                         )registers_management(
                         .clk(clk),
                         .processor_registers_1(processor_registers_1),
@@ -539,7 +548,9 @@ module Dual_core_mcu
                         .synchronized_processors(synchronized_processors),
                         .rst_n(rst_n)
                         );
-    Multi_processor_manager #(
+    (* dont_touch = "yes" *)  
+                        Multi_processor_manager 
+                        #(
                         .PROGRAM_MEMORY_SIZE(PROGRAM_MEMORY_SIZE)
                         ) multi_processor_manager (
                         .clk(clk),
@@ -584,7 +595,9 @@ module Dual_core_mcu
                         );
     
     // Data Memory (8Kb - 1kB)
-    ram                 #(
+    (* dont_touch = "yes" *)  
+                        ram                 
+                        #(
                         .ADDR_DEPTH(DATA_MEMORY_SIZE),
                         .RESERVED_REG_AMOUNT(RESERVED_REG_AMOUNT),
                         .RESERVED_REG_DEFAULT(RESERVED_REG_DEFAULT)
@@ -607,11 +620,13 @@ module Dual_core_mcu
                         .rst_n(rst_n)
                         //Debug 
                         `ifdef DEBUG
-                        ,.registers_wire(data_memory_wire)
+//                        ,.registers_wire(data_memory_wire)
                         `endif
                         );
     // Program memory (8Kb)
-    ram_pm              #(
+    (* dont_touch = "yes" *)  
+                        ram_pm              
+                        #(
                         .ADDR_DEPTH(PROGRAM_MEMORY_SIZE),
                         .RESERVED_REG_AMOUNT(1'b1)
                         )program_memory(
@@ -630,10 +645,11 @@ module Dual_core_mcu
                         .rst_n(rst_n)
                         //Debug 
                         `ifdef DEBUG
-                        ,.registers_wire(program_memory_wire)
+//                        ,.registers_wire(program_memory_wire)
                         `endif
                         );
-    Interrupt_controller
+    (* dont_touch = "yes" *)  
+                        Interrupt_controller
                         #(
                         )interrupt_controller(
                         .interrupt_flag_1(interrupt_flag_1),
@@ -649,11 +665,13 @@ module Dual_core_mcu
                         .interrupt_request_2(interrupt_request_2),
                         .interrupt_request_3(interrupt_request_3),
                         .interrupt_enable_1(interrupt_enable_1),
-                        .interrupt_enable_2(interrupt_enable_2),
-                        .interrupt_enable_3(interrupt_enable_3),
+                        .interrupt_enable_2(exti_enable),
+                        .interrupt_enable_3(timer_interrupt_enable),
                         .rst_n(rst_n)
                         );  
-    timer_INT_handler timer_interrupt_handler
+    (* dont_touch = "yes" *)  
+                        timer_INT_handler 
+                        timer_interrupt_handler
                         (
                         .clk(clk),
                         .enable_interrupt(timer_interrupt_enable),
@@ -663,19 +681,26 @@ module Dual_core_mcu
                         .interrupt_request(interrupt_request_3),
                         .rst_n(rst_n)
                         );
-    external_INT_handler external_interrupt_handler
+    (* dont_touch = "yes" *)  external_INT_handler 
+                        external_interrupt_handler
                         (
                         .clk(clk),
                         .int_pin(exti_pin),
                         .enable_interrupt(exti_enable),
                         .interrupt_sense_control(exti_sense),
                         .debounce_option(exti_debounce_option),
-                        .interrupt_request(interrupt_request_1),
+                        .interrupt_request(interrupt_request_2),
                         .rst_n(rst_n)
                         );           
                                  
-    fifo_advanced_module #(
-                        )fifo_advanced_module(
+    (* dont_touch = "yes" *)  fifo_advanced_module
+                        #(
+                        `ifdef DEBUG
+//                        .FINISH_RECEIVE_TIMER(FINISH_RECEIVE_TIMER)
+                        `endif
+                        )
+                        fifo_advanced_module
+                        (
                         .clk(clk),
                         // TX
                         // -- to Processor
@@ -706,12 +731,13 @@ module Dual_core_mcu
                         );        
     // Communication peripherals    
     `ifdef UART_PROT_1        
-    com_uart            #(
+    (* dont_touch = "yes" *)  com_uart            
+                        #(
                         .SLEEP_MODE(0), 
                         .RX_FLAG_CONFIG(1'b1),              // Use internal FIFO
-                        .FIFO_DEPTH(FIFO_BUFFER_SIZE),
+                        .FIFO_DEPTH(FIFO_BUFFER_SIZE)
                         `ifdef DEBUG
-                        .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
+//                        ,.CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
                         `endif
                         )uart_peripheral_1(
                         .clk(clk),
@@ -733,11 +759,12 @@ module Dual_core_mcu
                         );
     `endif
     `ifdef UART_PROT_2
-    com_uart            #(
-                        .SLEEP_MODE(0), 
-                        .RX_FLAG_CONFIG(1'b1), /// Internal FIFO
+    (* dont_touch = "yes" *)  com_uart            
+                        #(
+                        .SLEEP_MODE(1), 
+                        .RX_FLAG_CONFIG(1'b1) /// Internal FIFO
                         `ifdef DEBUG
-                        .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
+                        ,.CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
                         `endif
                         )             
                         uart_peripheral_2
