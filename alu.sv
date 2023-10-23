@@ -52,13 +52,13 @@ module alu
     `endif
     
     always_comb begin
-        assign operand_1_comb = (alu_enable_comb) ? operand_1 : {64{1'b0}};
-        assign operand_2_comb = (alu_enable_comb) ? operand_2 : {64{1'b0}};
-        assign op_code_comb   = (alu_enable_comb) ? op_code   : 1'b0;
+        operand_1_comb = (alu_enable_comb) ? operand_1 : {64{1'b0}};
+        operand_2_comb = (alu_enable_comb) ? operand_2 : {64{1'b0}};
+        op_code_comb   = (alu_enable_comb) ? op_code   : 1'b0;
         case(op_code_comb)
             ADD_ALU_ENCODE:  result_comb = operand_1_comb + operand_2_comb;
             SUB_ALU_ENCODE:  result_comb = operand_1_comb - operand_2_comb;
-            SLT_ALU_ENCODE:  result_comb = {63'h00, (operand_1_comb < operand_2_comb)};
+            SLT_ALU_ENCODE:  result_comb = {{63{1'b0}}, (operand_1_comb < operand_2_comb)};
             AND_ALU_ENCODE:  result_comb = operand_1_comb & operand_2_comb; 
             XOR_ALU_ENCODE:  result_comb = operand_1_comb ^ operand_2_comb;
             OR_ALU_ENCODE:   result_comb = operand_1_comb | operand_2_comb;
