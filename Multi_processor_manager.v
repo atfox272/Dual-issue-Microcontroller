@@ -51,7 +51,7 @@ module Multi_processor_manager
     parameter JUMP_OFS_SPACE_MSB    = 31,
     parameter JUMP_OFS_SPACE_LSB    = 7,
     parameter JUMP_OFS_SPACE_WIDTH  = JUMP_OFS_SPACE_MSB - JUMP_OFS_SPACE_LSB + 1,// Opcode encoder
-    parameter OPT_SPACE_MSB         = 11,               // Option space
+    parameter OPT_SPACE_MSB         = 16,               // Option space
     parameter OPT_SPACE_LSB         = 10,               // Option space    
     parameter OPT_SPACE_WIDTH       = OPT_SPACE_MSB - OPT_SPACE_LSB + 1,
     // Opcode encoder
@@ -98,7 +98,7 @@ module Multi_processor_manager
     input   wire    [DOUBLEWORD_WIDTH - 1:0]    data_bus_rd_pm,
     input   wire                                rd_idle_pm,
     output  wire    [ADDR_WIDTH_PM - 1:0]       addr_rd_pm,
-    output  wire                                rd_ins_pm,
+//    output  wire                                rd_ins_pm,
     
     // Processor 1
     input   wire    [1:0]                       main_state,
@@ -114,10 +114,9 @@ module Multi_processor_manager
     // Registers management
     input   wire    [DOUBLEWORD_WIDTH - 1:0]    registers_renew [0:REGISTER_AMOUNT - 1],
     input   wire                                synchronized_processors,
-    output  wire    [REG_SPACE_WIDTH*3 - 1:0]   register_num,
+    output  wire    [REG_SPACE_WIDTH - 1:0]     register_num,
     output  wire                                boot_renew_register_1,
     output  wire                                boot_renew_register_2,
-    output  wire                                boot_renew_3registers_2,
     output  wire    [DOUBLEWORD_WIDTH - 1:0]    ra_register,
     input   wire    [0:REGISTER_AMOUNT - 1]     processing_register_table,
     // Interrupt control
@@ -144,6 +143,7 @@ module Multi_processor_manager
     wire[DOUBLEWORD_WIDTH - 1:0]    rs1_regFile;
     wire[DOUBLEWORD_WIDTH - 1:0]    rs2_regFile;
     reg [ADDR_WIDTH_PM - 1:0]       PC;
+    wire[ADDR_WIDTH_PM - 1:0]       PC_next;
     // State machine
     reg [4:0] program_state;
     // reg
@@ -155,15 +155,17 @@ module Multi_processor_manager
     wire[REG_SPACE_WIDTH - 1:0] rd2_cur;
     wire[REG_SPACE_WIDTH - 1:0] rd3_cur;
     reg [1:0]                   processor_prev;             // 0-mpm, 1-main, 2-sub (processor_using log)
-    reg rd_ins_pm_reg;
+//    reg rd_ins_pm_reg;
     wire parallel_blocking_Rtype_condition;
     wire parallel_blocking_Itype_condition;
     wire parallel_blocking_LUItype_condition;
     wire parallel_blocking_STORE_condition;
+    wire parallel_blocking_PROT_condition;
     wire release_blocking_Rtype_condition;
     wire release_blocking_Itype_condition;
     wire release_blocking_LUItype_condition;
     wire release_blocking_STORE_condition;
+    wire release_blocking_PROT_condition;
     // Processor 
     reg boot_processor_1_reg;
     reg boot_processor_2_reg;
@@ -190,7 +192,6 @@ module Multi_processor_manager
     reg [REG_SPACE_WIDTH - 1:0]         register3_num_reg;
     reg                                 boot_renew_register_1_reg;
     reg                                 boot_renew_register_2_reg;
-    reg                                 boot_renew_3registers_2_reg;
     // LIFO 
     reg                                 active_stack_clk;
     reg                                 wr_stack_ins;
@@ -222,8 +223,9 @@ module Multi_processor_manager
     localparam EXIT_STATE = 15;
     
     assign addr_rd_pm = PC;
-    assign rd_ins_pm = rd_ins_pm_reg;
-    // Fetch Instruction management
+    assign PC_next = PC + 4;
+//    assign rd_ins_pm = rd_ins_pm_reg;
+    // Dispatch Instruction management
     assign cur_instruction  = (contain_ins) ? _2_instructions_buf[31:0] : _2_instructions_buf[63:32]; 
     assign fetch_instruction_1 = cur_instruction;
     assign fetch_instruction_2 = cur_instruction;
@@ -247,10 +249,9 @@ module Multi_processor_manager
     assign rs1_regFile = registers_renew[rs1_cur];
     assign rs2_regFile = registers_renew[rs2_cur];
     // register management 
-    assign register_num = {register3_num_reg, register2_num_reg, register1_num_reg};
+    assign register_num = register1_num_reg;
     assign boot_renew_register_1 = boot_renew_register_1_reg;
     assign boot_renew_register_2 = boot_renew_register_2_reg;
-    assign boot_renew_3registers_2 = boot_renew_3registers_2_reg;
     assign ra_register = x1;
     // Condition
     assign parallel_blocking_Rtype_condition = (processing_register_table[rs1_cur] == 1) | 
@@ -269,6 +270,8 @@ module Multi_processor_manager
                                                (processing_register_table[rs2_cur] == 1);
     assign release_blocking_STORE_condition  = ~parallel_blocking_STORE_condition;
     
+    assign parallel_blocking_PROT_condition  = (processing_register_table[rd1_cur]  == 1);
+    assign release_blocking_PROT_condition   = ~parallel_blocking_PROT_condition;
 
     
     // Interrupt control
@@ -305,7 +308,7 @@ module Multi_processor_manager
             // Init reg
             x1 <= 0;
             contain_ins <= 0;
-            rd_ins_pm_reg <= 0;
+//            rd_ins_pm_reg <= 0;
             boot_processor_1_reg <= 0;
             boot_processor_2_reg <= 0;
             active_stack_clk <= 0;
@@ -317,7 +320,6 @@ module Multi_processor_manager
             register3_num_reg <= 0;
             boot_renew_register_1_reg <= 0;
             boot_renew_register_2_reg <= 0;
-            boot_renew_3registers_2_reg <= 0;
             RETI_1_reg <= 0;
             RETI_2_reg <= 0;
             RETI_3_reg <= 0;
@@ -340,7 +342,7 @@ module Multi_processor_manager
                     program_state <= FETCH_INS_STATE;
                     contain_ins <= 1;
                     // Request 
-                    rd_ins_pm_reg <= 1;
+//                    rd_ins_pm_reg <= 1;
                 end
                 else begin
                     program_state <= DISPATCH_INS_STATE;
@@ -352,12 +354,9 @@ module Multi_processor_manager
                 wr_stack_ins <= 0;
             end
             FETCH_INS_STATE: begin
-                if(rd_idle_pm) begin
-                    program_state <= DISPATCH_INS_STATE;
-                    _2_instructions_buf <= data_bus_rd_pm;
-                    rd_ins_pm_reg <= 0;
-                end
-                else program_state <= FETCH_INS_STATE;
+                // Read Instruction
+                program_state <= DISPATCH_INS_STATE;
+                _2_instructions_buf <= data_bus_rd_pm;
                 // Recovery state of Stack 
                 active_stack_clk <= 0;
                 rd_stack_ins <= 0;
@@ -372,7 +371,7 @@ module Multi_processor_manager
                         else begin                             
                             if(processor_idle_1) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_1_reg <= 1;
                                 boot_renew_register_1_reg <= 1;
@@ -381,7 +380,7 @@ module Multi_processor_manager
                             end
                             else if(processor_idle_2)begin  
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_2_reg <= 1;
                                 boot_renew_register_2_reg <= 1;
@@ -398,7 +397,7 @@ module Multi_processor_manager
                         else begin
                             if(processor_idle_1) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_1_reg <= 1;
                                 boot_renew_register_1_reg <= 1;
@@ -407,7 +406,7 @@ module Multi_processor_manager
                             end
                             else if(processor_idle_2)begin  
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_2_reg <= 1;
                                 boot_renew_register_2_reg <= 1;
@@ -424,7 +423,7 @@ module Multi_processor_manager
                         else begin
                             if(processor_idle_1) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_1_reg <= 1;
                                 boot_renew_register_1_reg <= 1;
@@ -433,7 +432,7 @@ module Multi_processor_manager
                             end
                             else if(processor_idle_2)begin  
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_2_reg <= 1;
                                 boot_renew_register_2_reg <= 1;
@@ -441,6 +440,7 @@ module Multi_processor_manager
                                 processor_prev <= 2;    // 2-sub processor
                             end 
                         end
+                        register1_num_reg <= rd1_cur;
                     end
                     LOAD_ENCODE: begin
                         if(parallel_blocking_Itype_condition) begin
@@ -449,7 +449,7 @@ module Multi_processor_manager
                         else begin 
                             if(processor_idle_1) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_1_reg <= 1;
                                 boot_renew_register_1_reg <= 1;
@@ -458,7 +458,7 @@ module Multi_processor_manager
                             end
                             else if(processor_idle_2)begin  
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_2_reg <= 1;
                                 boot_renew_register_2_reg <= 1;
@@ -475,7 +475,7 @@ module Multi_processor_manager
                         else begin 
                             if(processor_idle_1) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_1_reg <= 1;
                                 // Log 
@@ -483,7 +483,7 @@ module Multi_processor_manager
                             end
                             else if(processor_idle_2)begin  
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_2_reg <= 1;
                                 // Log 
@@ -497,23 +497,23 @@ module Multi_processor_manager
                                 case(processor_prev)
                                     0: begin            // Multi-processor manager (Skip this case)
                                         program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                        PC <= PC + 4;
+                                        PC <= PC_next;
                                     end
                                     1: begin            // Main processor   (waiting for "Data memory is IDLE" & "Previous processor is IDLE")
                                         if(rd_idle_dm & wr_idle_dm & processor_idle_1) begin
                                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                            PC <= PC + 4;
+                                            PC <= PC_next;
                                         end
                                     end
                                     2: begin            // Sub processor    (waiting for "Data memory is IDLE" & "Previous processor is IDLE")
                                         if(rd_idle_dm & wr_idle_dm & processor_idle_2) begin
                                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                            PC <= PC + 4;
+                                            PC <= PC_next;
                                         end
                                     end
                                     default: begin      // Initial value (Skip this case)
                                         program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                        PC <= PC + 4;
+                                        PC <= PC_next;
                                     end
                                 endcase
                             end
@@ -534,7 +534,7 @@ module Multi_processor_manager
                         // PC-relative
                         if(synchronized_processors) begin
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                            x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
+                            x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC_next : x1;
                             PC <= PC + {jump_offset_space[ADDR_WIDTH_PM - 1:0]};
                             contain_ins <= 0;
                         end
@@ -545,7 +545,7 @@ module Multi_processor_manager
                         // PC-relative                      
                         if(synchronized_processors) begin
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                            x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
+                            x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC_next : x1;
                             PC <= PC + jump_offset_space[ADDR_WIDTH_PM - 1:0];
                             contain_ins <= 0;
                         end
@@ -618,23 +618,21 @@ module Multi_processor_manager
                     PROTOCOL_ENCODE: begin
                         case(funct3_space)
                             UART_ENCODE: begin
-                                if(parallel_blocking_Rtype_condition) begin
+                                if(parallel_blocking_PROT_condition) begin
                                     program_state <= PARALLEL_BLOCKING_PROTOCOL_STATE;
                                 end
                                 else begin 
                                     if(processor_idle_2) begin
                                         program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                        PC <= PC + 4;
+                                        PC <= PC_next;
                                         // Boot
                                         boot_processor_2_reg <= 1;
                                         // Log 
                                         processor_prev <= 2;
                                         // Boot_renew_register
-                                        if(!option_space) begin  // RX <rd1 rd2 rd3 imm ...>
+                                        if(option_space[OPT_SPACE_WIDTH - 1] == 0) begin  // (option_space_msb == 0) -> Receive data 
                                             register1_num_reg <= rd1_cur;
-                                            register2_num_reg <= rd2_cur;
-                                            register3_num_reg <= rd3_cur;
-                                            boot_renew_3registers_2_reg <= 1;
+                                            boot_renew_register_2_reg <= 1;
                                         end
                                     end
                                 end
@@ -657,7 +655,7 @@ module Multi_processor_manager
                         else begin
                             if(processor_idle_1) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_1_reg <= 1;
                                 boot_renew_register_1_reg <= 1;
@@ -674,7 +672,7 @@ module Multi_processor_manager
                 if(release_blocking_Rtype_condition) begin
                     if(processor_idle_1) begin
                         program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                        PC <= PC + 4;
+                        PC <= PC_next;
                         // Boot
                         boot_processor_1_reg <= 1;
                         boot_renew_register_1_reg <= 1;
@@ -683,7 +681,7 @@ module Multi_processor_manager
                     end
                     else if(processor_idle_2)begin  
                         program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                        PC <= PC + 4;
+                        PC <= PC_next;
                         // Boot
                         boot_processor_2_reg <= 1;
                         boot_renew_register_2_reg <= 1;
@@ -696,7 +694,7 @@ module Multi_processor_manager
                     if(release_blocking_Itype_condition) begin
                         if(processor_idle_1) begin
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                            PC <= PC + 4;
+                            PC <= PC_next;
                             // Boot
                             boot_processor_1_reg <= 1;
                             boot_renew_register_1_reg <= 1;
@@ -705,7 +703,7 @@ module Multi_processor_manager
                         end
                         else if(processor_idle_2)begin  
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                            PC <= PC + 4;
+                            PC <= PC_next;
                             // Boot
                             boot_processor_2_reg <= 1;
                             boot_renew_register_2_reg <= 1;
@@ -718,7 +716,7 @@ module Multi_processor_manager
                 if(release_blocking_LUItype_condition) begin
                         if(processor_idle_1) begin
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                            PC <= PC + 4;
+                            PC <= PC_next;
                             // Boot
                             boot_processor_1_reg <= 1;
                             boot_renew_register_1_reg <= 1;
@@ -727,7 +725,7 @@ module Multi_processor_manager
                         end
                         else if(processor_idle_2)begin  
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                            PC <= PC + 4;
+                            PC <= PC_next;
                             // Boot
                             boot_processor_2_reg <= 1;
                             boot_renew_register_2_reg <= 1;
@@ -741,7 +739,7 @@ module Multi_processor_manager
 //                                program_state <= FETCH_INSTRUCTION_STATE;
                             if(processor_idle_1) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_1_reg <= 1;
 //                                boot_renew_register_1_reg <= 1;
@@ -750,7 +748,7 @@ module Multi_processor_manager
                             end
                             else if(processor_idle_2)begin  
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4; 
+                                PC <= PC_next; 
                                 // Boot
                                 boot_processor_2_reg <= 1;
 //                                boot_renew_register_2_reg <= 1;
@@ -765,29 +763,27 @@ module Multi_processor_manager
                 end
             end
             PARALLEL_BLOCKING_PROTOCOL_STATE: begin
-                        if(release_blocking_Rtype_condition) begin
-                            if(processor_idle_2) begin
-                                program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
-                                // Boot
-                                boot_processor_2_reg <= 1;
-                                // Boot_renew_register
-                                if(!option_space) begin  // RX <rd1 rd2 rd3 imm ...>
-                                    register1_num_reg <= rd1_cur;
-                                    register2_num_reg <= rd2_cur;
-                                    register3_num_reg <= rd3_cur;
-                                    boot_renew_3registers_2_reg <= 1;
-                                end
-                                // Log 
-                                processor_prev <= 2;
-                            end
+                if(release_blocking_PROT_condition) begin
+                    if(processor_idle_2) begin
+                        program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
+                        PC <= PC_next;
+                        // Boot
+                        boot_processor_2_reg <= 1;
+                        // Log 
+                        processor_prev <= 2;
+                        // Boot_renew_register
+                        if(option_space[OPT_SPACE_WIDTH - 1] == 0) begin  // (option_space_msb == 0) -> Receive data 
+                            register1_num_reg <= rd1_cur;
+                            boot_renew_register_2_reg <= 1;
                         end
+                    end
+                end
             end
             PARALLEL_BLOCKING_GPIO_STATE: begin
                         if(release_blocking_Rtype_condition) begin
                             if(processor_idle_1) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                                 // Boot
                                 boot_processor_1_reg <= 1;
                                 boot_renew_register_1_reg <= 1;
@@ -806,7 +802,7 @@ module Multi_processor_manager
                             end
                             else begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4; 
+                                PC <= PC_next; 
                             end 
                         end
                         BNE_ENCODE: begin
@@ -816,17 +812,17 @@ module Multi_processor_manager
                             end
                             else begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                             end 
                         end
                         BLT_ENCODE: begin
-                            if(rs1_regFile < rs2_regFile) begin
+                            if(rs1_regFile < rs2_regFile) begin 
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                                 PC <= {52'b00, immediate_3_space, immediate_1_space};
                             end
                             else begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                             end 
                         end
                         BGE_ENCODE: begin
@@ -836,7 +832,7 @@ module Multi_processor_manager
                             end
                             else begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= PC + 4;
+                                PC <= PC_next;
                             end 
                         end
                         default: begin
@@ -851,7 +847,7 @@ module Multi_processor_manager
             EXECUTE_JTYPE_INSTRUCTION_INTERNAL_STATE: begin
                 if(synchronized_processors) begin
                     program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                    x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC + 4 : x1;
+                    x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC_next : x1;
                     PC <= PC + jump_offset_space[ADDR_WIDTH_PM - 1:0];
                     contain_ins <= 0;
                 end
@@ -873,7 +869,6 @@ module Multi_processor_manager
                 boot_renew_register_1_reg <= 0;
                 boot_processor_2_reg <= 0;
                 boot_renew_register_2_reg <= 0;
-                boot_renew_3registers_2_reg <= 0;
                 if(interrupt_handling_1) begin
                     if(contain_ins) begin
                         program_state <= DISPATCH_INS_STATE;
@@ -884,7 +879,7 @@ module Multi_processor_manager
                         program_state <= FETCH_INS_STATE;
                         // Request Instruction
                         contain_ins <= 1;
-                        rd_ins_pm_reg <= 1;
+//                        rd_ins_pm_reg <= 1;
                     end
                 end
                 else if(interrupt_handling_2) begin
@@ -910,7 +905,7 @@ module Multi_processor_manager
                             program_state <= FETCH_INS_STATE;
                             // Request Instruction
                             contain_ins <= 1;
-                            rd_ins_pm_reg <= 1;
+//                            rd_ins_pm_reg <= 1;
                         end 
                     end
                 end
@@ -949,7 +944,7 @@ module Multi_processor_manager
                             program_state <= FETCH_INS_STATE;
                             // Request Instruction
                             contain_ins <= 1;
-                            rd_ins_pm_reg <= 1;
+//                            rd_ins_pm_reg <= 1;
                         end 
                     end
                 end
@@ -1010,7 +1005,7 @@ module Multi_processor_manager
                     // Write PC to Stack
                     active_stack_clk <= 1;
                     // Request Instruction
-                    rd_ins_pm_reg <= 1;
+//                    rd_ins_pm_reg <= 1;
                 end
             end
             EXIT_STATE: begin
