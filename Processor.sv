@@ -67,7 +67,7 @@ module Processor
     parameter JUMP_OFS_SPACE_MSB    = 31,
     parameter JUMP_OFS_SPACE_LSB    = 7,
     parameter JUMP_OFS_SPACE_WIDTH  = JUMP_OFS_SPACE_MSB - JUMP_OFS_SPACE_LSB + 1,
-    parameter OPT_SPACE_MSB         = 11,               // Option space
+    parameter OPT_SPACE_MSB         = 16,               // Option space
     parameter OPT_SPACE_LSB         = 10,               // Option space    
     parameter OPT_SPACE_WIDTH       = OPT_SPACE_MSB - OPT_SPACE_LSB + 1,
     parameter IMM_4_SPACE_MSB       = 16,               // Option space
@@ -132,6 +132,11 @@ module Processor
     // Funct3 encoder (for I/O type)
     parameter READ_GPIO_ENCODE      = 3'b000,
     parameter WRITE_GPIO_ENCODE     = 3'b001,
+    // Option encode (for Protocol type)
+    parameter RECEIVE_PACKET_ENCODE = 7'b0000000,
+    parameter LOAD_PACKET_H_ENCODE  = 7'b0000010,
+    parameter LOAD_PACKET_L_ENCODE  = 7'b0000011,
+    parameter TRANS_PACKET_L_ENCODE = 7'b1000000,       // Note: Transmit encode always have HIGH MSB (MSB == 1) (mpm detect this difference)
     // Operator decode (Level_2 - Instruction decode - Operator decode)
     parameter ARITHMETIC_1CYCLE             = 0,
     parameter ARITHMETIC_MULTI_CYCLE        = 1,
@@ -271,8 +276,8 @@ module Processor
         wire[IMM_2_SPACE_WIDTH - 1:0]       immediate_2_space;
         wire[IMM_3_SPACE_WIDTH - 1:0]       immediate_3_space;
         wire[IMM_20_SPACE_WIDTH - 1:0]      immediate_20_space;  // immediate20
-        reg [DOUBLEWORD_WIDTH - 1:0]        rs1_buffer; 
-        reg [DOUBLEWORD_WIDTH - 1:0]        rs2_buffer; 
+//        reg [DOUBLEWORD_WIDTH - 1:0]        rs1_buffer; 
+//        reg [DOUBLEWORD_WIDTH - 1:0]        rs2_buffer; 
         logic[SIGN_EXTEND_WIDTH - 1:0]      alu_sign_extend_imm2;
         logic[SIGN_EXTEND_WIDTH - 1:0]      alu_sign_extend_imm3;
         logic[DOUBLEWORD_WIDTH - 1:0]       data_bus_rd_sign_extend;
@@ -421,8 +426,8 @@ module Processor
                     multi_cycle_type = 0;
                 end
                 ARITHMETIC_MULTI_CYCLE: begin    
-                    alu_operand_1 = rs1_buffer;
-                    alu_operand_2 = rs2_buffer;
+                    alu_operand_1 = rs1_regFile;
+                    alu_operand_2 = rs2_regFile;
                     alu_enable_comb = 0;
                     multi_cycle_type = 1;
                 end
@@ -433,7 +438,7 @@ module Processor
                     multi_cycle_type = 0;
                 end
                 ARITHMETIC_MULTI_CYCLE_IMM: begin    
-                    alu_operand_1 = rs1_buffer;
+                    alu_operand_1 = rs1_regFile;
                     alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
                     alu_enable_comb = 0;
                     multi_cycle_type = 1;
@@ -609,8 +614,8 @@ module Processor
                 addr_wr_reg <= 0;
                 data_bus_wr_reg <= 0;
                 wr_ins_reg <= 0;
-                rs1_buffer <= 0;
-                rs2_buffer <= 0;
+//                rs1_buffer <= 0;
+//                rs2_buffer <= 0;
                 alu_enable_seq <= 0;
             end
             else begin
@@ -699,8 +704,6 @@ module Processor
                                             // Multi_cycles arithmetic
                                             running_program_state_reg <= WRITE_BACK_STATE;
                                             alu_enable_seq <= 1'b1;
-                                            rs1_buffer <= rs1_regFile;
-                                            rs2_buffer <= rs2_regFile;
                                         end
                                         else begin
                                             // 1_cycle arithmetic
@@ -713,7 +716,6 @@ module Processor
                                         if(multi_cycle_type) begin
                                             running_program_state_reg <= WRITE_BACK_STATE;
                                             alu_enable_seq <= 1'b1;
-                                            rs1_buffer <= rs1_regFile;
                                         end
                                         else begin
                                             running_program_state_reg <= DISPATH_STATE;
@@ -847,9 +849,9 @@ module Processor
         wire[IMM_4_SPACE_WIDTH - 1:0]       immediate_4_space;
         wire[IMM_20_SPACE_WIDTH - 1:0]      immediate_20_space;  // immediate20
         wire[OPT_SPACE_WIDTH - 1:0]         option_space;
-        reg [DOUBLEWORD_WIDTH - 1:0]        rs1_buffer; 
-        reg [DOUBLEWORD_WIDTH - 1:0]        rs2_buffer; 
-        reg [DOUBLEWORD_WIDTH - 1:0]        rs3_buffer; 
+//        reg [DOUBLEWORD_WIDTH - 1:0]        rs1_buffer; 
+//        reg [DOUBLEWORD_WIDTH - 1:0]        rs2_buffer; 
+//        reg [DOUBLEWORD_WIDTH - 1:0]        rs3_buffer; 
         logic[SIGN_EXTEND_WIDTH - 1:0]      alu_sign_extend_imm2;
         logic[SIGN_EXTEND_WIDTH - 1:0]      alu_sign_extend_imm3;
         logic[DOUBLEWORD_WIDTH - 1:0]       data_bus_rd_sign_extend;
@@ -868,6 +870,9 @@ module Processor
         reg                                 send_protocol_clk_reg;
         reg                                 receive_protocol_clk_reg;
         reg [AMOUNT_SND_WIDTH - 1:0]        amount_snd_byte_protocol_reg;
+        // Protocol buffer
+        reg [DOUBLEWORD_WIDTH - 1:0]        protocol_packet_h;
+        reg [DOUBLEWORD_WIDTH - 1:0]        protocol_packet_l;
         // Synchronization primitive
         //  - read 
         reg [ADDR_WIDTH_DM - 1:0]           addr_rd_reg;
@@ -974,7 +979,7 @@ module Processor
         end
         // Protocol management 
         assign protocol_address_mapping = protocol_address_mapping_reg;
-        assign data_snd_protocol_per = {rs3_buffer, rs1_buffer};
+        assign data_snd_protocol_per = {rs3_regFile, rs1_regFile};
         assign send_protocol_clk = send_protocol_clk_reg;
         assign receive_protocol_clk = receive_protocol_clk_reg;
         assign amount_snd_byte_protocol = amount_snd_byte_protocol_reg;
@@ -991,8 +996,8 @@ module Processor
                     multi_cycle_type = 0;
                 end
                 ARITHMETIC_MULTI_CYCLE: begin    
-                    alu_operand_1 = rs1_buffer;
-                    alu_operand_2 = rs2_buffer;
+                    alu_operand_1 = rs1_regFile;
+                    alu_operand_2 = rs2_regFile;
                     alu_enable_comb = 0;
                     multi_cycle_type = 1;
                 end
@@ -1003,7 +1008,7 @@ module Processor
                     multi_cycle_type = 0;
                 end
                 ARITHMETIC_MULTI_CYCLE_IMM: begin    
-                    alu_operand_1 = rs1_buffer;
+                    alu_operand_1 = rs1_regFile;
                     alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
                     alu_enable_comb = 0;
                     multi_cycle_type = 1;
@@ -1160,13 +1165,12 @@ module Processor
                 addr_wr_reg <= 0;
                 data_bus_wr_reg <= 0;
                 wr_ins_reg <= 0;
-                rs1_buffer <= 0;
-                rs2_buffer <= 0;
-                rs3_buffer <= 0;
                 protocol_address_mapping_reg <= NOTHING_MAPPING;
                 send_protocol_clk_reg <= 0;
                 receive_protocol_clk_reg <= 0;
                 amount_snd_byte_protocol_reg <= 0;
+                protocol_packet_h <= 0;
+                protocol_packet_l <= 0;
             end
             else begin
                 case(running_program_state_reg) 
@@ -1194,8 +1198,6 @@ module Processor
                                         if(multi_cycle_type) begin
                                             running_program_state_reg <= WRITE_BACK_STATE;
                                             alu_enable_seq <= 1'b1;
-                                            rs1_buffer <= rs1_regFile;
-                                            rs2_buffer <= rs2_regFile;
                                         end
                                         else begin
                                             running_program_state_reg <= DISPATH_STATE;
@@ -1207,7 +1209,6 @@ module Processor
                                         if(multi_cycle_type) begin
                                             running_program_state_reg <= WRITE_BACK_STATE;
                                             alu_enable_seq <= 1'b1;
-                                            rs1_buffer <= rs1_regFile;
                                         end
                                         else begin
                                             running_program_state_reg <= DISPATH_STATE;
@@ -1242,29 +1243,28 @@ module Processor
                                     // Processor 2 doesn't process SYSTEM-type intruction
                                     end
                                     PROTOCOL_ENCODE: begin
-                                        running_program_state_reg <= ADDRESS_MAPPING_PROT_STATE;
                                         case(funct3_space) 
                                             UART_ENCODE: begin
                                                 case(option_space)
-                                                    2'b00: begin    // Only receive
-                                                        protocol_address_mapping_reg <= UART_RX_MAPPING;
+                                                    RECEIVE_PACKET_ENCODE: begin
+                                                        protocol_address_mapping_reg <= UART_RX_MAPPING; // Only receive
+                                                        running_program_state_reg <= ADDRESS_MAPPING_PROT_STATE;
                                                     end
-                                                    2'b01: begin    // Only transmit
-                                                        protocol_address_mapping_reg <= UART_TX_MAPPING;
-                                                        // Confirm data
-                                                        rs1_buffer <= rs1_regFile;
-                                                        rs2_buffer <= rs2_regFile;
-                                                        rs3_buffer <= rs3_regFile;
+                                                    LOAD_PACKET_H_ENCODE: begin
+                                                        registers_owner[rd_space] <= protocol_packet_h;
+                                                        running_program_state_reg <= DISPATH_STATE;
+                                                    end    
+                                                    LOAD_PACKET_L_ENCODE: begin 
+                                                        registers_owner[rd_space] <= protocol_packet_l;
+                                                        running_program_state_reg <= DISPATH_STATE;
                                                     end
-                                                    2'b10: begin    // Full-duplex
-                                                    // TODO: next version
-                                                    end
-                                                    2'b11: begin
-                                                    // TODO: next version
-                                                    end
-                                                    default: begin
-                                                    
-                                                    end
+                                                    7'b0000100: begin end   // Full-duplex
+                                                    7'b0000101: begin end   // TODO: next version
+                                                    TRANS_PACKET_L_ENCODE: begin 
+                                                        protocol_address_mapping_reg <= UART_TX_MAPPING; // Only transmit
+                                                        running_program_state_reg <= ADDRESS_MAPPING_PROT_STATE;
+                                                    end    
+                                                    default: begin end
                                                 endcase
                                             end
                                             SPI_ENCODE: begin
@@ -1320,22 +1320,20 @@ module Processor
                                         if(snd_protocol_available) begin
                                             running_program_state_reg <= DISPATH_STATE;
                                             send_protocol_clk_reg <= 1;
-                                            amount_snd_byte_protocol_reg <= rs2_buffer[AMOUNT_SND_WIDTH - 1:0];
+                                            amount_snd_byte_protocol_reg <= rs2_regFile[AMOUNT_SND_WIDTH - 1:0];
                                         end
                                     end
                                     UART_RX_MAPPING: begin
                                         if(rcv_protocol_available) begin
                                             running_program_state_reg <= DISPATH_STATE;
                                             receive_protocol_clk_reg <= 1;
-                                            registers_owner[rd_space] <= data_rcv_protocol_per[63:0];
-                                            registers_owner[rd2_space] <= data_rcv_protocol_per[127:64];
-                                            registers_owner[rd3_space] <= amount_rcv_byte_protocol;
+                                            protocol_packet_h <= data_rcv_protocol_per[127:64];
+                                            protocol_packet_l <= data_rcv_protocol_per[63:0];
+                                            registers_owner[rd_space] <= amount_rcv_byte_protocol;
                                         end
                                         else begin  // Exception: Waiting or Skipping
-//                                            running_program_state_reg <= DISPATH_STATE;
-//                                            registers_owner[rd_space] <= rd_regFile;
-//                                            registers_owner[rd2_space] <= rd2_regFile;
-//                                            registers_owner[rd3_space] <= 0;    // Don't have data in this packet
+                                            running_program_state_reg <= DISPATH_STATE;
+                                            registers_owner[rd_space] <= 0;    // Don't have data in this packet
                                         end
                                     end
                                     SPI_MAPPING: begin
