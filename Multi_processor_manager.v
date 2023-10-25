@@ -270,8 +270,10 @@ module Multi_processor_manager
                                                (processing_register_table[rs2_cur] == 1);
     assign release_blocking_STORE_condition  = ~parallel_blocking_STORE_condition;
     
-    assign parallel_blocking_PROT_condition  = (processing_register_table[rd1_cur]  == 1);
-    assign release_blocking_PROT_condition   = ~parallel_blocking_PROT_condition;
+    assign parallel_blocking_PROT_condition  = ((processing_register_table[rd1_cur]  == 1) & (option_space[OPT_SPACE_WIDTH - 1] == 0) |     // Receive state  (1 reg)
+                                                (parallel_blocking_Rtype_condition         & (option_space[OPT_SPACE_WIDTH - 1] == 1)));    // Transmit state (3 reg)
+    assign release_blocking_PROT_condition   = ((processing_register_table[rd1_cur]  == 0) & (option_space[OPT_SPACE_WIDTH - 1] == 0) | 
+                                                (release_blocking_Rtype_condition          & (option_space[OPT_SPACE_WIDTH - 1] == 1)));
 
     
     // Interrupt control
@@ -618,7 +620,7 @@ module Multi_processor_manager
                     PROTOCOL_ENCODE: begin
                         case(funct3_space)
                             UART_ENCODE: begin
-                                if(parallel_blocking_PROT_condition) begin
+                                if(parallel_blocking_PROT_condition) begin          
                                     program_state <= PARALLEL_BLOCKING_PROTOCOL_STATE;
                                 end
                                 else begin 
