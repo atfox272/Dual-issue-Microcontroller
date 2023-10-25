@@ -29,7 +29,7 @@ module alu
     
     `ifdef DEBUG    
     // Debug 
-    ,output alu_enable_seq_sync_wire
+//    ,output alu_enable_seq_sync_wire
     `endif
     );
     // Sequential circuit 
@@ -80,14 +80,6 @@ module alu
     localparam MUL_STATE = 4;
     
     assign alu_idle = ~(alu_occupied_start ^ alu_occupied_stop);
-    
-    edge_detector edge_detector
-            (
-            .clk(clk),
-            .sig_in(alu_enable_seq),
-            .out(alu_enable_seq_sync),
-            .rst_n(rst_n)
-            );
             
     always @(posedge alu_enable_seq, negedge rst_n) begin
         if(!rst_n) begin
@@ -97,7 +89,7 @@ module alu
             alu_occupied_start <= ~alu_occupied_stop;
         end
     end
-    always @(posedge clk, negedge rst_n) begin
+    always @(posedge clk) begin
         if(!rst_n) begin
             alu_state_reg <= IDLE_STATE;
             result_seq <= 0;
@@ -108,31 +100,30 @@ module alu
             case(alu_state_reg) 
                 IDLE_STATE: begin
                     repitions <= 0;
-                    if(alu_enable_seq_sync) begin
-                        case(op_code) 
-                            SRL_ALU_ENCODE: begin
-                                alu_state_reg <= SRL_STATE;
-                                result_seq <= operand_1 >> 1;
-                                repitions <= repitions + 1;
-                            end
-                            SLL_ALU_ENCODE: begin
-                                alu_state_reg <= SLL_STATE;
-                                result_seq <= operand_1 << 1;
-                                repitions <= repitions + 1;
-                            end
-                            MUL_ALU_ENCODE: begin
-                                alu_state_reg <= MUL_STATE;
-                                operand_1_seq <= operand_1; // Multiplicand
-                                operand_2_seq <= operand_2; // Multiplier
-                                result_seq <= 0;
-                            end
-                            default: begin
-                                alu_state_reg <= IDLE_STATE; 
-                                alu_occupied_stop <= alu_occupied_start;                               
-                            end
-                        endcase
+                    if (alu_enable_seq) begin
+                    case(op_code) 
+                    SRL_ALU_ENCODE: begin
+                        alu_state_reg <= SRL_STATE;
+                        result_seq <= operand_1 >> 1;
+                        repitions <= repitions + 1;
                     end
-                    else alu_state_reg <= IDLE_STATE;
+                    SLL_ALU_ENCODE: begin
+                        alu_state_reg <= SLL_STATE;
+                        result_seq <= operand_1 << 1;
+                        repitions <= repitions + 1;
+                    end
+                    MUL_ALU_ENCODE: begin
+                        alu_state_reg <= MUL_STATE;
+                        operand_1_seq <= operand_1; // Multiplicand
+                        operand_2_seq <= operand_2; // Multiplier
+                        result_seq <= 0;
+                    end
+                    default: begin
+                        alu_state_reg <= IDLE_STATE; 
+                        alu_occupied_stop <= alu_occupied_start;                               
+                    end
+                    endcase
+                    end
                 end
                 SRL_STATE: begin
                     if(repitions == operand_2 | (|repitions == 0)) begin
