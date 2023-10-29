@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//`define DEBUG
+`define DEBUG
 `define EXTI
 `define TIM
 `define UART_PROT_1    
@@ -128,8 +128,8 @@ module Dual_core_mcu
     input   wire                        rst_n
     
     `ifdef DEBUG
-//    ,output  wire    [DATA_WIDTH - 1:0]      program_memory_wire [0: PROGRAM_MEMORY_SIZE - 1]
-//    ,output  wire    [DATA_WIDTH - 1:0]      data_memory_wire [0: DATA_MEMORY_SIZE - 1]
+    ,output  wire    [DATA_WIDTH - 1:0]      program_memory_wire [0: PROGRAM_MEMORY_SIZE - 1]
+    ,output  wire    [DATA_WIDTH - 1:0]      data_memory_wire [0: DATA_MEMORY_SIZE - 1]
     `endif
     );
     
@@ -147,10 +147,9 @@ module Dual_core_mcu
     // REGISTERS MANAGEMENT
     // -- Registers management signal
     wire    [DOUBLEWORD_WIDTH - 1:0]    ra_register;
-    wire    [REG_SPACE_WIDTH*3 - 1:0]   register_num;
+    wire    [REG_SPACE_WIDTH - 1:0]     register_num;
     wire                                boot_renew_register_1;
     wire                                boot_renew_register_2;
-    wire                                boot_renew_3registers_2;
     wire                                synchronized_processors;
     wire    [0:REGISTER_AMOUNT - 1]     processing_register_table; 
     wire    [DOUBLEWORD_WIDTH - 1:0]    processor_registers_1 [0:REGISTER_AMOUNT - 1];
@@ -197,7 +196,6 @@ module Dual_core_mcu
     wire                                rd_idle_p1;
     wire                                rd_ins_p1;
     wire                                rd_access_p1;
-    wire                                rd_finish_p1;
     // -- Write-Handler of processor 1
     wire [DOUBLEWORD_WIDTH - 1:0]       data_bus_wr_p1;
     wire [ADDR_WIDTH_DM - 1:0]          addr_wr_p1;
@@ -212,7 +210,6 @@ module Dual_core_mcu
     wire                                rd_idle_p2;
     wire                                rd_ins_p2;
     wire                                rd_access_p2;
-    wire                                rd_finish_p2;
     // -- Write-Handler of processor 2
     wire [DOUBLEWORD_WIDTH - 1:0]       data_bus_wr_p2;
     wire [ADDR_WIDTH_DM - 1:0]          addr_wr_p2;
@@ -260,17 +257,21 @@ module Dual_core_mcu
     wire                                receive_protocol_clk;
     wire [AMOUNT_SND_WIDTH - 1:0]       amount_snd_byte_protocol;
     wire [AMOUNT_RCV_WIDTH - 1:0]       amount_rcv_byte_protocol;
-    reg                                 snd_protocol_available;
-    reg                                 rcv_protocol_available;
+    wire                                snd_protocol_available;
+    wire                                rcv_protocol_available;
     wire [DATA_WIDTH - 1:0]             data_snd_small;
     wire                                snd_small_clk;
     
+    wire                                send_debug_clk;
+    wire                                snd_debug_available;
+    wire [AMOUNT_SND_WIDTH - 1:0]       amount_snd_byte_debug;
+    wire [DOUBLEWORD_WIDTH*2 - 1:0]     data_snd_debug;
     `ifdef UART_PROT_1
     // UART_TX_1
     wire [DATA_WIDTH - 1:0]             data_bus_in_uart_1;
     wire [DATA_WIDTH - 1:0]             TX_config_register_1;
     wire                                TX_use_1;
-    wire                                TX_complete_1;
+    wire                                TX_available_1;
     wire                                TX_enable_1;
     // UART_RX_1
     wire [DATA_WIDTH - 1:0]             data_bus_out_uart_1;
@@ -390,8 +391,6 @@ module Dual_core_mcu
                         .data_type_rd(data_type_rd_p1),
                         .rd_idle(rd_idle_p1),
                         .rd_ins(rd_ins_p1),
-                        .rd_access(rd_access_p1),
-                        .rd_finish(rd_finish_p1),
                         // - write
                         .data_bus_wr(data_bus_wr_p1),
                         .addr_wr(addr_wr_p1),
@@ -409,11 +408,15 @@ module Dual_core_mcu
                         .GPIO_PORT_A(GPIO_PORT_A),
                         .GPIO_PORT_B(GPIO_PORT_B),
                         .GPIO_PORT_C(GPIO_PORT_C),
-                        
+                        // Debug UART
+                        .send_debug_clk(send_debug_clk),
+                        .snd_debug_available(snd_debug_available),
+                        .amount_snd_byte_debug(amount_snd_byte_debug),
+                        .data_snd_debug(data_snd_debug),
                         .rst_n(rst_n)
                         
                         // Debug
-//                        ,.debug_1(debug_1)
+                        ,.debug_1(debug_1)
                         );                
     (* dont_touch = "yes" *)  
                         Processor           
@@ -439,8 +442,6 @@ module Dual_core_mcu
                         .data_type_rd(data_type_rd_p2),
                         .rd_idle(rd_idle_p2),
                         .rd_ins(rd_ins_p2),
-                        .rd_access(rd_access_p2),
-                        .rd_finish(rd_finish_p2),
                         // - write
                         .data_bus_wr(data_bus_wr_p2),
                         .addr_wr(addr_wr_p2),
@@ -468,7 +469,7 @@ module Dual_core_mcu
                         .rst_n(rst_n)
                         
                         // Debug
-//                        ,.debug_2(debug_2)
+                        ,.debug_2(debug_2)
                         );   
                             
     (* dont_touch = "yes" *)  
@@ -478,14 +479,6 @@ module Dual_core_mcu
                         )synchronization_primitive(
                         .clk(clk),
                         // Processor 1
-                        // - read
-                        .data_bus_rd_p1(data_bus_rd_p1),
-                        .addr_rd_p1(addr_rd_p1),
-                        .data_type_rd_p1(data_type_rd_p1),
-                        .rd_idle_p1(rd_idle_p1),
-                        .rd_ins_p1(rd_ins_p1),
-                        .rd_access_p1(rd_access_p1),
-                        .rd_finish_p1(rd_finish_p1),
                         // - write
                         .data_bus_wr_p1(data_bus_wr_p1),
                         .addr_wr_p1(addr_wr_p1),
@@ -494,14 +487,6 @@ module Dual_core_mcu
                         .wr_ins_p1(wr_ins_p1),
                         .wr_access_p1(wr_access_p1),
                         // Processor 2
-                        // - read
-                        .data_bus_rd_p2(data_bus_rd_p2),
-                        .addr_rd_p2(addr_rd_p2),
-                        .data_type_rd_p2(data_type_rd_p2),
-                        .rd_idle_p2(rd_idle_p2),
-                        .rd_ins_p2(rd_ins_p2),
-                        .rd_access_p2(rd_access_p2),
-                        .rd_finish_p2(rd_finish_p2),
                         // - write
                         .data_bus_wr_p2(data_bus_wr_p2),
                         .addr_wr_p2(addr_wr_p2),
@@ -510,12 +495,6 @@ module Dual_core_mcu
                         .wr_ins_p2(wr_ins_p2),
                         .wr_access_p2(wr_access_p2),
                         // Data memory
-                        // -- read
-                        .data_bus_rd_dm(data_bus_rd_dm),
-                        .addr_rd_dm(addr_rd_dm),
-                        .data_type_rd_dm(data_type_rd_dm),
-                        .rd_idle_dm(rd_idle_dm),
-                        .rd_ins_dm(rd_ins_dm),
                         // -- write
                         .data_bus_wr_dm(data_bus_wr_dm),
                         .addr_wr_dm(addr_wr_dm),
@@ -536,7 +515,6 @@ module Dual_core_mcu
                         .processor_idle_2(processor_idle_2),
                         .boot_renew_register_1(boot_renew_register_1),
                         .boot_renew_register_2(boot_renew_register_2),
-                        .boot_renew_3registers_2(boot_renew_3registers_2),
                         .register_num(register_num),
                         .new_data_register(new_data_register),
                         .registers_renew(registers_renew),
@@ -558,7 +536,7 @@ module Dual_core_mcu
                         .data_bus_rd_pm(data_bus_rd_pm),
                         .rd_idle_pm(rd_idle_pm),
                         .addr_rd_pm(addr_rd_pm),
-                        .rd_ins_pm(rd_ins_pm),
+//                        .rd_ins_pm(rd_ins_pm),
                         // Processor 1
                         .main_state(main_state),
                         .fetch_instruction_1(fetch_instruction_1),
@@ -574,7 +552,6 @@ module Dual_core_mcu
                         .register_num(register_num),
                         .boot_renew_register_1(boot_renew_register_1),
                         .boot_renew_register_2(boot_renew_register_2),
-                        .boot_renew_3registers_2(boot_renew_3registers_2),
                         .synchronized_processors(synchronized_processors),
                         .processing_register_table(processing_register_table),
                         // Interrup control
@@ -588,7 +565,7 @@ module Dual_core_mcu
                         .interrupt_handling_2(interrupt_handling_2),
                         .interrupt_handling_3(interrupt_handling_3),
                         // Hardware support instruction
-                        .rd_idle_dm(rd_idle_dm),
+                        .rd_idle_dm(rd_idle_p1 & rd_idle_p2),
                         .wr_idle_dm(wr_idle_dm),
                         
                         .rst_n(rst_n)
@@ -600,7 +577,8 @@ module Dual_core_mcu
                         #(
                         .ADDR_DEPTH(DATA_MEMORY_SIZE),
                         .RESERVED_REG_AMOUNT(RESERVED_REG_AMOUNT),
-                        .RESERVED_REG_DEFAULT(RESERVED_REG_DEFAULT)
+                        .RESERVED_REG_DEFAULT(RESERVED_REG_DEFAULT),
+                        .DUAL_READ_HANDLER(1'b1)
                         )data_memory(
                         .clk(clk),
                         // -- write
@@ -609,18 +587,26 @@ module Dual_core_mcu
                         .addr_wr(addr_wr_dm),
                         .wr_ins(wr_ins_dm),
                         .wr_idle(wr_idle_dm),
-                        // -- read
-                        .data_bus_rd(data_bus_rd_dm),
-                        .rd_idle(rd_idle_dm),
-                        .addr_rd(addr_rd_dm),
-                        .rd_ins(rd_ins_dm),
-                        .data_type_rd(data_type_rd_dm),
+                        // -- read handler 1
+                        .data_bus_rd_1(data_bus_rd_p1),
+                        .rd_idle_1(rd_idle_p1),
+                        .addr_rd_1(addr_rd_p1),
+                        .rd_en_1(rd_ins_p1),
+                        .data_type_rd_1(data_type_rd_p1),
+                        .invalid_rd_flag_1(),
+                        // -- read handler 2
+                        .data_bus_rd_2(data_bus_rd_p2),
+                        .rd_idle_2(rd_idle_p2),
+                        .addr_rd_2(addr_rd_p2),
+                        .rd_en_2(rd_ins_p2),
+                        .data_type_rd_2(data_type_rd_p2),
+                        .invalid_rd_flag_2(),
                         // -- reserved register
                         .reserved_registers(reserved_registers),
                         .rst_n(rst_n)
                         //Debug 
                         `ifdef DEBUG
-//                        ,.registers_wire(data_memory_wire)
+                        ,.registers_wire(data_memory_wire)
                         `endif
                         );
     // Program memory (8Kb)
@@ -640,12 +626,12 @@ module Dual_core_mcu
                         .data_bus_rd(data_bus_rd_pm),
                         .rd_idle(rd_idle_pm),
                         .addr_rd(addr_rd_pm),
-                        .rd_ins(rd_ins_pm),
+//                        .rd_ins(rd_ins_pm),
                         .data_type_rd(2'b10),
                         .rst_n(rst_n)
                         //Debug 
                         `ifdef DEBUG
-//                        ,.registers_wire(program_memory_wire)
+                        ,.registers_wire(program_memory_wire)
                         `endif
                         );
     (* dont_touch = "yes" *)  
@@ -695,11 +681,13 @@ module Dual_core_mcu
                                  
     (* dont_touch = "yes" *)  fifo_advanced_module
                         #(
+                        .SEND_PACKET(1'b1),
+                        .RECEIVE_PACKET(1'b1),
                         `ifdef DEBUG
-//                        .FINISH_RECEIVE_TIMER(FINISH_RECEIVE_TIMER)
+                        .FINISH_RECEIVE_TIMER(FINISH_RECEIVE_TIMER)
                         `endif
                         )
-                        fifo_advanced_module
+                        fifo_advanced_uart_2_module
                         (
                         .clk(clk),
                         // TX
@@ -728,6 +716,45 @@ module Dual_core_mcu
                         `endif
                         
                         .rst_n(rst_n)
+                        );             
+                                 
+    (* dont_touch = "yes" *)  fifo_advanced_module
+                        #(
+                        .SEND_PACKET(1'b1),
+                        .RECEIVE_PACKET(1'b0),
+                        `ifdef DEBUG
+                        .FINISH_RECEIVE_TIMER()
+                        `endif
+                        )
+                        fifo_advanced_uart_1_module
+                        (
+                        .clk(clk),
+                        // TX
+                        // -- to Processor
+                        .snd_big_clk(send_debug_clk),
+                        .amount_byte_snd_big(amount_snd_byte_debug),
+                        .data_snd_big(data_snd_debug),
+                        .available_snd(snd_debug_available),
+                        // -- to UART
+                        .data_snd_small(data_bus_in_uart_1),
+                        .snd_small_clk(TX_use_1),
+                        .snd_small_available(TX_available_1),
+                        // RX 
+                        // -- to Processor
+                        .rcv_big_clk(),
+                        .amount_byte_rcv_big(),
+                        .data_rcv_big(),
+                        .available_rcv(),
+                        // -- to UART
+                        .data_rcv_small(),
+                        .rcv_small_clk(),
+                        .rcv_small_available(),
+                        `ifdef DEBUG_DATA
+                        .queue_snd_wire(),
+                        .queue_rcv_wire(),
+                        `endif
+                        
+                        .rst_n(rst_n)
                         );        
     // Communication peripherals    
     `ifdef UART_PROT_1        
@@ -737,7 +764,7 @@ module Dual_core_mcu
                         .RX_FLAG_CONFIG(1'b1),              // Use internal FIFO
                         .FIFO_DEPTH(FIFO_BUFFER_SIZE)
                         `ifdef DEBUG
-//                        ,.CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
+                        ,.CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
                         `endif
                         )uart_peripheral_1(
                         .clk(clk),
@@ -747,7 +774,7 @@ module Dual_core_mcu
                         .data_bus_in(data_bus_in_uart_1),
                         .TX_config_register(TX_config_register_1),
                         .TX_use(TX_use_1),
-                        .TX_complete(TX_complete_1),
+                        .TX_available(TX_available_1),
                         .TX_enable(TX_enable_1),
                         // RX
                         .data_bus_out(data_bus_out_uart_1),
