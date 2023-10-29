@@ -78,6 +78,7 @@ module Multi_processor_manager
     parameter BGE_ENCODE           = 3'b101,
     // Funct3 encoder (for SYSTEM-type) 
     parameter BREAK_ENCODE         = 3'b001,            // BREAK: use for debugger
+    parameter DEBUG_ENCODE         = 3'b101,
     parameter EXIT_ENCODE          = 3'b010,
     parameter RETI_ENCODE          = 3'b011,
     // Funct3 encoder (for MISC-MEM type)
@@ -609,8 +610,18 @@ module Multi_processor_manager
                             BREAK_ENCODE: begin
                             // Send all data in Memory and Registers to UART_TX
                             end
+                            DEBUG_ENCODE: begin
+                                if(processor_idle_1) begin
+                                    program_state <= EXIT_STATE;
+                                    PC <= MAIN_PROGRAM_ADDR;        // Return init addr of main program 
+                                    // Boot
+                                    boot_processor_1_reg <= 1;
+                                    // Log 
+                                    processor_prev <= 3;            // 3-mpm
+                                end
+                            end
                             EXIT_ENCODE: begin
-                                program_state <= EXIT_STATE;
+                            //
                             end
                             default: begin
                             
@@ -1012,6 +1023,9 @@ module Multi_processor_manager
             end
             EXIT_STATE: begin
             
+            // Reset clk
+            boot_processor_1_reg <= 0;
+            boot_processor_2_reg <= 0;
             end
             default: begin
             
