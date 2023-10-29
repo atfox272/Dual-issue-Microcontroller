@@ -86,6 +86,7 @@ module Processor
     // -- Data transfer type 
     parameter LOAD_ENCODE           = 7'b0000011,       // LOAD-type
     parameter STORE_ENCODE          = 7'b0100011,       // STORE-type
+    // -- System type
     parameter MISC_MEM_ENCODE       = 7'b0101111,       // Hardware-supportive memory type
     parameter PROTOCOL_ENCODE       = 7'b1000001,       // Protocol-type
     parameter GPIO_ENCODE           = 7'b1110101,       // GPIO-type
@@ -97,6 +98,7 @@ module Processor
     parameter BGE_ENCODE           = 3'b101,
     // Funct3 encoder (for SYSTEM-type) 
     parameter BREAK_ENCODE         = 3'b001,            // BREAK: use for debugger
+    parameter DEBUG_ENCODE         = 3'b101,
     parameter EXIT_ENCODE          = 3'b010,
     parameter RETI_ENCODE          = 3'b011,
     // Funct3 encoder (for MISC-MEM type)
@@ -187,7 +189,6 @@ module Processor
     input   wire                            rd_idle,   
     output  wire                            rd_ins, 
     input   wire                            rd_access,
-    output  wire                            rd_finish,
     // Synchronization primitive (WRITE_STATE)
     output  wire [DOUBLEWORD_WIDTH - 1:0]   data_bus_wr,
     output  wire [ADDR_WIDTH_DM - 1:0]      addr_wr,
@@ -201,9 +202,11 @@ module Processor
     input   wire [DATA_WIDTH - 1:0]         data_bus_out_uart_1,
     output  wire                            RX_use_1,
     output  wire                            RX_flag_1,
-    // UART_TX_1
-    output  wire [DATA_WIDTH - 1:0]         data_bus_in_uart_1,
-    output  wire                            TX_use_1,
+    // UART_TX_1 (via Package module - fifo_advanced)
+    output  wire                            send_debug_clk,
+    input   wire                            snd_debug_available,
+    output  wire [AMOUNT_SND_WIDTH - 1:0]   amount_snd_byte_debug,
+    output  wire [DOUBLEWORD_WIDTH*2 - 1:0] data_snd_debug,
     // Program memory
     output  wire [DOUBLEWORD_WIDTH - 1:0]   data_bus_wr_pm,
     input   wire                            wr_idle_pm,
@@ -249,6 +252,7 @@ module Processor
         reg [DOUBLEWORD_WIDTH - 1:0] registers_owner    [0:REGISTER_AMOUNT - 1];
         wire[DOUBLEWORD_WIDTH - 1:0] rs1_regFile;
         wire[DOUBLEWORD_WIDTH - 1:0] rs2_regFile;
+        wire[DOUBLEWORD_WIDTH - 1:0] rd_regFile;
         // Declare wires and states
         reg [1:0] main_state_reg;
         reg [1:0] stored_program_state_reg;
@@ -296,7 +300,6 @@ module Processor
         reg  [ADDR_WIDTH_DM - 1:0]          addr_rd_reg;
         logic[DATA_TYPE_WIDTH - 1:0]        data_type_rd_logic;   
         reg                                 rd_ins_reg;
-        reg                                 rd_finish_reg;
         //  - write
         reg  [DOUBLEWORD_WIDTH - 1:0]       data_bus_wr_reg;
         reg  [ADDR_WIDTH_DM - 1:0]          addr_wr_reg;
@@ -319,7 +322,9 @@ module Processor
         wire                                GPIO_PORT_C_mapping;
         wire[GPIO_PORT_WIDTH - 1:0]         pin_rs2_align;
         wire[GPIO_PORT_WIDTH - 1:0]         port_rs1_align;
-        
+        // Debug UART 
+        reg                                 send_debug_clk_reg;
+              
         // Main state encoder
         localparam IDLE_STATE = 0;
         localparam STORE_PROGRAM_STATE = 1;
@@ -332,9 +337,7 @@ module Processor
         localparam EXECUTE_INSTRUCTION_STATE = 1;
         localparam WRITE_BACK_STATE = 2;
         localparam DMEM_RD_ACCESS_STATE = 3;
-        localparam WRITE_BACK_DMEM_STATE = 4;
         localparam DMEM_WR_ACCESS_STATE = 5;
-        localparam DMEM_WR_CONFIRM_STATE = 6;
         localparam ADDRESS_MAPPING_PROT_STATE = 7;
         
         assign main_state = main_state_reg;
@@ -352,7 +355,6 @@ module Processor
         assign addr_rd = addr_rd_reg;
         assign data_type_rd = data_type_rd_logic;
         assign rd_ins = rd_ins_reg;
-        assign rd_finish = rd_finish_reg;
         assign register_sign_extend_word  = {32{data_bus_rd[WORD_WIDTH - 1]}};
         assign register_sign_extend_7byte = {56{data_bus_rd[BYTE_WIDTH - 1]}};
         always_comb begin
@@ -403,6 +405,7 @@ module Processor
         assign processor_idle = (running_program_state_reg == DISPATH_STATE);
         // Register management
         assign rs1_regFile = registers_renew[rs1_space];
+        assign rd_regFile  = registers_renew[rd_space];
         assign rs2_regFile = registers_renew[rs2_space];
         for(genvar index_register = 0; index_register < REGISTER_AMOUNT; index_register = index_register + 1) begin
             assign processor_registers[index_register] = registers_owner[index_register];
@@ -413,7 +416,10 @@ module Processor
         assign GPIO_PORT_C_mapping = GPIO_PORT_C[pin_rs2_align];
         assign pin_rs2_align  = rs2_regFile[GPIO_PORT_WIDTH - 1:0];
         assign port_rs1_align = rs1_regFile[GPIO_PORT_WIDTH - 1:0];
-       
+        // Debug UART
+        assign send_debug_clk = send_debug_clk_reg;
+        assign amount_snd_byte_debug = {{AMOUNT_SND_WIDTH{1'b1}}};  // Always 128bit
+        assign data_snd_debug = {rd_regFile, rs1_regFile};    
         // ALU block
         assign alu_sign_extend_imm2 = {52{fetch_instruction_reg[IMM_2_SPACE_MSB]}}; 
         assign alu_sign_extend_imm3 = {52{fetch_instruction_reg[IMM_3_SPACE_MSB]}}; 
@@ -610,7 +616,6 @@ module Processor
                 _4byte_counter <= 0;
                 addr_rd_reg <= 0;
                 rd_ins_reg <= 0;
-                rd_finish_reg <= 0;
                 addr_wr_reg <= 0;
                 data_bus_wr_reg <= 0;
                 wr_ins_reg <= 0;
@@ -694,6 +699,8 @@ module Processor
                                         registers_owner[i] <= registers_renew[i];
                                     end
                                 end
+                                // Reset clock
+                                wr_ins_reg <= 0;
                             end
                             EXECUTE_INSTRUCTION_STATE: begin
                             
@@ -736,7 +743,6 @@ module Processor
                                         addr_rd_reg <= alu_result_1cycle;
                                         rd_ins_reg <= 1;
                                         // Data_type_rd is connected to instruction directly
-                                        rd_finish_reg <= 0;      
                                         running_program_state_reg <= DMEM_RD_ACCESS_STATE;
                                     end
                                     STORE_ENCODE: begin
@@ -770,6 +776,16 @@ module Processor
                                             end
                                         endcase
                                     end
+                                    SYSTEM_ENCODE: begin
+                                        if(funct3_space == DEBUG_ENCODE) begin
+                                            if(snd_debug_available) begin
+                                                send_debug_clk_reg <= 1;
+                                                running_program_state_reg <= DISPATH_STATE;
+                                            end
+                                        end
+                                        else running_program_state_reg <= DISPATH_STATE;
+                                    end
+                                    default: begin end
                                 endcase 
                             end
                             WRITE_BACK_STATE: begin
@@ -781,31 +797,28 @@ module Processor
                                 else running_program_state_reg <= running_program_state_reg;
                             end
                             DMEM_RD_ACCESS_STATE: begin
-                                if(rd_access) begin
-                                    running_program_state_reg <= WRITE_BACK_DMEM_STATE;
-                                    rd_ins_reg <= 0;
-                                end
-                                else running_program_state_reg <= running_program_state_reg;
+                                running_program_state_reg <= DISPATH_STATE;
+                                registers_owner[rd_space] <= data_bus_rd_sign_extend;
+                                rd_ins_reg <= 0;
                             end
-                            WRITE_BACK_DMEM_STATE: begin
-                                if(rd_idle) begin
-                                    registers_owner[rd_space] <= data_bus_rd_sign_extend;
-                                    rd_finish_reg <= 1;
+//                            WRITE_BACK_DMEM_STATE: begin
+//                                if(rd_idle) begin
+//                                    registers_owner[rd_space] <= data_bus_rd_sign_extend;
+//                                    running_program_state_reg <= DISPATH_STATE;
+//                                end
+//                                else running_program_state_reg <= running_program_state_reg;
+//                            end
+                            DMEM_WR_ACCESS_STATE: begin
+                                if(wr_access) begin
                                     running_program_state_reg <= DISPATH_STATE;
                                 end
                                 else running_program_state_reg <= running_program_state_reg;
                             end
-                            DMEM_WR_ACCESS_STATE: begin
-                                if(wr_access) begin
-                                    running_program_state_reg <= DMEM_WR_CONFIRM_STATE;
-                                end
-                                else running_program_state_reg <= running_program_state_reg;
-                            end
-                            DMEM_WR_CONFIRM_STATE: begin  
-                                // Notation of DMEM_WR_CONFIRM_STATE: Just wait for 1 cycle to confirm stablization of buffer
-                                running_program_state_reg <= DISPATH_STATE;
-                                wr_ins_reg <= 0;
-                            end
+//                            DMEM_WR_CONFIRM_STATE: begin  
+//                                // Notation of DMEM_WR_CONFIRM_STATE: Just wait for 1 cycle to confirm stablization of buffer
+//                                running_program_state_reg <= DISPATH_STATE;
+//                                wr_ins_reg <= 0;
+//                            end
                         endcase
                     end
                 endcase 
@@ -870,6 +883,7 @@ module Processor
         reg                                 send_protocol_clk_reg;
         reg                                 receive_protocol_clk_reg;
         reg [AMOUNT_SND_WIDTH - 1:0]        amount_snd_byte_protocol_reg;
+        
         // Protocol buffer
         reg [DOUBLEWORD_WIDTH - 1:0]        protocol_packet_h;
         reg [DOUBLEWORD_WIDTH - 1:0]        protocol_packet_l;
@@ -878,7 +892,6 @@ module Processor
         reg [ADDR_WIDTH_DM - 1:0]           addr_rd_reg;
         logic[DATA_TYPE_WIDTH - 1:0]        data_type_rd_logic;
         reg                                 rd_ins_reg;
-        reg                                 rd_finish_reg;
         //  - write
         reg [DOUBLEWORD_WIDTH - 1:0]        data_bus_wr_reg;
         reg [ADDR_WIDTH_DM - 1:0]           addr_wr_reg;
@@ -901,9 +914,7 @@ module Processor
         localparam EXECUTE_INSTRUCTION_STATE = 1;
         localparam WRITE_BACK_STATE = 2;
         localparam DMEM_RD_ACCESS_STATE = 3;
-        localparam WRITE_BACK_DMEM_STATE = 4;
         localparam DMEM_WR_ACCESS_STATE = 5;
-        localparam DMEM_WR_CONFIRM_STATE = 6;
         localparam ADDRESS_MAPPING_PROT_STATE = 7;
         localparam SEND_REQUEST_PROTOCOL_STATE = 8;
         localparam RECEIVE_REQUEST_PROTOCOL_STATE = 9;
@@ -913,7 +924,6 @@ module Processor
         assign addr_rd = addr_rd_reg;
         assign data_type_rd = data_type_rd_logic;
         assign rd_ins = rd_ins_reg;
-        assign rd_finish = rd_finish_reg;
         assign register_sign_extend_word  = {32{data_bus_rd[WORD_WIDTH - 1]}};
         assign register_sign_extend_7byte = {56{data_bus_rd[BYTE_WIDTH - 1]}};
         always_comb begin
@@ -1161,7 +1171,6 @@ module Processor
                 // Reset buffer interact with RAM 
                 addr_rd_reg <= 0;
                 rd_ins_reg <= 0;
-                rd_finish_reg <= 0;
                 addr_wr_reg <= 0;
                 data_bus_wr_reg <= 0;
                 wr_ins_reg <= 0;
@@ -1190,6 +1199,7 @@ module Processor
                                 // Reset clk
                                 send_protocol_clk_reg <= 0;
                                 receive_protocol_clk_reg <= 0;
+                                wr_ins_reg <= 0;
                             end
                             EXECUTE_INSTRUCTION_STATE: begin
                                 case(opcode_space) 
@@ -1229,7 +1239,6 @@ module Processor
                                         addr_rd_reg <= alu_result_1cycle;
                                         rd_ins_reg <= 1;
                                         // Data_type_rd is connected to instruction directly
-                                        rd_finish_reg <= 0;      
                                         running_program_state_reg <= DMEM_RD_ACCESS_STATE;
                                     end
                                     STORE_ENCODE: begin
@@ -1289,31 +1298,28 @@ module Processor
                                 else running_program_state_reg <= running_program_state_reg;
                             end
                             DMEM_RD_ACCESS_STATE: begin
-                                if(rd_access) begin
-                                    running_program_state_reg <= WRITE_BACK_DMEM_STATE;
-                                    rd_ins_reg <= 0;
-                                end
-                                else running_program_state_reg <= running_program_state_reg;
+                                running_program_state_reg <= DISPATH_STATE;
+                                registers_owner[rd_space] <= data_bus_rd_sign_extend;
+                                rd_ins_reg <= 0;
                             end
-                            WRITE_BACK_DMEM_STATE: begin
-                                if(rd_idle) begin
-                                    registers_owner[rd_space] <= data_bus_rd_sign_extend;
-                                    rd_finish_reg <= 1;
+//                            WRITE_BACK_DMEM_STATE: begin
+//                                if(rd_idle) begin
+//                                    registers_owner[rd_space] <= data_bus_rd_sign_extend;
+//                                    running_program_state_reg <= DISPATH_STATE;
+//                                end
+//                                else running_program_state_reg <= running_program_state_reg;
+//                            end
+                            DMEM_WR_ACCESS_STATE: begin
+                                if(wr_access) begin
                                     running_program_state_reg <= DISPATH_STATE;
                                 end
                                 else running_program_state_reg <= running_program_state_reg;
                             end
-                            DMEM_WR_ACCESS_STATE: begin
-                                if(wr_access) begin
-                                    running_program_state_reg <= DMEM_WR_CONFIRM_STATE;
-                                end
-                                else running_program_state_reg <= running_program_state_reg;
-                            end
-                            DMEM_WR_CONFIRM_STATE: begin  
-                                // Notation of DMEM_WR_CONFIRM_STATE: Just wait for 1 cycle to confirm stablization of interactive buffer
-                                running_program_state_reg <= DISPATH_STATE;
-                                wr_ins_reg <= 0;
-                            end
+//                            DMEM_WR_CONFIRM_STATE: begin  
+//                                // Notation of DMEM_WR_CONFIRM_STATE: Just wait for 1 cycle to confirm stablization of interactive buffer
+//                                running_program_state_reg <= DISPATH_STATE;
+//                                wr_ins_reg <= 0;
+//                            end
                             ADDRESS_MAPPING_PROT_STATE: begin
                                 case(protocol_address_mapping_reg) 
                                     UART_TX_MAPPING: begin
