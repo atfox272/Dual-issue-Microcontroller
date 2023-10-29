@@ -145,6 +145,8 @@ module Multi_processor_manager
     wire[DOUBLEWORD_WIDTH - 1:0]    rs2_regFile;
     reg [ADDR_WIDTH_PM - 1:0]       PC;
     wire[ADDR_WIDTH_PM - 1:0]       PC_next;
+    wire[ADDR_WIDTH_PM - 1:0]       PC_jump_condition;
+    wire[ADDR_WIDTH_PM - 1:0]       PC_jump_uncondition;
     // State machine
     reg [4:0] program_state;
     // reg
@@ -224,7 +226,9 @@ module Multi_processor_manager
     localparam EXIT_STATE = 15;
     
     assign addr_rd_pm = PC;
-    assign PC_next = PC + 4;
+    assign PC_next              = PC + 4;
+    assign PC_jump_uncondition  = PC + {{37{jump_offset_space[JUMP_OFS_SPACE_WIDTH - 1]}}, jump_offset_space, 2'b00};                   // Sign extend included
+    assign PC_jump_condition    = PC + {{50{immediate_3_space[IMM_3_SPACE_WIDTH - 1]}}, immediate_3_space, immediate_1_space, 2'b00};   // Sign extend included
 //    assign rd_ins_pm = rd_ins_pm_reg;
     // Dispatch Instruction management
     assign cur_instruction  = (contain_ins) ? _2_instructions_buf[31:0] : _2_instructions_buf[63:32]; 
@@ -284,6 +288,34 @@ module Multi_processor_manager
     assign interrupt_handling_1 = interrupt_handling_1_reg;
     assign interrupt_handling_2 = interrupt_handling_2_reg;
     assign interrupt_handling_3 = interrupt_handling_3_reg;
+    
+    // Small ALU (for sign-comparison)
+    localparam EQUAL_RESULT     = 0;
+    localparam GREATER_RESULT   = 1;
+    localparam LESS_RESULT      = 2;
+    localparam NOTHING_RESULT   = 3;
+    logic [1:0] sign_comparison_result;
+    always_comb begin
+        if(rs1_regFile[DOUBLEWORD_WIDTH - 1] == rs2_regFile[DOUBLEWORD_WIDTH - 1]) begin    // Same sign
+            if(rs1_regFile[DOUBLEWORD_WIDTH - 2:0] == rs2_regFile[DOUBLEWORD_WIDTH - 2:0]) begin
+                sign_comparison_result = EQUAL_RESULT;
+            end
+            else if (rs1_regFile[DOUBLEWORD_WIDTH - 2:0] < rs2_regFile[DOUBLEWORD_WIDTH - 2:0]) begin
+                if(rs1_regFile[DOUBLEWORD_WIDTH - 1] == 0) sign_comparison_result = LESS_RESULT;
+                else sign_comparison_result = GREATER_RESULT;
+            end
+            else begin
+                if(rs1_regFile[DOUBLEWORD_WIDTH - 1] == 0) sign_comparison_result = GREATER_RESULT;
+                else sign_comparison_result = LESS_RESULT;
+            end
+        end
+        else if (rs1_regFile[DOUBLEWORD_WIDTH - 1] == 1) begin                              // rs1 is negative number
+            sign_comparison_result = LESS_RESULT;
+        end
+        else begin                                                                          // rs2 is negative number
+            sign_comparison_result = GREATER_RESULT;
+        end
+    end
     
     // LIFO_out decode
     assign program_type_out_stack = PC_info_out_stack[PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 1 : PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 2];
@@ -538,7 +570,7 @@ module Multi_processor_manager
                         if(synchronized_processors) begin
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                             x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC_next : x1;
-                            PC <= PC + {jump_offset_space[ADDR_WIDTH_PM - 1:0]};
+                            PC <= PC_jump_uncondition;
                             contain_ins <= 0;
                         end
                         // Log 
@@ -549,7 +581,7 @@ module Multi_processor_manager
                         if(synchronized_processors) begin
                             program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
                             x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC_next : x1;
-                            PC <= PC + jump_offset_space[ADDR_WIDTH_PM - 1:0];
+                            PC <= PC_jump_uncondition;
                             contain_ins <= 0;
                         end
                         // Log 
@@ -809,9 +841,9 @@ module Multi_processor_manager
                 if(synchronized_processors) begin
                     case(funct3_space)
                         BEQ_ENCODE: begin
-                            if(rs1_regFile == rs2_regFile) begin
+                            if(sign_comparison_result == EQUAL_RESULT) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                PC <= PC_jump_condition;
                             end
                             else begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
@@ -819,9 +851,9 @@ module Multi_processor_manager
                             end 
                         end
                         BNE_ENCODE: begin
-                            if(rs1_regFile != rs2_regFile) begin
+                            if(sign_comparison_result != EQUAL_RESULT) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                PC <= PC_jump_condition;
                             end
                             else begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
@@ -829,9 +861,9 @@ module Multi_processor_manager
                             end 
                         end
                         BLT_ENCODE: begin
-                            if(rs1_regFile < rs2_regFile) begin 
+                            if(sign_comparison_result == LESS_RESULT) begin 
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                PC <= PC_jump_condition;
                             end
                             else begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
@@ -839,9 +871,9 @@ module Multi_processor_manager
                             end 
                         end
                         BGE_ENCODE: begin
-                            if(rs1_regFile > rs2_regFile) begin
+                            if(sign_comparison_result == GREATER_RESULT) begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
-                                PC <= {52'b00, immediate_3_space, immediate_1_space};
+                                PC <= PC_jump_condition;
                             end
                             else begin
                                 program_state <= DETECT_HIGHER_PRIO_PROGRAM_STATE;
