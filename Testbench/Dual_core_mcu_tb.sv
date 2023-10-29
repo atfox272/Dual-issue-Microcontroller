@@ -4,11 +4,11 @@
 //`define SPI_PROT
 //`define I2C_PROT
 // Test case
-//`define NORMAL_TESTCASE
+`define NORMAL_TESTCASE
 //`define GPIO_TESTCASE
 //`define PERIPHERAL_TESTCASE
 //`define INTERRUPT_HANDLER_TESTCASE
-`define PARALLEL_TESTCASE
+//`define PARALLEL_TESTCASE
 
 module Dual_core_mcu_tb;
     parameter DATA_WIDTH = 8;
@@ -150,6 +150,11 @@ module Dual_core_mcu_tb;
     forever #1 clk <= ~clk;
     end
     
+    reg [12- 1:0] quick_seperate_imm12;
+    wire[7 - 1:0] imm12lo;
+    wire[5 - 1:0] imm12hi;
+    assign imm12hi = quick_seperate_imm12[11:7];
+    assign imm12lo = quick_seperate_imm12[6:0];
     
     parameter ADD_INS_17    = 17'b00000000000110011;// ADD:     <5-rd><5-rs1><5-rs2>
     parameter ADDI_INS_10   = 10'b0000010011;       // ADDI:    <5-rd><5rs1><12-imm>
@@ -165,17 +170,26 @@ module Dual_core_mcu_tb;
     parameter SB_INS_10     = 10'b0000100011;       // SB:      <5-immh><5-rs1><5rs2><7-imml>
     parameter SW_INS_10     = 10'b0100100011;       // SW:      <5-immh><5-rs1><5rs2><7-imml>
     parameter SD_INS_10     = 10'b0110100011;       // SD:      <5-immh><5-rs1><5rs2><7-imml>
-    
+    // Unocndition jump
     parameter J_INS_7       = 7'b1100111;           // J:       <25-imm>
     parameter JAL_INS_7     = 7'b1101111;           // J:       <25-imm>
     parameter JALR_INS_7    = 7'b1101011;           // J:       <25-imm>
+    // Condition jumo
+    parameter BEQ_INS_10    = 10'b0001100011;       // BEQ:     <imm-h><rs1><rs2><imm-l>
+    parameter BNE_INS_10    = 10'b0011100011;       // BNE:     <imm-h><rs1><rs2><imm-l>
+    parameter BLT_INS_10    = 10'b1001100011;       // BLT:     <imm-h><rs1><rs2><imm-l>
+    parameter BGE_INS_10    = 10'b1011100011;       // BGE:     <imm-h><rs1><rs2><imm-l>
     
     parameter FENCE_INS_10  = 10'b0100101111;       // FENCE:   Don't care
     
     parameter RETI_INS_10   = 10'b0111110111;       // RETI:   Don't care
+    parameter DEBUG_INS_10  = 10'b1011110111;       // RETI:   Don't care
     
-    parameter UART_TX_INS_12= 12'b010001000001;      // UART_TX: <5-rs3><5-rs1><5-rs2><5-imm>
-    parameter UART_RX_INS_12= 12'b000001000001;      // UART_TX: <5-rd1><5-rd2><5-rd3><5-imm>
+    parameter UART_TX_INS_17= 17'b10000000001000001;      // UART_TX: <5-rs3><5-rs1><5-rs2><5-imm>
+    parameter UART_RX_INS_17= 17'b00000000001000001;      // UART_TX: <5-rd1>
+    parameter LOAD_RX_H_INS_17= 17'b00000100001000001;      // UART_TX: <5-rd1>
+    parameter LOAD_RX_L_INS_17= 17'b00000110001000001;      // UART_TX: <5-rd1>
+    
     
     parameter GPIO_READ_INS_10  = 10'b0001110101;      // UART_TX: <5-rs3><5-rs1><5-rs2><6-imm>
     parameter GPIO_WRITE_INS_10 = 10'b0011110101;      // UART_TX: <5-rs3><5-rs1><5-rs2><6-imm>
@@ -221,13 +235,13 @@ module Dual_core_mcu_tb;
             end
             
             // PC = 0xD0
-            instruction <= {25'd08,JAL_INS_7};      //          // Jump to 0xD8     &   x1 <= PC + 4 = 0xD4
+            instruction <= {25'd02,JAL_INS_7};      //          // Jump to 0xD8     &   x1 <= PC + 4 = 0xD4
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
             // PC = 0xD4
-            instruction <= {25'd20,J_INS_7};                    // Jump to 0xD4 + 25'd24 = 0xE8
+            instruction <= {25'd5,J_INS_7};                    // Jump to 0xD4 + 5 * 4 = 0xE8
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
@@ -352,8 +366,92 @@ module Dual_core_mcu_tb;
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-            
             // PC = 0x128
+            instruction <= {5'd00,5'd00,5'd16,7'd20,SB_INS_10}; // Store x16(70 - 0x46) data to 0x20
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x12C
+            instruction <= {5'd00,5'd00,5'd01,7'd21,SB_INS_10}; // Store x1(0xD4) data to 0x21
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x130
+            instruction <= {5'd00,5'd00,5'd02,7'd22,SB_INS_10}; // Store x02(0xF0) data to 0x22
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x134
+            instruction <= {5'd00,5'd00,5'd03,7'd23,SB_INS_10}; // Store x03(0x2B) data to 0x23
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x138
+            instruction <= {5'd20,5'd00,12'd20,LB_INS_10};      // Load 20(x0) to x20 = 0x46
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x13C
+            instruction <= {5'd21,5'd00,12'd21,LB_INS_10};      // Load 21(x0) to x21 = 0xD4
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x140
+            instruction <= {5'd22,5'd00,12'd22,LB_INS_10};      // Load 22(x0) to x22 = 0xFFFFFFFFFFFFFFF0
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x144
+            instruction <= {5'd23,5'd00,12'd23,LB_INS_10};      // Load 23(x0) to x23 = 0x2b
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x148
+            instruction <= {5'd25,5'd00,12'd20,LW_INS_10};      // Load 20(x0) to x25 = 0x000000002bf0d446
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x14C
+            instruction <= {5'd26,5'd00,12'd22,LW_INS_10};      // Load 23(x0) to x23 = 0x000000002bf0d446 (invalid_flag == 1)
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x150
+            instruction <= {5'd26,5'd00,12'd22,LW_INS_10};      // Load 23(x0) to x23 = 0x000000002bf0d446 (invalid_flag == 1)
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x158
+            quick_seperate_imm12 <= 2; #1;
+            instruction <= {imm12hi,5'd20,5'd23,imm12lo,BGE_INS_10};      // JUMP to 0x160 (without sending debug data)
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x15C
+            instruction <= {5'd23,5'd22,5'd00,7'd00,DEBUG_INS_10};      // Send debug x23 & x22
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x160
+            instruction <= {5'd07,5'd09,5'd08,MUL_INS_17};      // x7 = x8 * x9     = -40
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x164 (EXIT)
             instruction <= {25'd00,J_INS_7};                   // While(1) {};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
@@ -523,7 +621,7 @@ module Dual_core_mcu_tb;
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
         // PC = 0xD0
-            instruction <= {-25'd12,J_INS_7};                        // Jump to C8;
+            instruction <= {-25'd3,J_INS_7};                        // Jump to C8;
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
@@ -605,19 +703,34 @@ module Dual_core_mcu_tb;
             end
             
             // PC = 0xCC
-            instruction <= {5'd08,5'd07,5'd09,5'b00,UART_TX_INS_12};      // Send 9bytes of x7 -> x8
+            instruction <= {5'd08,5'd07,5'd09,UART_TX_INS_17};      // Send 9bytes of x7 -> x8
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
             // PC = 0xD0
-            instruction <= {5'd15,5'd16,5'd17,5'b00,UART_RX_INS_12};      // Receive data (waiting until available)
+            instruction <= {5'd15,5'd00,5'd00,UART_RX_INS_17};      // Receive data (waiting until available)
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD4
+            instruction <= {5'd16,5'd09,5'd07,MUL_INS_17};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD4
+            instruction <= {5'd16,5'd00,5'd00,LOAD_RX_L_INS_17};      // Receive data (waiting until available)
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
             // PC = 0xD4
-            instruction <= {-25'd04,J_INS_7};                    // Jump to 0xD4 + 25'd24 = 0xE8
+            instruction <= {5'd16,5'd16,12'd01,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD8
+            instruction <= {-25'd4,J_INS_7};                    // Jump to 0xD4 + 25'd24 = 0xE8
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
@@ -1015,12 +1128,8 @@ module Dual_core_mcu_tb;
         #2750200 $stop;
         `else
         #66200 $stop;
-        #02200 $stop;
-        #02200 $stop;
-        #02200 $stop;
-        #02200 $stop;
-        #02200 $stop;
-        #02200 $stop;
+        #(02200*9) $stop;
+        #(02200*7) $stop;
         `endif
     end 
 endmodule
