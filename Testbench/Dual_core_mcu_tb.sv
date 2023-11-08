@@ -13,6 +13,7 @@
 module Dual_core_mcu_tb;
     parameter DATA_WIDTH = 8;
     parameter GPIO_NUM = 13;
+    parameter INTERNAL_CLOCK = 9600 * 10;
     parameter CLOCK_DIVIDER_UNIQUE_1 = 5;
     parameter PROGRAM_MEMORY_SIZE = 1024;
     parameter DATA_MEMORY_SIZE = 1024;
@@ -61,7 +62,7 @@ module Dual_core_mcu_tb;
     wire    TX_ex;
     reg     TX_use_ex;
     reg     [7:0] data_bus_in_tx_ex;
-    wire    [7:0] TX_config_register_ex = 8'b10001111;
+    wire    [7:0] TX_config_register_ex = 8'b00100011;
 //    wire    [7:0] RX_config_register_1  = 8'b10001111;
 // external UART_2
     reg  [DATA_WIDTH - 1:0] data_bus_in_uart_ex_2;
@@ -79,60 +80,63 @@ module Dual_core_mcu_tb;
     assign RX_ex_2 = TX_2;
     assign RX_2 = TX_ex_2; 
     
-    Dual_core_mcu       #(
-                        .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1),
-                        .FINISH_RECEIVE_TIMER(FINISH_RECEIVE_TIMER)
-                        ) dual_core_mcu (
-                        .clk(clk),
-                        .RX_1(RX_1),
-                        .TX_1(TX_1),
-                        .RX_2(RX_2),
-                        .TX_2(TX_2),
-                        .IO_PORT(IO_PORT),
-                        .rst_n(rst_n)
-                        ,.program_memory_wire(program_memory_wire)
-                        ,.data_memory_wire(data_memory_wire)
-                        );
+    Dual_core_mcu       
+        #(
+        .INTERNAL_CLOCK(INTERNAL_CLOCK),
+        .FINISH_RECEIVE_TIMER(FINISH_RECEIVE_TIMER)
+        ) dual_core_mcu (
+        .clk(clk),
+        .RX_1(RX_1),
+        .TX_1(TX_1),
+        .RX_2(RX_2),
+        .TX_2(TX_2),
+        .IO_PORT(IO_PORT),
+        .rst_n(rst_n)
+        ,.program_memory_wire(program_memory_wire)
+        ,.data_memory_wire(data_memory_wire)
+        );
     // External UART_1                    
-    com_uart            #(
-                        .SLEEP_MODE(0),
-                        .FIFO_DEPTH(13'd4096),
-                        .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
-                        )
-                        uart_ex
-                        (
-                        .clk(clk),
-                        .TX(TX_ex),
-                        .TX_use(TX_use_ex),
-                        .data_bus_in(data_bus_in_tx_ex),
-                        .TX_config_register(TX_config_register_ex),
-                        .rst_n(rst_n)
-                        );
+    uart_peripheral
+        #(
+        .SLEEP_MODE(0),
+        .FIFO_DEPTH(13'd4096),
+        .INTERNAL_CLOCK(INTERNAL_CLOCK)
+        )
+        uart_ex
+        (
+        .clk(clk),
+        .TX(TX_ex),
+        .TX_use(TX_use_ex),
+        .data_in(data_bus_in_tx_ex),
+        .TX_config_register(TX_config_register_ex),
+        .rst_n(rst_n)
+        );
     // External UART_2
-    com_uart            #(
-                        .SLEEP_MODE(0), 
-                        .RX_FLAG_CONFIG(0), /// External FIFO
-                        .CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
-                        )             
-                        uart_ex_2
-                        (
-                        .clk(clk),
-                        // TX 
-                        .data_bus_in(data_bus_in_uart_ex_2),
-                        .TX_use(TX_use_ex_2),
-                        .TX_flag(TX_flag_ex_2),
-                        .TX_complete(TX_complete_ex_2),
-                        .TX_config_register(TX_config_register_ex),
-                        .TX(TX_ex_2),
-                        // RX
-                        .data_bus_out(data_bus_out_uart_ex_2),
-                        .RX_use(RX_use_ex_2),
-                        .RX_flag(RX_flag_ex_2),
-                        .RX_config_register(TX_config_register_ex),
-                        .RX(RX_ex_2),
-                        
-                        .rst_n(rst_n)
-                        ); 
+    uart_peripheral
+        #(
+        .SLEEP_MODE(0), 
+        .RX_FLAG_CONFIG(0), /// External FIFO
+        .INTERNAL_CLOCK(INTERNAL_CLOCK)
+        )             
+        uart_ex_2
+        (
+        .clk(clk),
+        // TX 
+        .data_in(data_bus_in_uart_ex_2),
+        .TX_use(TX_use_ex_2),
+        .TX_flag(TX_flag_ex_2),
+        .TX_complete(TX_complete_ex_2),
+        .TX_config_register(TX_config_register_ex),
+        .TX(TX_ex_2),
+        // RX
+        .data_out(data_bus_out_uart_ex_2),
+        .RX_use(RX_use_ex_2),
+        .RX_flag(RX_flag_ex_2),
+        .RX_config_register(TX_config_register_ex),
+        .RX(RX_ex_2),
+        
+        .rst_n(rst_n)
+        ); 
     
     initial begin
         clk <= 0;
@@ -313,7 +317,7 @@ module Dual_core_mcu_tb;
             end
             
             // PC = 0x104
-            instruction <= {5'b111,5'd00,5'd09,7'b1101000,SW_INS_10}; // Store x9(-5) data to 0d1000
+            instruction <= {5'b000,5'd00,5'd09,7'b1101000,SW_INS_10}; // Store x9(-5) data to 0d1000
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
@@ -349,13 +353,13 @@ module Dual_core_mcu_tb;
             end
             
             // PC = 0x11C
-            instruction <= {5'd13,20'hfffff,LUI_INS_7};      // Load upper 20bit (1) in x12
+            instruction <= {5'd13,20'hfffff,LUI_INS_7};      // Load upper 20bit (1) in x13
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
             // PC = 0x120
-            instruction <= {5'd14,20'hfffff,LUI_INS_7};      // Load upper 20bit (1) in x12
+            instruction <= {5'd14,20'hfffff,LUI_INS_7};      // Load upper 20bit (1) in x14
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
@@ -432,26 +436,26 @@ module Dual_core_mcu_tb;
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-            // PC = 0x158
+            // PC = 0x154
             quick_seperate_imm12 <= 2; #1;
-            instruction <= {imm12hi,5'd20,5'd23,imm12lo,BGE_INS_10};      // JUMP to 0x160 (without sending debug data)
+            instruction <= {imm12hi,5'd20,5'd23,imm12lo,BGE_INS_10};      // JUMP to 0x15C (without sending debug data)
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-            // PC = 0x15C
+            // PC = 0x158
             instruction <= {5'd23,5'd22,5'd00,7'd00,DEBUG_INS_10};      // Send debug x23 & x22
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-            // PC = 0x160
+            // PC = 0x15C
             instruction <= {5'd07,5'd09,5'd08,MUL_INS_17};      // x7 = x8 * x9     = -40
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-            // PC = 0x164 (EXIT)
+            // PC = 0x160 (EXIT)
             instruction <= {25'd00,J_INS_7};                   // While(1) {};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#1 TX_use_ex <= 1;#2 TX_use_ex <= 0;
