@@ -35,12 +35,12 @@ module Dual_core_mcu
                                                                       8'b00000000,  // address 0x01  (PORT_B)
                                                                       8'b00000000,  // address 0x02  (PORT_C)
                                                                       8'b00000000,  // address 0x03  (DEBUGGER) 
-                                                                      8'b10001111,  // address 0x04  (UART_1_RX_CONFIG) 
-                                                                      8'b10001111,  // address 0x05  (UART_1_TX_CONFIG)
+                                                                      8'b00100011,  // address 0x04  (UART_1_RX_CONFIG) 
+                                                                      8'b00100011,  // address 0x05  (UART_1_TX_CONFIG)
                                                                       8'b00001100,  // address 0x06  (COM_PERIPHERAL) // Do not enable (set 1) in initial state
                                                                       8'b00000000,  // address 0x07  (NOTHING)
-                                                                      8'b10001111,  // address 0x08  (UART_2_RX_CONFIG)
-                                                                      8'b10001111,  // address 0x09  (UART_2_TX_CONFIG)
+                                                                      8'b00100011,  // address 0x08  (UART_2_RX_CONFIG)
+                                                                      8'b00100011,  // address 0x09  (UART_2_TX_CONFIG)
                                                                       8'b11111000,  // address 0x0A  (SPI_CONFIG)
                                                                       8'b00000000,  // address 0x0B  (I2C_CONFIG)
                                                                       8'b00000000,  // address 0x0C  (EXTERNAL_INT_CONFIG)
@@ -89,6 +89,7 @@ module Dual_core_mcu
     parameter FIFO_BUFFER_SIZE      = 64,
     parameter REG_SPACE_WIDTH       = $clog2(REGISTER_AMOUNT),
     `ifdef DEBUG
+    parameter INTERNAL_CLOCK        = 115200 * 100,
     parameter CLOCK_DIVIDER_UNIQUE_1= 5,
     parameter FINISH_RECEIVE_TIMER  = 500000,
     `endif
@@ -336,8 +337,8 @@ module Dual_core_mcu
     assign timer_interrupt_enable       =  reserved_registers[8'h0E][8'h07];
     assign timer_interrupt_option       =  reserved_registers[8'h0E][8'h06];
     assign timer_prescaler              =  reserved_registers[8'h0E][8'h02:8'h00];
-    assign timer_interrupt_limit_value  = {reserved_registers[8'h10],
-                                           reserved_registers[8'h0F]};
+    assign timer_interrupt_limit_value  = {reserved_registers[8'h0F],
+                                           reserved_registers[8'h10]};
     // GPIO
     for(genvar i = 0; i < GPIO_PER_PORT; i = i + 1) begin
     assign GPIO_PORT_A[i] = IO_PORT[i];
@@ -758,59 +759,64 @@ module Dual_core_mcu
                         );        
     // Communication peripherals    
     `ifdef UART_PROT_1        
-    (* dont_touch = "yes" *)  com_uart            
+    (* dont_touch = "yes" *)  
+                        uart_peripheral
                         #(
                         .SLEEP_MODE(0), 
-                        .RX_FLAG_CONFIG(1'b1),              // Use internal FIFO
+                        .RX_FLAG_TYPE(1'b1),              // Use internal FIFO
                         .FIFO_DEPTH(FIFO_BUFFER_SIZE)
                         `ifdef DEBUG
-                        ,.CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
+                        ,.INTERNAL_CLOCK(INTERNAL_CLOCK)
                         `endif
                         )uart_peripheral_1(
                         .clk(clk),
                         .TX(TX_1),
                         .RX(RX_1),
                         // TX
-                        .data_bus_in(data_bus_in_uart_1),
+                        .data_in(data_bus_in_uart_1),
                         .TX_config_register(TX_config_register_1),
                         .TX_use(TX_use_1),
                         .TX_available(TX_available_1),
-                        .TX_enable(TX_enable_1),
+                        .TX_flag(),
+//                        .TX_enable(TX_enable_1),
                         // RX
-                        .data_bus_out(data_bus_out_uart_1),
+                        .data_out(data_bus_out_uart_1),
                         .RX_config_register(RX_config_register_1),
                         .RX_use(RX_use_1),
                         .RX_flag(RX_flag_1),
-                        .RX_enable(1'b1),
+                        .RX_available(),
                         .rst_n(rst_n)
                         );
     `endif
     `ifdef UART_PROT_2
-    (* dont_touch = "yes" *)  com_uart            
+    (* dont_touch = "yes" *)  
+                        uart_peripheral
                         #(
                         .SLEEP_MODE(1), 
-                        .RX_FLAG_CONFIG(1'b1) /// Internal FIFO
+                        .RX_FLAG_TYPE(1'b1) /// Internal FIFO
                         `ifdef DEBUG
-                        ,.CLOCK_DIVIDER_UNIQUE_1(CLOCK_DIVIDER_UNIQUE_1)
+                        ,.INTERNAL_CLOCK(INTERNAL_CLOCK)
                         `endif
                         )             
                         uart_peripheral_2
                         (
                         .clk(clk),
                         // TX 
-                        .data_bus_in(data_bus_in_uart_2),
+                        .data_in(data_bus_in_uart_2),
                         .TX_use(TX_use_2),
                         .TX_available(TX_available_2),
                         .TX_complete(TX_complete_2),
                         .TX_config_register(TX_config_register_2),
-                        .TX_enable(TX_enable_2),
+//                        .TX_enable(TX_enable_2),
+//                        .TX_available(),
                         .TX(TX_2),
                         // RX
-                        .data_bus_out(data_bus_out_uart_2),
+                        .data_out(data_bus_out_uart_2),
                         .RX_use(RX_use_2),
+                        .RX_flag(),
                         .RX_available(RX_available_2),
                         .RX_config_register(RX_config_register_2),
-                        .RX_enable(RX_enable_2),
+//                        .RX_enable(RX_enable_2),
                         .RX(RX_2),
                         
                         .rst_n(rst_n)
