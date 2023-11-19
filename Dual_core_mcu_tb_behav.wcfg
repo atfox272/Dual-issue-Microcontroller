@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="Dual_core_mcu_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="Dual_core_mcu_tb" />
+            <top_module name="\$unit_Dual_core_mcu_v " />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="81494800fs"></ZoomStartTime>
+      <ZoomEndTime time="81653601fs"></ZoomEndTime>
+      <Cursor1Time time="81627000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="242"></NameColumnWidth>
+      <ValueColumnWidth column_width="91"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="22" />
+   <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/RX_1" type="logic">
+      <obj_property name="ElementShortName">RX_1</obj_property>
+      <obj_property name="ObjectShortName">RX_1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/TX_1" type="logic">
+      <obj_property name="ElementShortName">TX_1</obj_property>
+      <obj_property name="ObjectShortName">TX_1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/RX_2" type="logic">
+      <obj_property name="ElementShortName">RX_2</obj_property>
+      <obj_property name="ObjectShortName">RX_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/TX_2" type="logic">
+      <obj_property name="ElementShortName">TX_2</obj_property>
+      <obj_property name="ObjectShortName">TX_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/IO_PORT" type="array">
+      <obj_property name="ElementShortName">IO_PORT[12:0]</obj_property>
+      <obj_property name="ObjectShortName">IO_PORT[12:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/IO_driver" type="array">
+      <obj_property name="ElementShortName">IO_driver[12:0]</obj_property>
+      <obj_property name="ObjectShortName">IO_driver[12:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/external_int_pin" type="logic">
+      <obj_property name="ElementShortName">external_int_pin</obj_property>
+      <obj_property name="ObjectShortName">external_int_pin</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/program_memory_wire" type="array">
+      <obj_property name="ElementShortName">program_memory_wire[0:1023][7:0]</obj_property>
+      <obj_property name="ObjectShortName">program_memory_wire[0:1023][7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/data_memory_wire" type="array">
+      <obj_property name="ElementShortName">data_memory_wire[0:1023][7:0]</obj_property>
+      <obj_property name="ObjectShortName">data_memory_wire[0:1023][7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_registers_1" type="array">
+      <obj_property name="ElementShortName">processor_registers_1[0:31][63:0]</obj_property>
+      <obj_property name="ObjectShortName">processor_registers_1[0:31][63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_registers_2" type="array">
+      <obj_property name="ElementShortName">processor_registers_2[0:31][63:0]</obj_property>
+      <obj_property name="ObjectShortName">processor_registers_2[0:31][63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/registers_renew" type="array">
+      <obj_property name="ElementShortName">registers_renew[0:31][63:0]</obj_property>
+      <obj_property name="ObjectShortName">registers_renew[0:31][63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/fetch_instruction_1" type="array">
+      <obj_property name="ElementShortName">fetch_instruction_1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">fetch_instruction_1[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/boot_processor_1" type="logic">
+      <obj_property name="ElementShortName">boot_processor_1</obj_property>
+      <obj_property name="ObjectShortName">boot_processor_1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_idle_1" type="logic">
+      <obj_property name="ElementShortName">processor_idle_1</obj_property>
+      <obj_property name="ObjectShortName">processor_idle_1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/fetch_instruction_2" type="array">
+      <obj_property name="ElementShortName">fetch_instruction_2[31:0]</obj_property>
+      <obj_property name="ObjectShortName">fetch_instruction_2[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/boot_processor_2" type="logic">
+      <obj_property name="ElementShortName">boot_processor_2</obj_property>
+      <obj_property name="ObjectShortName">boot_processor_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_idle_2" type="logic">
+      <obj_property name="ElementShortName">processor_idle_2</obj_property>
+      <obj_property name="ObjectShortName">processor_idle_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/addr_rd_pm" type="array">
+      <obj_property name="ElementShortName">addr_rd_pm[9:0]</obj_property>
+      <obj_property name="ObjectShortName">addr_rd_pm[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/multi_processor_manager/data_bus_rd_pm" type="array">
+      <obj_property name="ElementShortName">data_bus_rd_pm[63:0]</obj_property>
+      <obj_property name="ObjectShortName">data_bus_rd_pm[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_1/main_state" type="array">
+      <obj_property name="ElementShortName">main_state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">main_state[1:0]</obj_property>
+   </wvobject>
+</wave_config>
