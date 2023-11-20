@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="81494800fs"></ZoomStartTime>
-      <ZoomEndTime time="81653601fs"></ZoomEndTime>
-      <Cursor1Time time="81627000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="595000001fs"></ZoomEndTime>
+      <Cursor1Time time="44249fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="242"></NameColumnWidth>
-      <ValueColumnWidth column_width="91"></ValueColumnWidth>
+      <ValueColumnWidth column_width="81"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="22" />
+   <WVObjectSize size="23" />
    <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -104,6 +104,10 @@
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/multi_processor_manager/data_bus_rd_pm" type="array">
       <obj_property name="ElementShortName">data_bus_rd_pm[63:0]</obj_property>
       <obj_property name="ObjectShortName">data_bus_rd_pm[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_1/main_state" type="array">
+      <obj_property name="ElementShortName">main_state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">main_state[1:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_1/main_state" type="array">
       <obj_property name="ElementShortName">main_state[1:0]</obj_property>
