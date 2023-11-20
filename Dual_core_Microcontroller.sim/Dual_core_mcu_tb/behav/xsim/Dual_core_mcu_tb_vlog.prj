@@ -3,9 +3,11 @@ verilog xil_defaultlib  --include "../../../../Dual_core_Microcontroller.srcs/so
 "../../../../Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v" \
 "../../../../../peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" \
 "../../../../../UART_module/UART_module.srcs/sources_1/imports/RF_Transceiver-main/fifo_module.v" \
+"../../../../Dual_core_Microcontroller.srcs/sources_1/imports/new/real_time.v" \
 "../../../../Dual_core_Microcontroller.srcs/sources_1/imports/RF_module_3modules/waiting_module.v" \
 
 sv xil_defaultlib  --include "../../../../Dual_core_Microcontroller.srcs/sources_1/new" \
+"../../../../../Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv" \
 "../../../../Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v" \
 "../../../../../LIFO_module/LIFO_module.srcs/sources_1/new/LIFO_module.sv" \
 "../../../../Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v" \

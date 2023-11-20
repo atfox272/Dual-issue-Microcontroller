@@ -6,21 +6,21 @@
       <db_ref path="Dual_core_mcu_tb_behav.wdb" id="1">
          <top_modules>
             <top_module name="Dual_core_mcu_tb" />
-            <top_module name="\$unit_Dual_core_mcu_v " />
+            <top_module name="\$unit_Atfox_exTensible_Interface_sv " />
             <top_module name="glbl" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="595000001fs"></ZoomEndTime>
-      <Cursor1Time time="44249fs"></Cursor1Time>
+      <ZoomStartTime time="50434700fs"></ZoomStartTime>
+      <ZoomEndTime time="50474351fs"></ZoomEndTime>
+      <Cursor1Time time="50445000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="242"></NameColumnWidth>
-      <ValueColumnWidth column_width="81"></ValueColumnWidth>
+      <NameColumnWidth column_width="221"></NameColumnWidth>
+      <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="23" />
+   <WVObjectSize size="44" />
    <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -101,6 +101,14 @@
       <obj_property name="ElementShortName">addr_rd_pm[9:0]</obj_property>
       <obj_property name="ObjectShortName">addr_rd_pm[9:0]</obj_property>
    </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/multi_processor_manager/bus_module_encode" type="array">
+      <obj_property name="ElementShortName">bus_module_encode[1:0]</obj_property>
+      <obj_property name="ObjectShortName">bus_module_encode[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/multi_processor_manager/quick_adder_result" type="array">
+      <obj_property name="ElementShortName">quick_adder_result[63:0]</obj_property>
+      <obj_property name="ObjectShortName">quick_adder_result[63:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/multi_processor_manager/data_bus_rd_pm" type="array">
       <obj_property name="ElementShortName">data_bus_rd_pm[63:0]</obj_property>
       <obj_property name="ObjectShortName">data_bus_rd_pm[63:0]</obj_property>
@@ -109,8 +117,84 @@
       <obj_property name="ElementShortName">main_state[1:0]</obj_property>
       <obj_property name="ObjectShortName">main_state[1:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_1/main_state" type="array">
-      <obj_property name="ElementShortName">main_state[1:0]</obj_property>
-      <obj_property name="ObjectShortName">main_state[1:0]</obj_property>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p1_wdata" type="array">
+      <obj_property name="ElementShortName">m_ati_p1_wdata[63:0]</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p1_wdata[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p1_rdata" type="array">
+      <obj_property name="ElementShortName">m_ati_p1_rdata[63:0]</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p1_rdata[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p1_addr" type="array">
+      <obj_property name="ElementShortName">m_ati_p1_addr[63:0]</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p1_addr[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p1_rd_req" type="logic">
+      <obj_property name="ElementShortName">m_ati_p1_rd_req</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p1_rd_req</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p1_wr_req" type="logic">
+      <obj_property name="ElementShortName">m_ati_p1_wr_req</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p1_wr_req</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p1_data_type" type="array">
+      <obj_property name="ElementShortName">m_ati_p1_data_type[1:0]</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p1_data_type[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p1_rd_available" type="logic">
+      <obj_property name="ElementShortName">m_ati_p1_rd_available</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p1_rd_available</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p1_wr_available" type="logic">
+      <obj_property name="ElementShortName">m_ati_p1_wr_available</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p1_wr_available</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p2_wdata" type="array">
+      <obj_property name="ElementShortName">m_ati_p2_wdata[63:0]</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p2_wdata[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p2_rdata" type="array">
+      <obj_property name="ElementShortName">m_ati_p2_rdata[63:0]</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p2_rdata[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p2_addr" type="array">
+      <obj_property name="ElementShortName">m_ati_p2_addr[63:0]</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p2_addr[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p2_rd_req" type="logic">
+      <obj_property name="ElementShortName">m_ati_p2_rd_req</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p2_rd_req</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p2_wr_req" type="logic">
+      <obj_property name="ElementShortName">m_ati_p2_wr_req</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p2_wr_req</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p2_data_type" type="array">
+      <obj_property name="ElementShortName">m_ati_p2_data_type[1:0]</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p2_data_type[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p2_rd_available" type="logic">
+      <obj_property name="ElementShortName">m_ati_p2_rd_available</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p2_rd_available</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p2_wr_available" type="logic">
+      <obj_property name="ElementShortName">m_ati_p2_wr_available</obj_property>
+      <obj_property name="ObjectShortName">m_ati_p2_wr_available</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/s_ati_dmem_p1_data_in" type="array">
+      <obj_property name="ElementShortName">s_ati_dmem_p1_data_in[63:0]</obj_property>
+      <obj_property name="ObjectShortName">s_ati_dmem_p1_data_in[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/s_ati_dmem_p1_data_out" type="array">
+      <obj_property name="ElementShortName">s_ati_dmem_p1_data_out[63:0]</obj_property>
+      <obj_property name="ObjectShortName">s_ati_dmem_p1_data_out[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/s_ati_dmem_p1_rd_available" type="logic">
+      <obj_property name="ElementShortName">s_ati_dmem_p1_rd_available</obj_property>
+      <obj_property name="ObjectShortName">s_ati_dmem_p1_rd_available</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/s_ati_dmem_p2_rd_available" type="logic">
+      <obj_property name="ElementShortName">s_ati_dmem_p2_rd_available</obj_property>
+      <obj_property name="ObjectShortName">s_ati_dmem_p2_rd_available</obj_property>
    </wvobject>
 </wave_config>
