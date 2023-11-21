@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="50434700fs"></ZoomStartTime>
-      <ZoomEndTime time="50474351fs"></ZoomEndTime>
-      <Cursor1Time time="50445000fs"></Cursor1Time>
+      <ZoomStartTime time="55011400fs"></ZoomStartTime>
+      <ZoomEndTime time="55053851fs"></ZoomEndTime>
+      <Cursor1Time time="55023000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="221"></NameColumnWidth>
+      <NameColumnWidth column_width="206"></NameColumnWidth>
       <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="44" />
+   <WVObjectSize size="45" />
    <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -41,14 +41,6 @@
       <obj_property name="ElementShortName">TX_2</obj_property>
       <obj_property name="ObjectShortName">TX_2</obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/IO_PORT" type="array">
-      <obj_property name="ElementShortName">IO_PORT[12:0]</obj_property>
-      <obj_property name="ObjectShortName">IO_PORT[12:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/IO_driver" type="array">
-      <obj_property name="ElementShortName">IO_driver[12:0]</obj_property>
-      <obj_property name="ObjectShortName">IO_driver[12:0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/external_int_pin" type="logic">
       <obj_property name="ElementShortName">external_int_pin</obj_property>
       <obj_property name="ObjectShortName">external_int_pin</obj_property>
@@ -58,8 +50,8 @@
       <obj_property name="ObjectShortName">program_memory_wire[0:1023][7:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/data_memory_wire" type="array">
-      <obj_property name="ElementShortName">data_memory_wire[0:1023][7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_memory_wire[0:1023][7:0]</obj_property>
+      <obj_property name="ElementShortName">data_memory_wire[0:255][7:0]</obj_property>
+      <obj_property name="ObjectShortName">data_memory_wire[0:255][7:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_registers_1" type="array">
       <obj_property name="ElementShortName">processor_registers_1[0:31][63:0]</obj_property>
@@ -196,5 +188,35 @@
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/s_ati_dmem_p2_rd_available" type="logic">
       <obj_property name="ElementShortName">s_ati_dmem_p2_rd_available</obj_property>
       <obj_property name="ObjectShortName">s_ati_dmem_p2_rd_available</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/s_ati_gpio_wr_available" type="logic">
+      <obj_property name="ElementShortName">s_ati_gpio_wr_available</obj_property>
+      <obj_property name="ObjectShortName">s_ati_gpio_wr_available</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT" type="array">
+      <obj_property name="ElementShortName">GPIO_PORT[0:1][7:0]</obj_property>
+      <obj_property name="ObjectShortName">GPIO_PORT[0:1][7:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[0]" type="array">
+         <obj_property name="ElementShortName">[0][7:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][7:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[1]" type="array">
+         <obj_property name="ElementShortName">[1][7:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[0]" type="array">
+         <obj_property name="ElementShortName">[0][7:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[1]" type="array">
+         <obj_property name="ElementShortName">[1][7:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][7:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_2/\SUB_PROCESSOR_BLOCK.running_program_state_reg " type="array">
+      <obj_property name="ElementShortName">\SUB_PROCESSOR_BLOCK.running_program_state_reg [2:0]</obj_property>
+      <obj_property name="ObjectShortName">\SUB_PROCESSOR_BLOCK.running_program_state_reg [2:0]</obj_property>
    </wvobject>
 </wave_config>
