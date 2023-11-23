@@ -4,29 +4,28 @@ Running: L:/Application/Xilinx/Vivado/2020.2/bin/unwrapped/win64.o/xelab.exe -wt
 Using 2 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
-WARNING: [VRFC 10-2861] module 'uart_peripheral' does not have a parameter named SLEEP_MODE [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:813]
-WARNING: [VRFC 10-2861] module 'uart_peripheral' does not have a parameter named SLEEP_MODE [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:871]
+WARNING: [VRFC 10-2861] module 'Dual_core_mcu' does not have a parameter named FINISH_RECEIVE_TIMER [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:89]
 WARNING: [VRFC 10-2861] module 'uart_peripheral' does not have a parameter named SLEEP_MODE [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:104]
 WARNING: [VRFC 10-2861] module 'uart_peripheral' does not have a parameter named SLEEP_MODE [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:120]
 WARNING: [VRFC 10-2861] module 'uart_peripheral' does not have a parameter named RX_FLAG_CONFIG [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:121]
-WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 64 for port 'debug_1' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:425]
-WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 64 for port 'debug_2' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:465]
-WARNING: [VRFC 10-3091] actual bit length 8 differs from formal bit length 64 for port 'device_addr_rd' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:490]
-WARNING: [VRFC 10-3091] actual bit length 8 differs from formal bit length 64 for port 'device_addr_wr' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:491]
-WARNING: [VRFC 10-3091] actual bit length 8 differs from formal bit length 64 for port 'device_addr_rd' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:520]
-WARNING: [VRFC 10-3091] actual bit length 8 differs from formal bit length 64 for port 'device_addr_wr' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:521]
+WARNING: [VRFC 10-3091] actual bit length 64 differs from formal bit length 8 for port 'addr_wr_p1' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:521]
+WARNING: [VRFC 10-3091] actual bit length 64 differs from formal bit length 8 for port 'addr_wr_p2' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:529]
+WARNING: [VRFC 10-3091] actual bit length 8 differs from formal bit length 64 for port 'addr_wr' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:558]
 WARNING: [VRFC 10-3091] actual bit length 32 differs from formal bit length 18 for port 'limit_counter' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:167]
 WARNING: [VRFC 10-5021] port 'RX' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:102]
-WARNING: [VRFC 10-5021] port 'rd_access' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:377]
-WARNING: [VRFC 10-5021] port 'rd_access' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:427]
-WARNING: [VRFC 10-5021] port 'main_program_state' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:595]
-WARNING: [VRFC 10-5021] port 'rd_ins' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:662]
+WARNING: [VRFC 10-5021] port 'rd_access' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:368]
+WARNING: [VRFC 10-5021] port 'rd_access' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:417]
+WARNING: [VRFC 10-5021] port 'main_program_state' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:583]
+WARNING: [VRFC 10-5021] port 'rd_ins' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:650]
 Completed static elaboration
 Starting simulation data flow analysis
 WARNING: [XSIM 43-4099] "L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v" Line 1. Module Sync_primitive(DATA_MEMORY_SIZE=256) doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "L:/Projects/UART_module/UART_module.srcs/sources_1/imports/RF_Transceiver-main/fifo_module.v" Line 4. Module fifo_module(WIDTH=1,SLEEP_MODE=1'b1) doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "L:/Projects/UART_module/UART_module.srcs/sources_1/imports/RF_Transceiver-main/fifo_module.v" Line 4. Module fifo_module(WIDTH=1,SLEEP_MODE=1'b1) doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "L:/Projects/UART_module/UART_module.srcs/sources_1/imports/RF_Transceiver-main/fifo_module.v" Line 4. Module fifo_module(WIDTH=1,SLEEP_MODE=1'b1) doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
 WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
 WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
 WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
@@ -44,9 +43,12 @@ WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/source
 WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
 WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
 WARNING: [XSIM 43-4099] "L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v" Line 1. Module Sync_primitive(DATA_MEMORY_SIZE=256) doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "L:/Projects/UART_module/UART_module.srcs/sources_1/imports/RF_Transceiver-main/fifo_module.v" Line 4. Module fifo_module(WIDTH=1,SLEEP_MODE=1'b1) doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "L:/Projects/UART_module/UART_module.srcs/sources_1/imports/RF_Transceiver-main/fifo_module.v" Line 4. Module fifo_module(WIDTH=1,SLEEP_MODE=1'b1) doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "L:/Projects/UART_module/UART_module.srcs/sources_1/imports/RF_Transceiver-main/fifo_module.v" Line 4. Module fifo_module(WIDTH=1,SLEEP_MODE=1'b1) doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
 WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
 WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
 WARNING: [XSIM 43-4099] "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v" Line 1. Module edgedet doesn't have a timescale but at least one module in design has a timescale.
@@ -79,7 +81,8 @@ Compiling module xil_defaultlib.Multi_processor_manager_default
 Compiling module xil_defaultlib.ram_pm(ADDR_DEPTH=1024,RESERVED_...
 Compiling module xil_defaultlib.Atfox_exTensible_Interface(INTER...
 Compiling module xil_defaultlib.GPIO_module_default
-Compiling module xil_defaultlib.fifo_module(WIDTH=1,SLEEP_MODE=1...
+Compiling module xil_defaultlib.edgedet
+Compiling module xil_defaultlib.sync_fifo(DATA_WIDTH=1)
 Compiling module xil_defaultlib.Interrupt_controller
 Compiling module xil_defaultlib.timer_INT_handler_default
 Compiling module xil_defaultlib.waiting_module(END_COUNTER=20)
@@ -90,7 +93,6 @@ Compiling module xil_defaultlib.TX_controller_default
 Compiling module xil_defaultlib.RX_controller_default
 Compiling module xil_defaultlib.baudrate_generator(INTERNAL_CLOC...
 Compiling module xil_defaultlib.baudrate_generator(INTERNAL_CLOC...
-Compiling module xil_defaultlib.edgedet
 Compiling module xil_defaultlib.sync_fifo(FIFO_DEPTH=64)
 Compiling module xil_defaultlib.uart_peripheral(INTERNAL_CLOCK=9...
 Compiling module xil_defaultlib.sync_fifo_default

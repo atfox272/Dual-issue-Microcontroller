@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="55011400fs"></ZoomStartTime>
-      <ZoomEndTime time="55053851fs"></ZoomEndTime>
-      <Cursor1Time time="55023000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="266000001fs"></ZoomEndTime>
+      <Cursor1Time time="0fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="206"></NameColumnWidth>
+      <NameColumnWidth column_width="201"></NameColumnWidth>
       <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="45" />
+   <WVObjectSize size="51" />
    <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -197,26 +197,33 @@
       <obj_property name="ElementShortName">GPIO_PORT[0:1][7:0]</obj_property>
       <obj_property name="ObjectShortName">GPIO_PORT[0:1][7:0]</obj_property>
       <obj_property name="isExpanded"></obj_property>
-      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[0]" type="array">
-         <obj_property name="ElementShortName">[0][7:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][7:0]</obj_property>
-         <obj_property name="isExpanded"></obj_property>
-      </wvobject>
-      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[1]" type="array">
-         <obj_property name="ElementShortName">[1][7:0]</obj_property>
-         <obj_property name="ObjectShortName">[1][7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[0]" type="array">
-         <obj_property name="ElementShortName">[0][7:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[1]" type="array">
-         <obj_property name="ElementShortName">[1][7:0]</obj_property>
-         <obj_property name="ObjectShortName">[1][7:0]</obj_property>
-      </wvobject>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_2/\SUB_PROCESSOR_BLOCK.running_program_state_reg " type="array">
       <obj_property name="ElementShortName">\SUB_PROCESSOR_BLOCK.running_program_state_reg [2:0]</obj_property>
       <obj_property name="ObjectShortName">\SUB_PROCESSOR_BLOCK.running_program_state_reg [2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_request_1" type="logic">
+      <obj_property name="ElementShortName">interrupt_request_1</obj_property>
+      <obj_property name="ObjectShortName">interrupt_request_1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_request_2" type="logic">
+      <obj_property name="ElementShortName">interrupt_request_2</obj_property>
+      <obj_property name="ObjectShortName">interrupt_request_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_request_3" type="logic">
+      <obj_property name="ElementShortName">interrupt_request_3</obj_property>
+      <obj_property name="ObjectShortName">interrupt_request_3</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_controller/interrupt_request_1_empty" type="logic">
+      <obj_property name="ElementShortName">interrupt_request_1_empty</obj_property>
+      <obj_property name="ObjectShortName">interrupt_request_1_empty</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_controller/interrupt_request_2_empty" type="logic">
+      <obj_property name="ElementShortName">interrupt_request_2_empty</obj_property>
+      <obj_property name="ObjectShortName">interrupt_request_2_empty</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_controller/interrupt_request_3_empty" type="logic">
+      <obj_property name="ElementShortName">interrupt_request_3_empty</obj_property>
+      <obj_property name="ObjectShortName">interrupt_request_3_empty</obj_property>
    </wvobject>
 </wave_config>

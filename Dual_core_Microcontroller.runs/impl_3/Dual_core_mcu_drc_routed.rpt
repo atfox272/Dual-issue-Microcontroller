@@ -1,0 +1,156 @@
+Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
+| Date         : Wed Nov 22 11:51:22 2023
+| Host         : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
+| Command      : report_drc -file Dual_core_mcu_drc_routed.rpt -pb Dual_core_mcu_drc_routed.pb -rpx Dual_core_mcu_drc_routed.rpx
+| Design       : Dual_core_mcu
+| Device       : xc7z020clg400-1
+| Speed File   : -1
+| Design State : Fully Routed
+---------------------------------------------------------------------------------------------------------------------------------
+
+Report DRC
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: design_1
+      Design limits: <entire design considered>
+           Ruledeck: default
+             Max violations: <unlimited>
+             Violations found: 20
++-------------+----------+-------------------------------------------------------------+------------+
+| Rule        | Severity | Description                                                 | Violations |
++-------------+----------+-------------------------------------------------------------+------------+
+| PDRC-153    | Warning  | Gated clock check                                           | 1          |
+| PLHOLDVIO-2 | Warning  | Non-Optimal connections which could lead to hold violations | 1          |
+| RPBF-3      | Warning  | IO port buffering is incomplete                             | 16         |
+| RTSTAT-10   | Warning  | No routable loads                                           | 1          |
+| ZPS7-1      | Warning  | PS7 block required                                          | 1          |
++-------------+----------+-------------------------------------------------------------+------------+
+
+2. REPORT DETAILS
+-----------------
+PDRC-153#1 Warning
+Gated clock check  
+Net synchronization_primitive/wr_ins_dm is a gated clock net sourced by a combinational pin synchronization_primitive/wr_occupy_start_i_2/O, cell synchronization_primitive/wr_occupy_start_i_2. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PLHOLDVIO-2#1 Warning
+Non-Optimal connections which could lead to hold violations  
+A LUT synchronization_primitive/wr_occupy_start_i_2 is driving clock pin of 1 cells. This could lead to large hold time violations. Involved cells are:
+DMEM/wr_occupy_start_reg
+Related violations: <none>
+
+RPBF-3#1 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[0][0] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#2 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[0][1] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#3 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[0][2] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#4 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[0][3] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#5 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[0][4] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#6 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[0][5] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#7 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[0][6] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#8 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[0][7] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#9 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[1][0] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#10 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[1][1] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#11 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[1][2] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#12 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[1][3] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#13 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[1][4] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#14 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[1][5] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#15 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[1][6] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RPBF-3#16 Warning
+IO port buffering is incomplete  
+Device port GPIO_PORT[1][7] expects both input and output buffering but the buffers are incomplete.
+Related violations: <none>
+
+RTSTAT-10#1 Warning
+No routable loads  
+2404 net(s) have no routable loads. The problem bus(es) and/or net(s) are processor_2/SUB_PROCESSOR_BLOCK.addr_rd_reg_reg[0]_i_13_n_1,
+processor_2/SUB_PROCESSOR_BLOCK.addr_rd_reg_reg[0]_i_3_n_1,
+processor_2/SUB_PROCESSOR_BLOCK.addr_rd_reg_reg[0]_i_3_n_2,
+processor_2/SUB_PROCESSOR_BLOCK.addr_rd_reg_reg[0]_i_3_n_3,
+processor_2/SUB_PROCESSOR_BLOCK.addr_rd_reg_reg[0]_i_4_n_1,
+processor_2/SUB_PROCESSOR_BLOCK.addr_rd_reg_reg[0]_i_4_n_2,
+processor_2/SUB_PROCESSOR_BLOCK.addr_rd_reg_reg[0]_i_4_n_3,
+uart_peripheral_1/fifo_rx/buffer_reg_0_63_0_2/DOA,
+uart_peripheral_1/fifo_rx/buffer_reg_0_63_0_2/DOB,
+uart_peripheral_1/fifo_rx/buffer_reg_0_63_0_2/DOC,
+uart_peripheral_1/fifo_rx/buffer_reg_0_63_3_5/DOA,
+uart_peripheral_1/fifo_rx/buffer_reg_0_63_3_5/DOB,
+uart_peripheral_1/fifo_rx/buffer_reg_0_63_3_5/DOC,
+uart_peripheral_1/fifo_rx/buffer_reg_0_63_6_6/DPO,
+uart_peripheral_1/fifo_rx/buffer_reg_0_63_7_7/DPO
+ (the first 15 of 388 listed).
+Related violations: <none>
+
+ZPS7-1#1 Warning
+PS7 block required  
+The PS7 cell must be used in this Zynq design in order to enable correct default configuration.
+Related violations: <none>
+
+
