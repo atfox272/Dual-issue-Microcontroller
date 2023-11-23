@@ -3,7 +3,7 @@ Dual-core Microcontroller ver1.0
 ## 1. General:
 ### a. Block diagram:
 
-![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/1154092b-6696-4419-bcb5-abcf276b5f2c)
+![image](https://github.com/atfox272/Dual-core-Microcontroller/assets/99324602/b60e30fe-ed5e-4ad9-a4c3-bc2ca97939b6)
 
 
 ### b. Chức năng các khối
