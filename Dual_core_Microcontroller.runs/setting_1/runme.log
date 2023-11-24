@@ -19,9 +19,9 @@ INFO: [Device 21-403] Loading part xc7z020clg400-1
 INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
 INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
 WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {17-179}  -suppress '. The existing rule will be replaced.
-INFO: [Synth 8-7075] Helper process launched with PID 34524
+INFO: [Synth 8-7075] Helper process launched with PID 6760
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:03 ; elapsed = 00:00:04 . Memory (MB): peak = 1202.430 ; gain = 22.125
+Starting RTL Elaboration : Time (s): cpu = 00:00:02 ; elapsed = 00:00:04 . Memory (MB): peak = 1203.457 ; gain = 40.648
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'Dual_core_mcu' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:9]
 	Parameter INTERNAL_CLOCK bound to: 125000000 - type: integer 
@@ -35,12 +35,13 @@ INFO: [Synth 8-6157] synthesizing module 'Dual_core_mcu' [L:/Projects/Dual_core_
 	Parameter RESERVED_REG_DEFAULT bound to: 136'b0000000000000000000000000000000000100011001000110000110000000000001000110010001111111000000000000000000000000000000000001111111111111111 
 	Parameter DATA_BUS_WIDTH bound to: 64 - type: integer 
 	Parameter ADDR_BUS_WIDTH bound to: 64 - type: integer 
-	Parameter CHANNEL_AMOUNT bound to: 3 - type: integer 
+	Parameter CHANNEL_AMOUNT bound to: 4 - type: integer 
 	Parameter CHANNEL_BUS_WIDTH bound to: 2 - type: integer 
 	Parameter CHANNEL_ID_DMEM bound to: 2'b00 
 	Parameter CHANNEL_ID_GPIO bound to: 2'b01 
 	Parameter CHANNEL_ID_UART1 bound to: 2'b10 
 	Parameter CHANNEL_ID_UART2 bound to: 2'b11 
+	Parameter INTERFACE_MASTER_ENCODE bound to: 3 - type: integer 
 	Parameter INTERFACE_DMEM_ENCODE bound to: 0 - type: integer 
 	Parameter INTERFACE_PERP_ENCODE bound to: 1 - type: integer 
 	Parameter INTERFACE_GPIO_ENCODE bound to: 2 - type: integer 
@@ -371,17 +372,22 @@ INFO: [Synth 8-6155] done synthesizing module 'Processor__parameterized0' (4#1) 
 INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 	Parameter DATA_BUS_WIDTH bound to: 64 - type: integer 
 	Parameter ADDR_BUS_WIDTH bound to: 64 - type: integer 
+	Parameter CHANNEL_AMOUNT bound to: 4 - type: integer 
 	Parameter CHANNEL_WIDTH bound to: 2 - type: integer 
 	Parameter CHANNEL_ID bound to: 2'b00 
 	Parameter DATA_TYPE_WIDTH bound to: 2 - type: integer 
 	Parameter BYTE_TYPE_ENCODE bound to: 0 - type: integer 
 	Parameter WORD_TYPE_ENCODE bound to: 1 - type: integer 
 	Parameter DOUBLEWORD_TYPE_ENCODE bound to: 2 - type: integer 
+	Parameter INTERFACE_MASTER_ENCODE bound to: 3 - type: integer 
 	Parameter INTERFACE_DMEM_ENCODE bound to: 0 - type: integer 
 	Parameter INTERFACE_PERP_ENCODE bound to: 1 - type: integer 
 	Parameter INTERFACE_GPIO_ENCODE bound to: 2 - type: integer 
-	Parameter INTERFACE_TYPE bound to: 0 - type: integer 
-	Parameter DEVICE_DATA_WIDTH bound to: 64 - type: integer 
+	Parameter INTERFACE_TYPE bound to: 3 - type: integer 
+	Parameter M_ATI_DATA_WIDTH bound to: 64 - type: integer 
+	Parameter M_ATI_ADDR_WIDTH bound to: 64 - type: integer 
+	Parameter S_ATI_DATA_WIDTH bound to: 8 - type: integer 
+	Parameter S_ATI_ADDR_WIDTH bound to: 64 - type: integer 
 	Parameter INTERFACE_DMEM_THROUGH bound to: 0 - type: integer 
 	Parameter PORT_AMOUNT bound to: 2 - type: integer 
 	Parameter PIN_AMOUNT bound to: 8 - type: integer 
@@ -395,6 +401,39 @@ INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface' [L:/Projec
 	Parameter WORD_WIDTH bound to: 32 - type: integer 
 	Parameter DOUBLEWORD_WIDTH bound to: 64 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface' (5#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
+INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameterized0' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
+	Parameter DATA_BUS_WIDTH bound to: 64 - type: integer 
+	Parameter ADDR_BUS_WIDTH bound to: 64 - type: integer 
+	Parameter CHANNEL_AMOUNT bound to: 4 - type: integer 
+	Parameter CHANNEL_WIDTH bound to: 2 - type: integer 
+	Parameter CHANNEL_ID bound to: 2'b00 
+	Parameter DATA_TYPE_WIDTH bound to: 2 - type: integer 
+	Parameter BYTE_TYPE_ENCODE bound to: 0 - type: integer 
+	Parameter WORD_TYPE_ENCODE bound to: 1 - type: integer 
+	Parameter DOUBLEWORD_TYPE_ENCODE bound to: 2 - type: integer 
+	Parameter INTERFACE_MASTER_ENCODE bound to: 3 - type: integer 
+	Parameter INTERFACE_DMEM_ENCODE bound to: 0 - type: integer 
+	Parameter INTERFACE_PERP_ENCODE bound to: 1 - type: integer 
+	Parameter INTERFACE_GPIO_ENCODE bound to: 2 - type: integer 
+	Parameter INTERFACE_TYPE bound to: 0 - type: integer 
+	Parameter M_ATI_DATA_WIDTH bound to: 64 - type: integer 
+	Parameter M_ATI_ADDR_WIDTH bound to: 64 - type: integer 
+	Parameter S_ATI_DATA_WIDTH bound to: 64 - type: integer 
+	Parameter S_ATI_ADDR_WIDTH bound to: 64 - type: integer 
+	Parameter INTERFACE_DMEM_THROUGH bound to: 0 - type: integer 
+	Parameter PORT_AMOUNT bound to: 2 - type: integer 
+	Parameter PIN_AMOUNT bound to: 8 - type: integer 
+	Parameter INTERNAL_CLOCK bound to: 125000000 - type: integer 
+	Parameter PACKET_TIMEOUT bound to: 260416 - type: integer 
+	Parameter MASTER_BUFFER_SIZE bound to: 4 - type: integer 
+	Parameter SLAVE_BUFFER_SIZE bound to: 32 - type: integer 
+	Parameter POINTER_MASTER_BUF bound to: 2 - type: integer 
+	Parameter POINTER_SLAVE_BUF bound to: 5 - type: integer 
+	Parameter BYTE_WIDTH bound to: 8 - type: integer 
+	Parameter WORD_WIDTH bound to: 32 - type: integer 
+	Parameter DOUBLEWORD_WIDTH bound to: 64 - type: integer 
+WARNING: [Synth 8-693] zero replication count - replication ignored [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:494]
+INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized0' (5#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'pram_consistency' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v:2]
 	Parameter DOUBLEWORD_WIDTH bound to: 64 - type: integer 
 	Parameter DATA_MEMORY_SIZE bound to: 256 - type: integer 
@@ -568,20 +607,25 @@ INFO: [Synth 8-6157] synthesizing module 'ram_pm' [L:/Projects/Dual_core_Microco
 	Parameter ADDR_WORD_ENCODE bound to: 8 - type: integer 
 	Parameter ADDR_BYTE_ENCODE bound to: 10 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'ram_pm' (11#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/ram_pm.sv:4]
-INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameterized0' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
+INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameterized1' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 	Parameter DATA_BUS_WIDTH bound to: 64 - type: integer 
 	Parameter ADDR_BUS_WIDTH bound to: 64 - type: integer 
+	Parameter CHANNEL_AMOUNT bound to: 4 - type: integer 
 	Parameter CHANNEL_WIDTH bound to: 2 - type: integer 
 	Parameter CHANNEL_ID bound to: 2'b01 
 	Parameter DATA_TYPE_WIDTH bound to: 2 - type: integer 
 	Parameter BYTE_TYPE_ENCODE bound to: 0 - type: integer 
 	Parameter WORD_TYPE_ENCODE bound to: 1 - type: integer 
 	Parameter DOUBLEWORD_TYPE_ENCODE bound to: 2 - type: integer 
+	Parameter INTERFACE_MASTER_ENCODE bound to: 3 - type: integer 
 	Parameter INTERFACE_DMEM_ENCODE bound to: 0 - type: integer 
 	Parameter INTERFACE_PERP_ENCODE bound to: 1 - type: integer 
 	Parameter INTERFACE_GPIO_ENCODE bound to: 2 - type: integer 
 	Parameter INTERFACE_TYPE bound to: 2 - type: integer 
-	Parameter DEVICE_DATA_WIDTH bound to: 8 - type: integer 
+	Parameter M_ATI_DATA_WIDTH bound to: 64 - type: integer 
+	Parameter M_ATI_ADDR_WIDTH bound to: 64 - type: integer 
+	Parameter S_ATI_DATA_WIDTH bound to: 8 - type: integer 
+	Parameter S_ATI_ADDR_WIDTH bound to: 64 - type: integer 
 	Parameter INTERFACE_DMEM_THROUGH bound to: 0 - type: integer 
 	Parameter PORT_AMOUNT bound to: 2 - type: integer 
 	Parameter PIN_AMOUNT bound to: 8 - type: integer 
@@ -594,7 +638,7 @@ INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameteri
 	Parameter BYTE_WIDTH bound to: 8 - type: integer 
 	Parameter WORD_WIDTH bound to: 32 - type: integer 
 	Parameter DOUBLEWORD_WIDTH bound to: 64 - type: integer 
-INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized0' (11#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
+INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized1' (11#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'GPIO_module' [L:/Projects/GPIO_module/GPIO_module.srcs/sources_1/new/GPIO_module.sv:1]
 	Parameter PORT_AMOUNT bound to: 2 - type: integer 
 	Parameter PIN_AMOUNT bound to: 8 - type: integer 
@@ -647,20 +691,25 @@ INFO: [Synth 8-6157] synthesizing module 'waiting_module__parameterized0' [L:/Pr
 	Parameter LIMIT_COUNTER_WIDTH bound to: 5 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'waiting_module__parameterized0' (16#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/RF_module_3modules/waiting_module.v:1]
 INFO: [Synth 8-6155] done synthesizing module 'external_INT_handler' (17#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/external_INT_handler.sv:1]
-INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameterized1' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
+INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameterized2' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 	Parameter DATA_BUS_WIDTH bound to: 64 - type: integer 
 	Parameter ADDR_BUS_WIDTH bound to: 64 - type: integer 
+	Parameter CHANNEL_AMOUNT bound to: 4 - type: integer 
 	Parameter CHANNEL_WIDTH bound to: 2 - type: integer 
 	Parameter CHANNEL_ID bound to: 2'b10 
 	Parameter DATA_TYPE_WIDTH bound to: 2 - type: integer 
 	Parameter BYTE_TYPE_ENCODE bound to: 0 - type: integer 
 	Parameter WORD_TYPE_ENCODE bound to: 1 - type: integer 
 	Parameter DOUBLEWORD_TYPE_ENCODE bound to: 2 - type: integer 
+	Parameter INTERFACE_MASTER_ENCODE bound to: 3 - type: integer 
 	Parameter INTERFACE_DMEM_ENCODE bound to: 0 - type: integer 
 	Parameter INTERFACE_PERP_ENCODE bound to: 1 - type: integer 
 	Parameter INTERFACE_GPIO_ENCODE bound to: 2 - type: integer 
 	Parameter INTERFACE_TYPE bound to: 1 - type: integer 
-	Parameter DEVICE_DATA_WIDTH bound to: 8 - type: integer 
+	Parameter M_ATI_DATA_WIDTH bound to: 64 - type: integer 
+	Parameter M_ATI_ADDR_WIDTH bound to: 64 - type: integer 
+	Parameter S_ATI_DATA_WIDTH bound to: 8 - type: integer 
+	Parameter S_ATI_ADDR_WIDTH bound to: 64 - type: integer 
 	Parameter INTERFACE_DMEM_THROUGH bound to: 0 - type: integer 
 	Parameter PORT_AMOUNT bound to: 2 - type: integer 
 	Parameter PIN_AMOUNT bound to: 8 - type: integer 
@@ -677,8 +726,8 @@ INFO: [Synth 8-6157] synthesizing module 'real_time' [L:/Projects/Dual_core_Micr
 	Parameter MAX_COUNTER bound to: 260416 - type: integer 
 	Parameter MAX_COUNTER_WIDTH bound to: 18 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'real_time' (18#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/real_time.v:23]
-INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:202]
-INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized1' (18#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
+INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:248]
+INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized2' (18#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'uart_peripheral' [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
 	Parameter INTERNAL_CLOCK bound to: 125000000 - type: integer 
 	Parameter RX_FLAG_TYPE bound to: 1'b1 
@@ -832,20 +881,25 @@ INFO: [Synth 8-6157] synthesizing module 'baudrate_generator__parameterized0' [L
 	Parameter COUNTER_BD115200 bound to: 1085 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'baudrate_generator__parameterized0' (21#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/baudrate_generator.sv:15]
 INFO: [Synth 8-6155] done synthesizing module 'uart_peripheral' (22#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
-INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameterized2' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
+INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameterized3' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 	Parameter DATA_BUS_WIDTH bound to: 64 - type: integer 
 	Parameter ADDR_BUS_WIDTH bound to: 64 - type: integer 
+	Parameter CHANNEL_AMOUNT bound to: 4 - type: integer 
 	Parameter CHANNEL_WIDTH bound to: 2 - type: integer 
 	Parameter CHANNEL_ID bound to: 2'b11 
 	Parameter DATA_TYPE_WIDTH bound to: 2 - type: integer 
 	Parameter BYTE_TYPE_ENCODE bound to: 0 - type: integer 
 	Parameter WORD_TYPE_ENCODE bound to: 1 - type: integer 
 	Parameter DOUBLEWORD_TYPE_ENCODE bound to: 2 - type: integer 
+	Parameter INTERFACE_MASTER_ENCODE bound to: 3 - type: integer 
 	Parameter INTERFACE_DMEM_ENCODE bound to: 0 - type: integer 
 	Parameter INTERFACE_PERP_ENCODE bound to: 1 - type: integer 
 	Parameter INTERFACE_GPIO_ENCODE bound to: 2 - type: integer 
 	Parameter INTERFACE_TYPE bound to: 1 - type: integer 
-	Parameter DEVICE_DATA_WIDTH bound to: 8 - type: integer 
+	Parameter M_ATI_DATA_WIDTH bound to: 64 - type: integer 
+	Parameter M_ATI_ADDR_WIDTH bound to: 64 - type: integer 
+	Parameter S_ATI_DATA_WIDTH bound to: 8 - type: integer 
+	Parameter S_ATI_ADDR_WIDTH bound to: 64 - type: integer 
 	Parameter INTERFACE_DMEM_THROUGH bound to: 0 - type: integer 
 	Parameter PORT_AMOUNT bound to: 2 - type: integer 
 	Parameter PIN_AMOUNT bound to: 8 - type: integer 
@@ -858,8 +912,8 @@ INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameteri
 	Parameter BYTE_WIDTH bound to: 8 - type: integer 
 	Parameter WORD_WIDTH bound to: 32 - type: integer 
 	Parameter DOUBLEWORD_WIDTH bound to: 64 - type: integer 
-INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:202]
-INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized2' (22#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
+INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:248]
+INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized3' (22#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'uart_peripheral__parameterized0' [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
 	Parameter INTERNAL_CLOCK bound to: 125000000 - type: integer 
 	Parameter RX_FLAG_TYPE bound to: 1'b1 
@@ -885,18 +939,18 @@ INFO: [Synth 8-6155] done synthesizing module 'sync_fifo__parameterized1' (22#1)
 INFO: [Synth 8-6155] done synthesizing module 'uart_peripheral__parameterized0' (22#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
 INFO: [Synth 8-6155] done synthesizing module 'Dual_core_mcu' (23#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:9]
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:14 ; elapsed = 00:00:20 . Memory (MB): peak = 1758.934 ; gain = 578.629
+Finished RTL Elaboration : Time (s): cpu = 00:00:13 ; elapsed = 00:00:21 . Memory (MB): peak = 1760.477 ; gain = 597.668
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:15 ; elapsed = 00:00:22 . Memory (MB): peak = 1758.934 ; gain = 578.629
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:14 ; elapsed = 00:00:24 . Memory (MB): peak = 1760.477 ; gain = 597.668
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:15 ; elapsed = 00:00:22 . Memory (MB): peak = 1758.934 ; gain = 578.629
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:14 ; elapsed = 00:00:24 . Memory (MB): peak = 1760.477 ; gain = 597.668
 ---------------------------------------------------------------------------------
-Netlist sorting complete. Time (s): cpu = 00:00:02 ; elapsed = 00:00:03 . Memory (MB): peak = 1792.184 ; gain = 17.402
+Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:04 . Memory (MB): peak = 1790.695 ; gain = 12.836
 INFO: [Netlist 29-17] Analyzing 16 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
@@ -909,27 +963,27 @@ INFO: [Project 1-236] Implementation specific constraints were found while readi
 Resolution: To avoid this warning, move constraints listed in [.Xil/Dual_core_mcu_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
 Completed Processing XDC Constraints
 
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.006 . Memory (MB): peak = 3287.035 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 3295.703 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
   A total of 16 instances were transformed.
   IOBUF => IOBUF (IBUF, OBUFT): 16 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.111 . Memory (MB): peak = 3287.035 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.140 . Memory (MB): peak = 3295.703 ; gain = 0.000
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:39 ; elapsed = 00:00:59 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Constraint Validation : Time (s): cpu = 00:00:32 ; elapsed = 00:01:10 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7z020clg400-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:39 ; elapsed = 00:00:59 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:32 ; elapsed = 00:01:10 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:39 ; elapsed = 00:00:59 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:32 ; elapsed = 00:01:10 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'alu_state_reg_reg' in module 'alu'
 INFO: [Synth 8-802] inferred FSM for state register 'MAIN_RPOCESSOR_BLOCK.main_state_reg_reg' in module 'Processor'
@@ -1060,7 +1114,7 @@ INFO: [Synth 8-3354] encoded FSM with state register 'transaction_state_reg' usi
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'transaction_state_reg' using encoding 'sequential' in module 'RX_controller'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:48 ; elapsed = 00:01:13 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:39 ; elapsed = 00:01:26 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start RTL Component Statistics 
@@ -1111,7 +1165,7 @@ Detailed RTL Component Info :
 	                8 Bit	(4 X 2 bit)          RAMs := 2     
 +---Muxes : 
 	   2 Input   64 Bit        Muxes := 108   
-	   4 Input   64 Bit        Muxes := 52    
+	   4 Input   64 Bit        Muxes := 54    
 	   7 Input   64 Bit        Muxes := 5     
 	   8 Input   64 Bit        Muxes := 3     
 	   5 Input   64 Bit        Muxes := 32    
@@ -1148,7 +1202,7 @@ Detailed RTL Component Info :
 	   7 Input    2 Bit        Muxes := 2     
 	   3 Input    2 Bit        Muxes := 4     
 	   2 Input    1 Bit        Muxes := 2305  
-	   4 Input    1 Bit        Muxes := 83    
+	   4 Input    1 Bit        Muxes := 87    
 	   8 Input    1 Bit        Muxes := 33    
 	   3 Input    1 Bit        Muxes := 14    
 	   5 Input    1 Bit        Muxes := 45    
@@ -1171,7 +1225,7 @@ Finished Part Resource Summary
 Start Cross Boundary and Area Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:57 ; elapsed = 00:03:20 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:40 ; elapsed = 00:03:46 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -1199,13 +1253,13 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:02:01 ; elapsed = 00:03:27 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:43 ; elapsed = 00:03:54 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:02:01 ; elapsed = 00:03:27 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Timing Optimization : Time (s): cpu = 00:01:43 ; elapsed = 00:03:55 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -1232,7 +1286,7 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:02:06 ; elapsed = 00:03:36 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Technology Mapping : Time (s): cpu = 00:01:48 ; elapsed = 00:04:06 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start IO Insertion
@@ -1249,40 +1303,139 @@ Start Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
-WARNING: [Synth 8-3295] tying undriven pin INT_CONTROLLER:interrupt_request_1 to constant 0
-WARNING: [Synth 8-3295] tying undriven pin INT_CONTROLLER:interrupt_enable_1 to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][63] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][62] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][61] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][60] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][59] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][58] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][57] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][56] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][55] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][54] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][53] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][52] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][51] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][50] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][49] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][48] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][47] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][46] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][45] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][44] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][43] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][42] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][41] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][40] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][39] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][38] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][37] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][36] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][35] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][34] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][33] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][32] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][31] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][30] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][29] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][28] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][27] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][26] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][25] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][24] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][23] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][22] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][21] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][20] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][19] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][18] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][17] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][16] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][15] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][14] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][13] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][12] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][11] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][10] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][9] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][8] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][7] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][6] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][5] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][4] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][3] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][2] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][1] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[1][0] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][63] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][62] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][61] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][60] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][59] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][58] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][57] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][56] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][55] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][54] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][53] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][52] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][51] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][50] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][49] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][48] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][47] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][46] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][45] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][44] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][43] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][42] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][41] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][40] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][39] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][38] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][37] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][36] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][35] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][34] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][33] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][32] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][31] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][30] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][29] to constant 0
+WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][28] to constant 0
+INFO: [Common 17-14] Message 'Synth 8-3295' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:02:09 ; elapsed = 00:03:43 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished IO Insertion : Time (s): cpu = 00:01:51 ; elapsed = 00:04:12 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:02:09 ; elapsed = 00:03:43 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:51 ; elapsed = 00:04:13 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:10 ; elapsed = 00:03:44 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:52 ; elapsed = 00:04:14 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:02:10 ; elapsed = 00:03:44 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:52 ; elapsed = 00:04:14 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:02:11 ; elapsed = 00:03:48 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:53 ; elapsed = 00:04:16 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:02:11 ; elapsed = 00:03:48 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:53 ; elapsed = 00:04:16 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -1300,12 +1453,12 @@ Report Cell Usage:
 +------+---------+------+
 |1     |BUFG     |     2|
 |2     |CARRY4   |   225|
-|3     |LUT1     |   462|
-|4     |LUT2     |  3105|
-|5     |LUT3     |  1205|
-|6     |LUT4     |  2894|
-|7     |LUT5     |  1890|
-|8     |LUT6     | 17490|
+|3     |LUT1     |   188|
+|4     |LUT2     |  2904|
+|5     |LUT3     |  1139|
+|6     |LUT4     |  2828|
+|7     |LUT5     |  1888|
+|8     |LUT6     | 17500|
 |9     |MUXF7    |  4876|
 |10    |MUXF8    |  1863|
 |11    |RAM16X1D |     4|
@@ -1321,18 +1474,18 @@ Report Cell Usage:
 |21    |OBUF     |     2|
 +------+---------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:02:11 ; elapsed = 00:03:48 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:53 ; elapsed = 00:04:16 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 ---------------------------------------------------------------------------------
-Synthesis finished with 0 errors, 0 critical warnings and 2 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:01:35 ; elapsed = 00:03:17 . Memory (MB): peak = 3287.035 ; gain = 578.629
-Synthesis Optimization Complete : Time (s): cpu = 00:02:11 ; elapsed = 00:03:48 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+Synthesis finished with 0 errors, 0 critical warnings and 200 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:01:23 ; elapsed = 00:03:37 . Memory (MB): peak = 3295.703 ; gain = 597.668
+Synthesis Optimization Complete : Time (s): cpu = 00:01:53 ; elapsed = 00:04:16 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 INFO: [Project 1-571] Translating synthesized netlist
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.687 . Memory (MB): peak = 3287.035 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.791 . Memory (MB): peak = 3295.703 ; gain = 0.000
 INFO: [Netlist 29-17] Analyzing 7018 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.014 . Memory (MB): peak = 3287.035 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.016 . Memory (MB): peak = 3295.703 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
   A total of 54 instances were transformed.
   IOBUF => IOBUF (IBUF, OBUFT): 16 instances
@@ -1342,10 +1495,10 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM64X1D => RAM64X1D (RAMD64E(x2)): 4 instances
 
 INFO: [Common 17-83] Releasing license: Synthesis
-120 Infos, 4 Warnings, 0 Critical Warnings and 0 Errors encountered.
+123 Infos, 103 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:02:19 ; elapsed = 00:04:07 . Memory (MB): peak = 3287.035 ; gain = 2106.730
+synth_design: Time (s): cpu = 00:02:02 ; elapsed = 00:04:36 . Memory (MB): peak = 3295.703 ; gain = 2132.895
 INFO: [Common 17-1381] The checkpoint 'L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.runs/setting_1/Dual_core_mcu.dcp' has been generated.
-write_checkpoint: Time (s): cpu = 00:00:04 ; elapsed = 00:00:06 . Memory (MB): peak = 3287.035 ; gain = 0.000
+write_checkpoint: Time (s): cpu = 00:00:05 ; elapsed = 00:00:08 . Memory (MB): peak = 3295.703 ; gain = 0.000
 INFO: [runtcl-4] Executing : report_utilization -file Dual_core_mcu_utilization_synth.rpt -pb Dual_core_mcu_utilization_synth.pb
-INFO: [Common 17-206] Exiting Vivado at Thu Nov 23 23:20:47 2023...
+INFO: [Common 17-206] Exiting Vivado at Sat Nov 25 02:57:28 2023...

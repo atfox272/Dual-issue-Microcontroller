@@ -16,9 +16,12 @@
   <File Type="BITSTR-BMM" Name="Dual_core_mcu_bd.bmm"/>
   <File Type="ROUTE-METHODOLOGY-DRC" Name="Dual_core_mcu_methodology_drc_routed.rpt"/>
   <File Type="BITSTR-MMI" Name="Dual_core_mcu.mmi"/>
+  <File Type="ROUTE-METHODOLOGY-DRC-PB" Name="Dual_core_mcu_methodology_drc_routed.pb"/>
   <File Type="BITSTR-SYSDEF" Name="Dual_core_mcu.sysdef"/>
+  <File Type="ROUTE-DRC-RPX" Name="Dual_core_mcu_drc_routed.rpx"/>
   <File Type="BITSTR-LTX" Name="debug_nets.ltx"/>
   <File Type="BITSTR-LTX" Name="Dual_core_mcu.ltx"/>
+  <File Type="RCFI_FILE" Name="Dual_core_mcu.rcfi"/>
   <File Type="WBT-USG" Name="usage_statistics_webtalk.html"/>
   <File Type="OPT-HWDEF" Name="Dual_core_mcu.hwdef"/>
   <File Type="PLACE-IO" Name="Dual_core_mcu_io_placed.rpt"/>
@@ -47,11 +50,8 @@
   <File Type="PHYSOPT-DCP" Name="Dual_core_mcu_physopt.dcp"/>
   <File Type="POSTROUTE-PHYSOPT-DCP" Name="Dual_core_mcu_postroute_physopt.dcp"/>
   <File Type="POSTROUTE-PHYSOPT-BLACKBOX-DCP" Name="Dual_core_mcu_postroute_physopt_bb.dcp"/>
-  <File Type="ROUTE-METHODOLOGY-DRC-PB" Name="Dual_core_mcu_methodology_drc_routed.pb"/>
-  <File Type="ROUTE-DRC-RPX" Name="Dual_core_mcu_drc_routed.rpx"/>
   <File Type="ROUTE-METHODOLOGY-DRC-RPX" Name="Dual_core_mcu_methodology_drc_routed.rpx"/>
   <File Type="PDI-FILE" Name="Dual_core_mcu.pdi"/>
-  <File Type="RCFI_FILE" Name="Dual_core_mcu.rcfi"/>
   <File Type="CFI_FILE" Name="Dual_core_mcu.cfi"/>
   <File Type="RNPI_FILE" Name="Dual_core_mcu.rnpi"/>
   <File Type="NPI_FILE" Name="Dual_core_mcu.npi"/>

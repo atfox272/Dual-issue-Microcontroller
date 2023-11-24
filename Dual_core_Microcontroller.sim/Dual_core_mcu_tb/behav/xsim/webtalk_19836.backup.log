@@ -1,0 +1,13 @@
+#-----------------------------------------------------------
+# Webtalk v2020.2 (64-bit)
+# SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
+# IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+# Start of session at: Fri Nov 24 17:31:03 2023
+# Process ID: 19836
+# Current directory: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/Dual_core_mcu_tb/behav/xsim
+# Command line: wbtcv.exe -mode batch -source L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/Dual_core_mcu_tb/behav/xsim/xsim.dir/Dual_core_mcu_tb_behav/webtalk/xsim_webtalk.tcl -notrace
+# Log file: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/Dual_core_mcu_tb/behav/xsim/webtalk.log
+# Journal file: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/Dual_core_mcu_tb/behav/xsim\webtalk.jou
+#-----------------------------------------------------------
+source L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/Dual_core_mcu_tb/behav/xsim/xsim.dir/Dual_core_mcu_tb_behav/webtalk/xsim_webtalk.tcl -notrace
+INFO: [Common 17-206] Exiting Webtalk at Fri Nov 24 17:31:04 2023...

@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-//`define DEBUG
+`define DEBUG
 `define EXTI
 `define TIM
 `define UART_PROT_1    
@@ -51,16 +51,17 @@ module Dual_core_mcu
     parameter DATA_BUS_WIDTH        = 64,
     /* ADDRESS_BUS */
     parameter ADDR_BUS_WIDTH        = 64,
-    parameter CHANNEL_AMOUNT        = 3,    // 4 device for Processor 3(DMEM - UART1 - UART2 - GPIO)
+    parameter CHANNEL_AMOUNT        = 4,    // 4 device for Processor 3(DMEM - UART1 - UART2 - GPIO)
     parameter CHANNEL_BUS_WIDTH     = $clog2(CHANNEL_AMOUNT),
     parameter CHANNEL_ID_DMEM       = 2'b00,
     parameter CHANNEL_ID_GPIO       = 2'b01,
     parameter CHANNEL_ID_UART1      = 2'b10,
     parameter CHANNEL_ID_UART2      = 2'b11,
     /* Interface Encode */
-    parameter INTERFACE_DMEM_ENCODE = 0,
-    parameter INTERFACE_PERP_ENCODE = 1,
-    parameter INTERFACE_GPIO_ENCODE = 2,
+    parameter INTERFACE_MASTER_ENCODE = 3,
+    parameter INTERFACE_DMEM_ENCODE   = 0,
+    parameter INTERFACE_PERP_ENCODE   = 1,
+    parameter INTERFACE_GPIO_ENCODE   = 2,
     // Program memory
     parameter INSTRUCTION_WIDTH     = 32,   //32-bit instruction
     parameter PROGRAM_MEMORY_SIZE   = 1024,   // 64 instruction
@@ -214,6 +215,15 @@ module Dual_core_mcu
     wire [DATA_TYPE_WIDTH - 1:0]        m_ati_p1_data_type;
     wire                                m_ati_p1_rd_available;
     wire                                m_ati_p1_wr_available;
+    /* Master Stream for Processor 1*/
+    wire [DATA_BUS_WIDTH - 1:0]         m_atis_p1_rdata_bus    [0:CHANNEL_AMOUNT - 1];
+    wire [DATA_BUS_WIDTH - 1:0]         m_atis_p1_wdata_bus;
+    wire [ADDR_BUS_WIDTH - 1:0]         m_atis_p1_addr_bus;
+    wire                                m_atis_p1_rd_req;
+    wire                                m_atis_p1_wr_req;
+    wire [DATA_TYPE_WIDTH - 1:0]        m_atis_p1_data_type;
+    wire                                m_atis_p1_rd_available [0:CHANNEL_AMOUNT - 1];
+    wire                                m_atis_p1_wr_available [0:CHANNEL_AMOUNT - 1];
     /* Master Interface for Processor 2*/
     wire [DATA_BUS_WIDTH - 1:0]         m_ati_p2_wdata;
     wire [DATA_BUS_WIDTH - 1:0]         m_ati_p2_rdata;
@@ -223,6 +233,15 @@ module Dual_core_mcu
     wire [DATA_TYPE_WIDTH - 1:0]        m_ati_p2_data_type;
     wire                                m_ati_p2_rd_available;
     wire                                m_ati_p2_wr_available;
+    /* Master Stream for Processor 1*/
+    wire [DATA_BUS_WIDTH - 1:0]         m_atis_p2_rdata_bus    [0:CHANNEL_AMOUNT - 1];
+    wire [DATA_BUS_WIDTH - 1:0]         m_atis_p2_wdata_bus;
+    wire [ADDR_BUS_WIDTH - 1:0]         m_atis_p2_addr_bus;
+    wire                                m_atis_p2_rd_req;
+    wire                                m_atis_p2_wr_req;
+    wire [DATA_TYPE_WIDTH - 1:0]        m_atis_p2_data_type;
+    wire                                m_atis_p2_rd_available [0:CHANNEL_AMOUNT - 1];
+    wire                                m_atis_p2_wr_available [0:CHANNEL_AMOUNT - 1];
     /* Slave Interface (UART_1) */ /* Use For Debugger */ 
     wire [DATA_WIDTH - 1:0]             s_ati_uart1_data_in;
     wire [DATA_WIDTH - 1:0]             s_ati_uart1_data_out;
@@ -458,31 +477,141 @@ module Dual_core_mcu
     (* dont_touch = "yes" *)   
     Atfox_exTensible_Interface
         #(
+        .CHANNEL_ID(),
+        .INTERFACE_MASTER_ENCODE(INTERFACE_MASTER_ENCODE),
+        .INTERFACE_DMEM_ENCODE(INTERFACE_DMEM_ENCODE),
+        .INTERFACE_PERP_ENCODE(INTERFACE_PERP_ENCODE),
+        .INTERFACE_GPIO_ENCODE(INTERFACE_GPIO_ENCODE),
+        .INTERFACE_TYPE(INTERFACE_MASTER_ENCODE)
+        ) ATI_PROC1_BUS1 (
+        .clk(clk),
+        .m_ati_rdata(m_ati_p1_rdata),
+        .m_ati_wdata(m_ati_p1_wdata),
+        .m_ati_addr(m_ati_p1_addr),
+        .m_ati_rd_available(m_ati_p1_rd_available),
+        .m_ati_wr_available(m_ati_p1_wr_available),
+        .m_ati_rd_req(m_ati_p1_rd_req),
+        .m_ati_wr_req(m_ati_p1_wr_req),
+        .m_ati_data_type(m_ati_p1_data_type),
+        .m_atis_rdata_bus(m_atis_p1_rdata_bus),
+        .m_atis_wdata_bus(m_atis_p1_wdata_bus),
+        .m_atis_addr_bus(m_atis_p1_addr_bus),
+        .m_atis_rd_available(m_atis_p1_rd_available),
+        .m_atis_wr_available(m_atis_p1_wr_available),
+        .m_atis_rd_req(m_atis_p1_rd_req),
+        .m_atis_wr_req(m_atis_p1_wr_req),
+        .m_atis_data_type(m_atis_p1_data_type),
+        .s_atis_wdata(),
+        .s_atis_rdata(),
+        .s_atis_addr(),
+        .s_atis_rd_available(),
+        .s_atis_wr_available(),
+        .s_atis_rd_req(),
+        .s_atis_wr_req(),
+        .s_atis_data_type(),
+        .s_ati_rdata(),
+        .s_ati_wdata(),
+        .s_ati_wr_req(),
+        .s_ati_rd_req(),
+        .s_ati_rd_available(),
+        .s_ati_wr_available(),
+        .s_ati_raddr(),
+        .s_ati_waddr(),
+        .s_ati_rdata_type(),
+        .s_ati_wdata_type(),
+        .rst_n(~rst)
+        );
+    (* dont_touch = "yes" *)   
+    Atfox_exTensible_Interface
+        #(
+        .CHANNEL_ID(),
+        .INTERFACE_MASTER_ENCODE(INTERFACE_MASTER_ENCODE),
+        .INTERFACE_DMEM_ENCODE(INTERFACE_DMEM_ENCODE),
+        .INTERFACE_PERP_ENCODE(INTERFACE_PERP_ENCODE),
+        .INTERFACE_GPIO_ENCODE(INTERFACE_GPIO_ENCODE),
+        .INTERFACE_TYPE(INTERFACE_MASTER_ENCODE)
+        ) ATI_PROC2_BUS2 (
+        .clk(clk),
+        .m_ati_rdata(m_ati_p2_rdata),
+        .m_ati_wdata(m_ati_p2_wdata),
+        .m_ati_addr(m_ati_p2_addr),
+        .m_ati_rd_available(m_ati_p2_rd_available),
+        .m_ati_wr_available(m_ati_p2_wr_available),
+        .m_ati_rd_req(m_ati_p2_rd_req),
+        .m_ati_wr_req(m_ati_p2_wr_req),
+        .m_ati_data_type(m_ati_p2_data_type),
+        .m_atis_rdata_bus(m_atis_p2_rdata_bus),
+        .m_atis_wdata_bus(m_atis_p2_wdata_bus),
+        .m_atis_addr_bus(m_atis_p2_addr_bus),
+        .m_atis_rd_available(m_atis_p2_rd_available),
+        .m_atis_wr_available(m_atis_p2_wr_available),
+        .m_atis_rd_req(m_atis_p2_rd_req),
+        .m_atis_wr_req(m_atis_p2_wr_req),
+        .m_atis_data_type(m_atis_p2_data_type),
+        .s_atis_wdata(),
+        .s_atis_rdata(),
+        .s_atis_addr(),
+        .s_atis_rd_available(),
+        .s_atis_wr_available(),
+        .s_atis_rd_req(),
+        .s_atis_wr_req(),
+        .s_atis_data_type(),
+        .s_ati_rdata(),
+        .s_ati_wdata(),
+        .s_ati_wr_req(),
+        .s_ati_rd_req(),
+        .s_ati_rd_available(),
+        .s_ati_wr_available(),
+        .s_ati_raddr(),
+        .s_ati_waddr(),
+        .s_ati_rdata_type(),
+        .s_ati_wdata_type(),
+        .rst_n(~rst)
+        );
+    (* dont_touch = "yes" *)   
+    Atfox_exTensible_Interface
+        #(
         .CHANNEL_ID(CHANNEL_ID_DMEM),
         .INTERFACE_DMEM_ENCODE(INTERFACE_DMEM_ENCODE),
         .INTERFACE_PERP_ENCODE(INTERFACE_PERP_ENCODE),
         .INTERFACE_GPIO_ENCODE(INTERFACE_GPIO_ENCODE),
-        .INTERFACE_TYPE(INTERFACE_DMEM_ENCODE)  
+        .INTERFACE_TYPE(INTERFACE_DMEM_ENCODE)
         ) ATI_DMEM_BUS1 (
         .clk(clk),
-        .data_bus_in(m_ati_p1_wdata),
-        .data_bus_out(m_ati_p1_rdata),
-        .addr_bus_in(m_ati_p1_addr),
-        .buffer_rd_available(m_ati_p1_rd_available),
-        .buffer_wr_available(m_ati_p1_wr_available),
-        .rd_req(m_ati_p1_rd_req),
-        .wr_req(m_ati_p1_wr_req),
-        .data_type_encode(m_ati_p1_data_type),
-        .device_data_in(s_ati_dmem_p1_data_in),
-        .device_data_out(s_ati_dmem_p1_data_out),
-        .device_wr_ins(s_ati_dmem_p1_wr_req),
-        .device_rd_ins(s_ati_dmem_p1_rd_req),
-        .device_rd_available(s_ati_dmem_p1_rd_available),
-        .device_wr_available(s_ati_dmem_p1_wr_available),
-        .device_addr_rd(s_ati_dmem_p1_addr_rd),
-        .device_addr_wr(s_ati_dmem_p1_addr_wr),
-        .device_data_type_rd(s_ati_dmem_p1_data_type_rd),
-        .device_data_type_wr(s_ati_dmem_p1_data_type_wr),
+        .m_ati_rdata(),
+        .m_ati_wdata(),
+        .m_ati_addr(),
+        .m_ati_rd_available(),
+        .m_ati_wr_available(),
+        .m_ati_rd_req(),
+        .m_ati_wr_req(),
+        .m_ati_data_type(),
+        .m_atis_rdata_bus(),
+        .m_atis_wdata_bus(),
+        .m_atis_addr_bus(),
+        .m_atis_rd_available(),
+        .m_atis_wr_available(),
+        .m_atis_rd_req(),
+        .m_atis_wr_req(),
+        .m_atis_data_type(), 
+        .s_atis_wdata(m_atis_p1_wdata_bus),
+        .s_atis_rdata(m_atis_p1_rdata_bus[CHANNEL_ID_DMEM]),
+        .s_atis_addr(m_atis_p1_addr_bus),
+        .s_atis_rd_available(m_atis_p1_rd_available[CHANNEL_ID_DMEM]),
+        .s_atis_wr_available(m_atis_p1_wr_available[CHANNEL_ID_DMEM]),
+        .s_atis_rd_req(m_atis_p1_rd_req),
+        .s_atis_wr_req(m_atis_p1_wr_req),
+        .s_atis_data_type(m_atis_p1_data_type),
+        .s_ati_rdata(s_ati_dmem_p1_data_in),
+        .s_ati_wdata(s_ati_dmem_p1_data_out),
+        .s_ati_rd_req(s_ati_dmem_p1_rd_req),
+        .s_ati_wr_req(s_ati_dmem_p1_wr_req),
+        .s_ati_rd_available(s_ati_dmem_p1_rd_available),
+        .s_ati_wr_available(s_ati_dmem_p1_wr_available),
+        .s_ati_raddr(s_ati_dmem_p1_addr_rd),
+        .s_ati_waddr(s_ati_dmem_p1_addr_wr),
+        .s_ati_rdata_type(s_ati_dmem_p1_data_type_rd),
+        .s_ati_wdata_type(s_ati_dmem_p1_data_type_wr),
         .rst_n(~rst)
         );
      
@@ -496,24 +625,40 @@ module Dual_core_mcu
         .INTERFACE_TYPE(INTERFACE_DMEM_ENCODE)  
         ) ATI_DMEM_BUS2 (
         .clk(clk),
-        .data_bus_in(m_ati_p2_wdata),
-        .data_bus_out(m_ati_p2_rdata),
-        .addr_bus_in(m_ati_p2_addr),
-        .buffer_rd_available(m_ati_p2_rd_available),
-        .buffer_wr_available(m_ati_p2_wr_available),
-        .rd_req(m_ati_p2_rd_req),
-        .wr_req(m_ati_p2_wr_req),
-        .data_type_encode(m_ati_p2_data_type),
-        .device_data_in(s_ati_dmem_p2_data_in),
-        .device_data_out(s_ati_dmem_p2_data_out),
-        .device_wr_ins(s_ati_dmem_p2_wr_req),
-        .device_rd_ins(s_ati_dmem_p2_rd_req),
-        .device_rd_available(s_ati_dmem_p2_rd_available),
-        .device_wr_available(s_ati_dmem_p2_wr_available),
-        .device_addr_rd(s_ati_dmem_p2_addr_rd),
-        .device_addr_wr(s_ati_dmem_p2_addr_wr),
-        .device_data_type_rd(s_ati_dmem_p2_data_type_rd),
-        .device_data_type_wr(s_ati_dmem_p2_data_type_wr),
+        .m_ati_rdata(),
+        .m_ati_wdata(),
+        .m_ati_addr(),
+        .m_ati_rd_available(),
+        .m_ati_wr_available(),
+        .m_ati_rd_req(),
+        .m_ati_wr_req(),
+        .m_ati_data_type(),
+        .m_atis_rdata_bus(),
+        .m_atis_wdata_bus(),
+        .m_atis_addr_bus(),
+        .m_atis_rd_available(),
+        .m_atis_wr_available(),
+        .m_atis_rd_req(),
+        .m_atis_wr_req(),
+        .m_atis_data_type(), 
+        .s_atis_wdata(m_atis_p2_wdata_bus),
+        .s_atis_rdata(m_atis_p2_rdata_bus[CHANNEL_ID_DMEM]),
+        .s_atis_addr(m_atis_p2_addr_bus),
+        .s_atis_rd_available(m_atis_p2_rd_available[CHANNEL_ID_DMEM]),
+        .s_atis_wr_available(m_atis_p2_wr_available[CHANNEL_ID_DMEM]),
+        .s_atis_rd_req(m_atis_p2_rd_req),
+        .s_atis_wr_req(m_atis_p2_wr_req),
+        .s_atis_data_type(m_atis_p2_data_type),
+        .s_ati_rdata(s_ati_dmem_p2_data_in),
+        .s_ati_wdata(s_ati_dmem_p2_data_out),
+        .s_ati_rd_req(s_ati_dmem_p2_rd_req),
+        .s_ati_wr_req(s_ati_dmem_p2_wr_req),
+        .s_ati_rd_available(s_ati_dmem_p2_rd_available),
+        .s_ati_wr_available(s_ati_dmem_p2_wr_available),
+        .s_ati_raddr(s_ati_dmem_p2_addr_rd),
+        .s_ati_waddr(s_ati_dmem_p2_addr_wr),
+        .s_ati_rdata_type(s_ati_dmem_p2_data_type_rd),
+        .s_ati_wdata_type(s_ati_dmem_p2_data_type_wr),
         .rst_n(~rst)
         ); 
     (* dont_touch = "yes" *)                   
@@ -695,24 +840,40 @@ module Dual_core_mcu
         .PIN_AMOUNT(GPIO_PIN_AMOUNT)
         ) ATI_GPIO_BUS1 (
         .clk(clk),
-        .data_bus_in(m_ati_p1_wdata),
-        .data_bus_out(m_ati_p1_rdata),
-        .addr_bus_in(m_ati_p1_addr),
-        .buffer_rd_available(m_ati_p1_rd_available),
-        .buffer_wr_available(m_ati_p1_wr_available),
-        .rd_req(m_ati_p1_rd_req),
-        .wr_req(m_ati_p1_wr_req),
-        .data_type_encode(m_ati_p1_data_type),
-        .device_data_in(s_ati_gpio_data_in),
-        .device_data_out(s_ati_gpio_data_out),
-        .device_wr_ins(s_ati_gpio_wr_req),
-        .device_rd_ins(s_ati_gpio_rd_req),
-        .device_rd_available(s_ati_gpio_rd_available),
-        .device_wr_available(s_ati_gpio_wr_available),
-        .device_addr_rd(s_ati_gpio_addr_rd),
-        .device_addr_wr(s_ati_gpio_addr_wr),
-        .device_data_type_rd(),
-        .device_data_type_wr(),
+        .m_ati_rdata(),
+        .m_ati_wdata(),
+        .m_ati_addr(),
+        .m_ati_rd_available(),
+        .m_ati_wr_available(),
+        .m_ati_rd_req(),
+        .m_ati_wr_req(),
+        .m_ati_data_type(),
+        .m_atis_rdata_bus(),
+        .m_atis_wdata_bus(),
+        .m_atis_addr_bus(),
+        .m_atis_rd_available(),
+        .m_atis_wr_available(),
+        .m_atis_rd_req(),
+        .m_atis_wr_req(),
+        .m_atis_data_type(),        
+        .s_atis_wdata(m_atis_p1_wdata_bus),
+        .s_atis_rdata(m_atis_p1_rdata_bus[CHANNEL_ID_GPIO]),
+        .s_atis_addr(m_atis_p1_addr_bus),
+        .s_atis_rd_available(m_atis_p1_rd_available[CHANNEL_ID_GPIO]),
+        .s_atis_wr_available(m_atis_p1_wr_available[CHANNEL_ID_GPIO]),
+        .s_atis_rd_req(m_atis_p1_rd_req),
+        .s_atis_wr_req(m_atis_p1_wr_req),
+        .s_atis_data_type(m_atis_p1_data_type),
+        .s_ati_rdata(s_ati_gpio_data_in),
+        .s_ati_wdata(s_ati_gpio_data_out),
+        .s_ati_rd_req(s_ati_gpio_rd_req),
+        .s_ati_wr_req(s_ati_gpio_wr_req),
+        .s_ati_rd_available(s_ati_gpio_rd_available),
+        .s_ati_wr_available(s_ati_gpio_wr_available),
+        .s_ati_raddr(s_ati_gpio_addr_rd),
+        .s_ati_waddr(s_ati_gpio_addr_wr),
+        .s_ati_rdata_type(),
+        .s_ati_wdata_type(),
         .rst_n(~rst)
         );
     generate     
@@ -813,24 +974,40 @@ module Dual_core_mcu
         .INTERFACE_TYPE(INTERFACE_PERP_ENCODE)
         ) ATI_UART1_BUS1 (
         .clk(clk),
-        .data_bus_in(m_ati_p1_wdata),
-        .data_bus_out(m_ati_p1_rdata),
-        .addr_bus_in(m_ati_p1_addr),
-        .buffer_rd_available(m_ati_p1_rd_available),
-        .buffer_wr_available(m_ati_p1_wr_available),
-        .rd_req(m_ati_p1_rd_req),
-        .wr_req(m_ati_p1_wr_req),
-        .data_type_encode(m_ati_p1_data_type),
-        .device_data_in(s_ati_uart1_data_in),
-        .device_data_out(s_ati_uart1_data_out),
-        .device_wr_ins(s_ati_uart1_wr_req),
-        .device_rd_ins(s_ati_uart1_rd_req),
-        .device_rd_available(s_ati_uart1_rd_available),
-        .device_wr_available(s_ati_uart1_wr_available),
-        .device_addr_rd(),
-        .device_addr_wr(),
-        .device_data_type_rd(),
-        .device_data_type_wr(),
+        .m_ati_rdata(),
+        .m_ati_wdata(),
+        .m_ati_addr(),
+        .m_ati_rd_available(),
+        .m_ati_wr_available(),
+        .m_ati_rd_req(),
+        .m_ati_wr_req(),
+        .m_ati_data_type(),
+        .m_atis_rdata_bus(),
+        .m_atis_wdata_bus(),
+        .m_atis_addr_bus(),
+        .m_atis_rd_available(),
+        .m_atis_wr_available(),
+        .m_atis_rd_req(),
+        .m_atis_wr_req(),
+        .m_atis_data_type(), 
+        .s_atis_wdata(m_atis_p1_wdata_bus),
+        .s_atis_rdata(m_atis_p1_rdata_bus[CHANNEL_ID_UART1]),
+        .s_atis_addr(m_atis_p1_addr_bus),
+        .s_atis_rd_available(m_atis_p1_rd_available[CHANNEL_ID_UART1]),
+        .s_atis_wr_available(m_atis_p1_wr_available[CHANNEL_ID_UART1]),
+        .s_atis_rd_req(m_atis_p1_rd_req),
+        .s_atis_wr_req(m_atis_p1_wr_req),
+        .s_atis_data_type(m_atis_p1_data_type),
+        .s_ati_rdata(s_ati_uart1_data_in),
+        .s_ati_wdata(s_ati_uart1_data_out),
+        .s_ati_rd_req(s_ati_uart1_rd_req),
+        .s_ati_wr_req(s_ati_uart1_wr_req),
+        .s_ati_rd_available(s_ati_uart1_rd_available),
+        .s_ati_wr_available(s_ati_uart1_wr_available),
+        .s_ati_raddr(),
+        .s_ati_waddr(),
+        .s_ati_rdata_type(),
+        .s_ati_wdata_type(),
         .rst_n(~rst)
         );        
     (* dont_touch = "yes" *)  
@@ -871,24 +1048,40 @@ module Dual_core_mcu
         .INTERFACE_TYPE(INTERFACE_PERP_ENCODE)
         ) ATI_UART2_BUS2 (
         .clk(clk),
-        .data_bus_in(m_ati_p2_wdata),
-        .data_bus_out(m_ati_p2_rdata),
-        .addr_bus_in(m_ati_p2_addr),
-        .buffer_rd_available(m_ati_p2_rd_available),
-        .buffer_wr_available(m_ati_p2_wr_available),
-        .rd_req(m_ati_p2_rd_req),
-        .wr_req(m_ati_p2_wr_req),
-        .data_type_encode(m_ati_p2_data_type),
-        .device_data_in(s_ati_uart2_data_in),
-        .device_data_out(s_ati_uart2_data_out),
-        .device_wr_ins(s_ati_uart2_wr_req),
-        .device_rd_ins(s_ati_uart2_rd_req),
-        .device_rd_available(s_ati_uart2_rd_available),
-        .device_wr_available(s_ati_uart2_wr_available),
-        .device_addr_rd(),
-        .device_addr_wr(),
-        .device_data_type_rd(),
-        .device_data_type_wr(),
+        .m_ati_rdata(),
+        .m_ati_wdata(),
+        .m_ati_addr(),
+        .m_ati_rd_available(),
+        .m_ati_wr_available(),
+        .m_ati_rd_req(),
+        .m_ati_wr_req(),
+        .m_ati_data_type(),
+        .m_atis_rdata_bus(),
+        .m_atis_wdata_bus(),
+        .m_atis_addr_bus(),
+        .m_atis_rd_available(),
+        .m_atis_wr_available(),
+        .m_atis_rd_req(),
+        .m_atis_wr_req(),
+        .m_atis_data_type(), 
+        .s_atis_wdata(m_atis_p2_wdata_bus),
+        .s_atis_rdata(m_atis_p2_rdata_bus[CHANNEL_ID_UART2]),
+        .s_atis_addr(m_atis_p2_addr_bus),
+        .s_atis_rd_available(m_atis_p2_rd_available[CHANNEL_ID_UART2]),
+        .s_atis_wr_available(m_atis_p2_wr_available[CHANNEL_ID_UART2]),
+        .s_atis_rd_req(m_atis_p2_rd_req),
+        .s_atis_wr_req(m_atis_p2_wr_req),
+        .s_atis_data_type(m_atis_p2_data_type),
+        .s_ati_rdata(s_ati_uart2_data_in),
+        .s_ati_wdata(s_ati_uart2_data_out),
+        .s_ati_wr_req(s_ati_uart2_wr_req),
+        .s_ati_rd_req(s_ati_uart2_rd_req),
+        .s_ati_rd_available(s_ati_uart2_rd_available),
+        .s_ati_wr_available(s_ati_uart2_wr_available),
+        .s_ati_raddr(),
+        .s_ati_waddr(),
+        .s_ati_rdata_type(),
+        .s_ati_wdata_type(),
         .rst_n(~rst)
         );
     (* dont_touch = "yes" *)  

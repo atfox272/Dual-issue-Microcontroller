@@ -51,7 +51,7 @@ module Dual_core_mcu_tb;
     reg                      external_int_pin;
     for(genvar port_index = 0; port_index < GPIO_PORT_AMOUNT; port_index = port_index + 1) begin
         for(genvar pin_index = 0; pin_index < GPIO_PIN_AMOUNT; pin_index = pin_index + 1) begin
-            assign GPIO_PORT[port_index][pin_index] = (GPIO_driver[port_index][pin_index]) ? GPIO_ext[port_index][pin_index] : 1'bz;
+            assign GPIO_PORT[port_index][pin_index] = (~GPIO_driver[port_index][pin_index]) ? GPIO_ext[port_index][pin_index] : 1'bz;
         end
     end 
     // Debug
@@ -86,7 +86,7 @@ module Dual_core_mcu_tb;
     Dual_core_mcu       
         #(
         .INTERNAL_CLOCK(INTERNAL_CLOCK),
-        .FINISH_RECEIVE_TIMER(FINISH_RECEIVE_TIMER)
+//        .FINISH_RECEIVE_TIMER(FINISH_RECEIVE_TIMER)
         ) dual_core_mcu (
         .clk(clk),
         .RX_1(RX_1),
@@ -480,7 +480,7 @@ module Dual_core_mcu_tb;
             end
             
             // PC = 0xC0
-            instruction <= {5'd10,5'd0,12'b11110000,ADDI_INS_10};      // PORT[0][7:4]: Output - PORT[0][3:0]: Input
+            instruction <= {5'd10,5'd0,12'b00001111,ADDI_INS_10};      // PORT[0][7:4]: Output - PORT[0][3:0]: Input
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
@@ -766,6 +766,18 @@ module Dual_core_mcu_tb;
         
         // MAIN ///////////////////////////////////////////////////////////////////////////////////////// 
         // PC = 0xC0
+            instruction <= {5'd20,5'd0,12'b00001111,ADDI_INS_10};      // PORT[0][7:4]: Output - PORT[0][3:0]: Input
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0xC4
+            instruction <= {5'd00,5'd00,5'd20,7'h00,SB_INS_10};         // PORT[0][7:4]: Output - PORT[0][3:0]: Input (Addr at 0x00)
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0xC0
             instruction <= {5'd07,5'd00,12'd10,ADDI_INS_10};            // x7 = x0 + 5     = 5
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
@@ -797,18 +809,6 @@ module Dual_core_mcu_tb;
             end
         // PC = 0xD8
             instruction <= {5'd00,5'd00,5'd08,7'h0E,SB_INS_10};     // Store x8 to 0x0E (configure timer0) 8'b11000001
-            begin
-                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
-            end
-            
-        // PC = 0xDC
-            instruction <= {5'd10,5'd0,12'b11110000,ADDI_INS_10};      // PORT[0][7:4]: Output - PORT[0][3:0]: Input
-            begin
-                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
-            end
-            
-        // PC = 0xE0
-            instruction <= {5'd00,5'd00,5'd10,7'h00,SB_INS_10};         // PORT[0][7:4]: Output - PORT[0][3:0]: Input (Addr at 0x00)
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
@@ -915,10 +915,14 @@ module Dual_core_mcu_tb;
 //        IO_PORT[2] <= 1;
 //        GPIO_driver[2] <= 1;
         #59950;
-        GPIO_driver[0][0] <= 1;
-        GPIO_driver[0][1] <= 1;
-        GPIO_driver[0][2] <= 1;
-        GPIO_driver[0][3] <= 1;
+        GPIO_driver[0][0] <= 0;
+        GPIO_driver[0][1] <= 0;
+        GPIO_driver[0][2] <= 0;
+        GPIO_driver[0][3] <= 0;
+        GPIO_driver[0][4] <= 1;
+        GPIO_driver[0][5] <= 1;
+        GPIO_driver[0][6] <= 1;
+        GPIO_driver[0][7] <= 1;
         GPIO_ext[0][0] <= 0;
         GPIO_ext[0][1] <= 0;
         GPIO_ext[0][2] <= 1;
@@ -1064,7 +1068,8 @@ module Dual_core_mcu_tb;
 //        #2 interrupt_request_3 <= 0;
         
         #16;
-        GPIO_driver[0][2] <= 1;
+        GPIO_driver[0][2] <= 0;
+        
         GPIO_ext[0][2] <= 1;
         
 //        external_int_pin <= 0;

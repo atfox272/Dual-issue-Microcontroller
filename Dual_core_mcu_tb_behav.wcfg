@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="266000001fs"></ZoomEndTime>
-      <Cursor1Time time="0fs"></Cursor1Time>
+      <ZoomStartTime time="81442300fs"></ZoomStartTime>
+      <ZoomEndTime time="81710501fs"></ZoomEndTime>
+      <Cursor1Time time="81487000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="201"></NameColumnWidth>
+      <NameColumnWidth column_width="196"></NameColumnWidth>
       <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="51" />
+   <WVObjectSize size="44" />
    <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -92,22 +92,6 @@
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/addr_rd_pm" type="array">
       <obj_property name="ElementShortName">addr_rd_pm[9:0]</obj_property>
       <obj_property name="ObjectShortName">addr_rd_pm[9:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/multi_processor_manager/bus_module_encode" type="array">
-      <obj_property name="ElementShortName">bus_module_encode[1:0]</obj_property>
-      <obj_property name="ObjectShortName">bus_module_encode[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/multi_processor_manager/quick_adder_result" type="array">
-      <obj_property name="ElementShortName">quick_adder_result[63:0]</obj_property>
-      <obj_property name="ObjectShortName">quick_adder_result[63:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/multi_processor_manager/data_bus_rd_pm" type="array">
-      <obj_property name="ElementShortName">data_bus_rd_pm[63:0]</obj_property>
-      <obj_property name="ObjectShortName">data_bus_rd_pm[63:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_1/main_state" type="array">
-      <obj_property name="ElementShortName">main_state[1:0]</obj_property>
-      <obj_property name="ObjectShortName">main_state[1:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/m_ati_p1_wdata" type="array">
       <obj_property name="ElementShortName">m_ati_p1_wdata[63:0]</obj_property>
@@ -198,10 +182,6 @@
       <obj_property name="ObjectShortName">GPIO_PORT[0:1][7:0]</obj_property>
       <obj_property name="isExpanded"></obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_2/\SUB_PROCESSOR_BLOCK.running_program_state_reg " type="array">
-      <obj_property name="ElementShortName">\SUB_PROCESSOR_BLOCK.running_program_state_reg [2:0]</obj_property>
-      <obj_property name="ObjectShortName">\SUB_PROCESSOR_BLOCK.running_program_state_reg [2:0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_request_1" type="logic">
       <obj_property name="ElementShortName">interrupt_request_1</obj_property>
       <obj_property name="ObjectShortName">interrupt_request_1</obj_property>
@@ -214,16 +194,8 @@
       <obj_property name="ElementShortName">interrupt_request_3</obj_property>
       <obj_property name="ObjectShortName">interrupt_request_3</obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_controller/interrupt_request_1_empty" type="logic">
-      <obj_property name="ElementShortName">interrupt_request_1_empty</obj_property>
-      <obj_property name="ObjectShortName">interrupt_request_1_empty</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_controller/interrupt_request_2_empty" type="logic">
-      <obj_property name="ElementShortName">interrupt_request_2_empty</obj_property>
-      <obj_property name="ObjectShortName">interrupt_request_2_empty</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_controller/interrupt_request_3_empty" type="logic">
-      <obj_property name="ElementShortName">interrupt_request_3_empty</obj_property>
-      <obj_property name="ObjectShortName">interrupt_request_3_empty</obj_property>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/s_ati_dmem_p1_wr_available" type="logic">
+      <obj_property name="ElementShortName">s_ati_dmem_p1_wr_available</obj_property>
+      <obj_property name="ObjectShortName">s_ati_dmem_p1_wr_available</obj_property>
    </wvobject>
 </wave_config>
