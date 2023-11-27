@@ -1,0 +1,58 @@
+Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
+| Date         : Sun Nov 26 11:44:32 2023
+| Host         : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
+| Command      : report_drc -file Dual_core_mcu_drc_routed.rpt -pb Dual_core_mcu_drc_routed.pb -rpx Dual_core_mcu_drc_routed.rpx
+| Design       : Dual_core_mcu
+| Device       : xc7z020clg400-1
+| Speed File   : -1
+| Design State : Fully Routed
+---------------------------------------------------------------------------------------------------------------------------------
+
+Report DRC
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: design_1
+      Design limits: <entire design considered>
+           Ruledeck: default
+             Max violations: <unlimited>
+             Violations found: 2
++-----------+----------+--------------------+------------+
+| Rule      | Severity | Description        | Violations |
++-----------+----------+--------------------+------------+
+| RTSTAT-10 | Warning  | No routable loads  | 1          |
+| ZPS7-1    | Warning  | PS7 block required | 1          |
++-----------+----------+--------------------+------------+
+
+2. REPORT DETAILS
+-----------------
+RTSTAT-10#1 Warning
+No routable loads  
+341 net(s) have no routable loads. The problem bus(es) and/or net(s) are DMEM/invalid_rd_flag_1, DMEM/invalid_rd_flag_2, DMEM/invalid_wr_flag,
+IMEM/invalid_rd_flag, IMEM/invalid_wr_flag,
+UART_PERIPHERAL_1/fifo_tx/TX_complete,
+UART_PERIPHERAL_1/rx_controller/RX_available,
+UART_PERIPHERAL_2/rx_controller/RX_available,
+registers_management/new_data_register[0],
+registers_management/new_data_register[2],
+registers_management/new_data_register[3],
+registers_management/new_data_register[4],
+registers_management/new_data_register[5],
+registers_management/new_data_register[6],
+registers_management/new_data_register[7] (the first 15 of 215 listed).
+Related violations: <none>
+
+ZPS7-1#1 Warning
+PS7 block required  
+The PS7 cell must be used in this Zynq design in order to enable correct default configuration.
+Related violations: <none>
+
+

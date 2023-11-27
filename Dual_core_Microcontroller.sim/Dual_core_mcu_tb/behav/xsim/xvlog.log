@@ -19,11 +19,11 @@ INFO: [VRFC 10-311] analyzing module Processor
 INFO: [VRFC 10-2458] undeclared symbol send_debug_clk, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:402]
 INFO: [VRFC 10-2458] undeclared symbol amount_snd_byte_debug, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:403]
 INFO: [VRFC 10-2458] undeclared symbol data_snd_debug, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:404]
-INFO: [VRFC 10-2458] undeclared symbol protocol_address_mapping, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:992]
-INFO: [VRFC 10-2458] undeclared symbol data_snd_protocol_per, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:993]
-INFO: [VRFC 10-2458] undeclared symbol send_protocol_clk, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:994]
-INFO: [VRFC 10-2458] undeclared symbol receive_protocol_clk, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:995]
-INFO: [VRFC 10-2458] undeclared symbol amount_snd_byte_protocol, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:996]
+INFO: [VRFC 10-2458] undeclared symbol protocol_address_mapping, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:998]
+INFO: [VRFC 10-2458] undeclared symbol data_snd_protocol_per, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:999]
+INFO: [VRFC 10-2458] undeclared symbol send_protocol_clk, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:1000]
+INFO: [VRFC 10-2458] undeclared symbol receive_protocol_clk, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:1001]
+INFO: [VRFC 10-2458] undeclared symbol amount_snd_byte_protocol, assumed default net type wire [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:1002]
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/RX_controller.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module RX_controller
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/TX_controller.v" into library xil_defaultlib
