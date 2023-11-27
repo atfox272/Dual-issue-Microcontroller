@@ -136,6 +136,7 @@ module Dual_core_mcu
     inout   wire                        SDL,
     `endif
     
+    output                              RUNNING_PROGRAM,
     // GPIO
     inout   [GPIO_PIN_AMOUNT - 1:0]     GPIO_PORT [0:GPIO_PORT_AMOUNT - 1],
     
@@ -1121,8 +1122,8 @@ module Dual_core_mcu
     `endif
     
     /* Special wires are used for Stored-program */
-    wire active_UART_BUS1           = (main_state == RUNNING_PROGRAM_STATE);
-    assign RX_use_1                 = (active_UART_BUS1) ? s_ati_uart1_rd_req : RX_use_1_processor;    
-    assign s_ati_uart1_rd_available = (active_UART_BUS1) ? RX_flag_1 : 1'b0;
+    assign RUNNING_PROGRAM          = (main_state == RUNNING_PROGRAM_STATE);
+    assign RX_use_1                 = (RUNNING_PROGRAM) ? s_ati_uart1_rd_req : RX_use_1_processor;    
+    assign s_ati_uart1_rd_available = (RUNNING_PROGRAM) ? RX_flag_1 : 1'b0;
     
 endmodule

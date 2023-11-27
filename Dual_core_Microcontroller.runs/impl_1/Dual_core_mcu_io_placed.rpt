@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------
 | Tool Version              : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date                      : Sun Nov 26 11:42:41 2023
+| Date                      : Mon Nov 27 23:42:41 2023
 | Host                      : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
 | Command                   : report_io -file Dual_core_mcu_io_placed.rpt
 | Design                    : Dual_core_mcu
@@ -25,7 +25,7 @@ Table of Contents
 +---------------+
 | Total User IO |
 +---------------+
-|            22 |
+|            23 |
 +---------------+
 
 
@@ -328,7 +328,7 @@ Table of Contents
 | R11        |                 | Dedicated  | DONE_0                  | Config      |             |       0 |            |      |                     |                      |         |            |           |          |      |                  |              |                   |              |
 | R12        |                 |            | GND                     | GND         |             |         |            |      |                     |                      |     0.0 |            |           |          |      |                  |              |                   |              |
 | R13        |                 |            | VCCINT                  | VCCINT      |             |         |            |      |                     |                      |         |            |           |          |      |                  |              |                   |              |
-| R14        |                 | High Range | IO_L6N_T0_VREF_34       | User IO     |             |      34 |            |      |                     |                      |         |            |           |          |      |                  |              |                   |              |
+| R14        | RUNNING_PROGRAM | High Range | IO_L6N_T0_VREF_34       | OUTPUT      | LVCMOS33    |      34 |         12 | SLOW |                     |            FP_VTT_50 |         | FIXED      |           |          |      | NONE             |              |                   |              |
 | R15        |                 | High Range | VCCO_34                 | VCCO        |             |      34 |            |      |                     |                      |    3.30 |            |           |          |      |                  |              |                   |              |
 | R16        | GPIO_PORT[0][2] | High Range | IO_L19P_T3_34           | BIDIR       | LVCMOS33    |      34 |         12 | SLOW |                     |            FP_VTT_50 |         | FIXED      |           |          |      | NONE             |              |                   |              |
 | R17        | GPIO_PORT[0][7] | High Range | IO_L19N_T3_VREF_34      | BIDIR       | LVCMOS33    |      34 |         12 | SLOW |                     |            FP_VTT_50 |         | FIXED      |           |          |      | NONE             |              |                   |              |

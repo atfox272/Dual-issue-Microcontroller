@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date         : Sun Nov 26 11:44:56 2023
+| Date         : Mon Nov 27 23:45:13 2023
 | Host         : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
 | Command      : report_timing_summary -max_paths 10 -file Dual_core_mcu_timing_summary_routed.rpt -pb Dual_core_mcu_timing_summary_routed.pb -rpx Dual_core_mcu_timing_summary_routed.rpx -warn_on_violation
 | Design       : Dual_core_mcu
@@ -44,7 +44,7 @@ Table of Contents
 3. checking pulse_width_clock (0)
 4. checking unconstrained_internal_endpoints (50556)
 5. checking no_input_delay (19)
-6. checking no_output_delay (18)
+6. checking no_output_delay (19)
 7. checking multiple_clock (0)
 8. checking generated_clocks (0)
 9. checking loops (0)
@@ -87,9 +87,9 @@ Table of Contents
  There are 0 input ports with no input delay but user has a false path constraint.
 
 
-6. checking no_output_delay (18)
+6. checking no_output_delay (19)
 --------------------------------
- There are 18 ports with no output delay specified. (HIGH)
+ There are 19 ports with no output delay specified. (HIGH)
 
  There are 0 ports with no output delay but user has a false path constraint
 
