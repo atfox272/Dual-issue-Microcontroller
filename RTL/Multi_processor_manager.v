@@ -209,7 +209,7 @@ module Multi_processor_manager
     reg                                 boot_renew_register_1_reg;
     reg                                 boot_renew_register_2_reg;
     // LIFO 
-    reg                                 active_stack_clk;
+//    reg                                 active_stack_clk;
     reg                                 wr_stack_ins;
     reg                                 rd_stack_ins;
     wire                                program_stack_empty;
@@ -222,9 +222,9 @@ module Multi_processor_manager
     localparam PROGRAM_IDLE_STATE               = 3'd0;
     localparam FETCH_INS_STATE                  = 3'd7;    // Fetch instruction
     localparam DISPATCH_INS_STATE               = 3'd2;    // Dispath instruction 
-    localparam RESTORE_PC_STATE                 = 3'd3;
+//    localparam RESTORE_PC_STATE                 = 3'd3;
     localparam DETECT_HIGHER_PRIO_PROGRAM_STATE = 3'd4;    // Detect interrupt
-    localparam RECOVERY_PC_STATE                = 3'd5;
+//    localparam RECOVERY_PC_STATE                = 3'd5;
     localparam EXIT_STATE                       = 3'd6;
     
     assign addr_rd_pm = PC;
@@ -333,12 +333,16 @@ module Multi_processor_manager
         .DATA_WIDTH(PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM),
         .LIFO_DEPTH(INTERRUPT_BUFFER)
         ) program_buffer (
-        .active_clk(active_stack_clk),
-        .data_bus_in(PC_info_in_stack),
-        .data_bus_out(PC_info_out_stack),
-        .wr_ins(wr_stack_ins),
-        .rd_ins(rd_stack_ins),
+        .clk(clk),
+        .data_i(PC_info_in_stack),
+        .data_o(PC_info_out_stack),
+        .rd_req(rd_stack_ins),
+        .wr_req(wr_stack_ins),
+        .full(),
         .empty(program_stack_empty),
+        .almost_full(),
+        .almost_empty(),
+        .enable(1'b1),
         .rst_n(rst_n)
         );     
     
@@ -619,7 +623,7 @@ module Multi_processor_manager
                         rd_PC_stack_en = 0;
                     end
                     else begin
-                        decode_state = RECOVERY_PC_STATE;
+                        decode_state = PROGRAM_IDLE_STATE;
                         PC_update_ins_flow = PC_out_stack;
                         rd_PC_stack_en = 1;
                     end
@@ -724,7 +728,7 @@ module Multi_processor_manager
         end
         else if(interrupt_handling_2) begin
             if(interrupt_flag_1) begin
-                detect_interrupt_state = RESTORE_PC_STATE;
+                detect_interrupt_state = FETCH_INS_STATE;
                 // Assign Interrupt address
                 PC_update_main_flow = INT1_PROGRAM_ADDR;
                 cur_program_encode = INT2_PROGRAM_ENCODE[1:0];
@@ -744,7 +748,7 @@ module Multi_processor_manager
         end
         else if(interrupt_handling_3) begin
             if(interrupt_flag_1) begin
-                detect_interrupt_state = RESTORE_PC_STATE;
+                detect_interrupt_state = FETCH_INS_STATE;
                 // Assign Interrupt address
                 PC_update_main_flow = INT1_PROGRAM_ADDR;
                 cur_program_encode = INT3_PROGRAM_ENCODE[1:0];
@@ -757,7 +761,7 @@ module Multi_processor_manager
                 contain_ins_update = 1;
             end
             else if(interrupt_flag_2) begin
-                detect_interrupt_state = RESTORE_PC_STATE;
+                detect_interrupt_state = FETCH_INS_STATE;
                 // Assign Interrupt address
                 PC_update_main_flow = INT2_PROGRAM_ADDR;
                 cur_program_encode = INT3_PROGRAM_ENCODE[1:0];
@@ -777,7 +781,7 @@ module Multi_processor_manager
         end
         else begin      // In main program
             if(interrupt_flag_1) begin
-                detect_interrupt_state = RESTORE_PC_STATE;
+                detect_interrupt_state = FETCH_INS_STATE;
                 // Assign Interrupt address
                 PC_update_main_flow = INT1_PROGRAM_ADDR;
                 cur_program_encode = MAIN_PROGRAM_ENCODE[1:0];
@@ -790,7 +794,7 @@ module Multi_processor_manager
                 contain_ins_update = 1;
             end
             else if(interrupt_flag_2) begin
-                detect_interrupt_state = RESTORE_PC_STATE;
+                detect_interrupt_state = FETCH_INS_STATE;
                 // Assign Interrupt address
                 PC_update_main_flow = INT2_PROGRAM_ADDR;
                 cur_program_encode = MAIN_PROGRAM_ENCODE[1:0];
@@ -803,7 +807,7 @@ module Multi_processor_manager
                 contain_ins_update = 1;
             end
             else if(interrupt_flag_3) begin
-                detect_interrupt_state = RESTORE_PC_STATE;
+                detect_interrupt_state = FETCH_INS_STATE;
                 // Assign Interrupt address
                 PC_update_main_flow = INT3_PROGRAM_ADDR;
                 cur_program_encode = MAIN_PROGRAM_ENCODE[1:0];
@@ -823,10 +827,143 @@ module Multi_processor_manager
         end
         
     end
-    
-    always_comb begin
-    
-    
+    logic [2:0]                                         program_state_n;
+    logic [ADDR_WIDTH_PM - 1:0]                         PC_n;
+    logic [DOUBLEWORD_WIDTH - 1:0]                      x1_n;
+    logic [DOUBLEWORD_WIDTH - 1:0]                      IR_2ins_n;
+    logic [WORD_WIDTH - 1:0]                            IR_processor_1_n;
+    logic [WORD_WIDTH - 1:0]                            IR_processor_2_n;
+    logic                                               contain_ins_n;
+    logic                                               boot_processor_1_n;
+    logic                                               boot_processor_2_n;
+//    logic                                               active_stack_clk_n;
+    logic [PROGRAM_COUNTER_WIDTH + ADDR_WIDTH_PM - 1:0] PC_info_in_stack_n;
+    logic                                               wr_stack_ins_n;
+    logic                                               rd_stack_ins_n;
+    logic [REG_SPACE_WIDTH - 1:0]                       register1_num_n;
+    logic [REG_SPACE_WIDTH - 1:0]                       register2_num_n;
+    logic [REG_SPACE_WIDTH - 1:0]                       register3_num_n;
+    logic                                               boot_renew_register_1_n;
+    logic                                               boot_renew_register_2_n;
+    logic                                               RETI_1_n;
+    logic                                               RETI_2_n;
+    logic                                               RETI_3_n;
+    logic                                               interrupt_handling_1_n;
+    logic                                               interrupt_handling_2_n;
+    logic                                               interrupt_handling_3_n;
+    logic [1:0]                                         processor_prev_n; 
+    always_comb begin                                   : PROGRAM_FSM_GENERATOR
+        program_state_n = program_state;                                                                          
+        PC_n = PC;                                                                                         
+        x1_n = x1;    
+        IR_2ins_n = IR_2ins;
+        IR_processor_1_n = IR_processor_1;
+        IR_processor_2_n = IR_processor_2;
+        contain_ins_n = contain_ins;                                                                          
+        boot_processor_1_n = boot_processor_1_reg;                                                                  
+        boot_processor_2_n = boot_processor_2_reg;                                                                  
+//        active_stack_clk_n = active_stack_clk;                                                                      
+        PC_info_in_stack_n = PC_info_in_stack;                                                                      
+        wr_stack_ins_n = 0;                                                                          
+        rd_stack_ins_n = 0;                                                                          
+        register1_num_n = register1_num_reg;                                                                     
+        register2_num_n = register2_num_reg;                                                                     
+        register3_num_n = register3_num_reg;                                                                     
+        boot_renew_register_1_n = boot_renew_register_1_reg;                                                             
+        boot_renew_register_2_n = boot_renew_register_2_reg;                                                             
+        RETI_1_n = 0;                                                                            
+        RETI_2_n = 0;                                                                            
+        RETI_3_n = 0;                                                                            
+        interrupt_handling_1_n = interrupt_handling_1_reg;                                                              
+        interrupt_handling_2_n = interrupt_handling_2_reg;                                                              
+        interrupt_handling_3_n = interrupt_handling_3_reg;                                                                       
+        processor_prev_n = processor_prev;    
+        
+        case(program_state)
+            INIT_STATE: begin
+                program_state_n = (main_state == RUNNING_PROGRAM_STATE) ? PROGRAM_IDLE_STATE : program_state;
+            end
+            PROGRAM_IDLE_STATE: begin
+                program_state_n = (contain_ins) ? DISPATCH_INS_STATE : FETCH_INS_STATE;
+                contain_ins_n = ~contain_ins;
+                // Recovery state
+//                active_stack_clk_n = 0;
+                rd_stack_ins_n = 0;
+                wr_stack_ins_n = 0;
+            end
+            FETCH_INS_STATE: begin
+                program_state_n = DISPATCH_INS_STATE;
+                IR_2ins_n = data_bus_rd_pm;
+                // Recovery state of Stack 
+//                active_stack_clk_n = 0;
+                rd_stack_ins_n = 0;
+                wr_stack_ins_n = 0;
+            end
+            DISPATCH_INS_STATE: begin
+                program_state_n = decode_state;
+                boot_processor_1_n = boot_p1_en;
+                boot_processor_2_n = boot_p2_en;
+                IR_processor_1_n = (boot_p1_en) ? cur_instruction : IR_processor_1;
+                IR_processor_2_n = (boot_p2_en) ? cur_instruction : IR_processor_2;
+                boot_renew_register_1_n = boot_renew_register_1_en;
+                boot_renew_register_2_n = boot_renew_register_2_en;
+                register1_num_n = rd1_cur;
+                if(reti_det) begin        // Renew interrupt
+                    interrupt_handling_1_n = interrupt_handling_1_update_remain;
+                    interrupt_handling_2_n = interrupt_handling_2_update_remain;
+                    interrupt_handling_3_n = interrupt_handling_3_update_remain;
+                    RETI_1_n = (interrupt_handling_1) ? 1'b1 : 1'b0;
+                    RETI_2_n = (interrupt_handling_2) ? 1'b1 : 1'b0;
+                    RETI_3_n = (interrupt_handling_3) ? 1'b1 : 1'b0;
+                    // Quick update PC (Force return from interrupt0
+                    PC_n = PC_update_ins_flow;
+                    // Read stack
+                    rd_stack_ins_n = rd_PC_stack_en;
+                    contain_ins_n = 0;
+                end
+            end
+            DETECT_HIGHER_PRIO_PROGRAM_STATE: begin
+                program_state_n = detect_interrupt_state;
+                PC_n = PC_update_main_flow; 
+                x1_n = (opcode_space == JAL_TYPE_ENCODE) ? PC_next : x1;
+                processor_prev_n = (boot_processor_1_reg) ? 1 : (boot_processor_2_reg) ? 2 : 0;
+                if(restore_PC_en) begin
+                    PC_info_in_stack_n = {cur_program_encode, PC};
+                    wr_stack_ins_n = 1;
+                end
+                contain_ins_n = contain_ins_update;
+                interrupt_handling_1_n = interrupt_handling_1_update_new;
+                interrupt_handling_2_n = interrupt_handling_2_update_new;
+                interrupt_handling_3_n = interrupt_handling_3_update_new;
+                // Reset boot
+                boot_processor_1_n = 0;
+                boot_renew_register_1_n = 0;
+                boot_processor_2_n = 0;
+                boot_renew_register_2_n = 0;
+            end
+//            RECOVERY_PC_STATE: begin
+//                program_state_n <= PROGRAM_IDLE_STATE;
+//                active_stack_clk_n <= 1'b1;
+//                // Recovery RETI state
+//                RETI_1_n = 0;
+//                RETI_2_n = 0;
+//                RETI_3_n = 0;
+//            end
+//            RESTORE_PC_STATE: begin
+//                program_state_n = FETCH_INS_STATE;
+//                // Write PC to Stack
+//                active_stack_clk_n = 1;
+//            end
+            EXIT_STATE: begin
+                
+                // Reset clk
+                boot_processor_1_n = 0;
+                boot_processor_2_n = 0;
+            end
+            default: begin
+            
+            end
+        endcase
     end
     
     always @(posedge clk) begin
@@ -840,7 +977,7 @@ module Multi_processor_manager
 //            rd_ins_pm_reg <= 0;
             boot_processor_1_reg <= 0;
             boot_processor_2_reg <= 0;
-            active_stack_clk <= 0;
+//            active_stack_clk <= 0;
             PC_info_in_stack <= 0;
             wr_stack_ins <= 0;
             rd_stack_ins <= 0;
@@ -859,89 +996,31 @@ module Multi_processor_manager
             processor_prev <= 0;    // 0-mpm, 1-main processor, 2-sub processor (initial value = 0)
         end
         else begin
-        case(program_state)
-            INIT_STATE: begin
-                program_state <= (main_state == RUNNING_PROGRAM_STATE) ? PROGRAM_IDLE_STATE : program_state;
-            end
-            PROGRAM_IDLE_STATE: begin
-                program_state <= (contain_ins) ? DISPATCH_INS_STATE : FETCH_INS_STATE;
-                contain_ins <= ~contain_ins;
-                // Recovery state
-                active_stack_clk <= 0;
-                rd_stack_ins <= 0;
-                wr_stack_ins <= 0;
-            end
-            FETCH_INS_STATE: begin
-                program_state <= DISPATCH_INS_STATE;
-                IR_2ins <= data_bus_rd_pm;
-                // Recovery state of Stack 
-                active_stack_clk <= 0;
-                rd_stack_ins <= 0;
-                wr_stack_ins <= 0;
-            end
-            DISPATCH_INS_STATE: begin
-                program_state <= decode_state;
-                boot_processor_1_reg <= boot_p1_en;
-                boot_processor_2_reg <= boot_p2_en;
-                IR_processor_1 <= (boot_p1_en) ? cur_instruction : IR_processor_1;
-                IR_processor_2 <= (boot_p2_en) ? cur_instruction : IR_processor_2;
-                boot_renew_register_1_reg <= boot_renew_register_1_en;
-                boot_renew_register_2_reg <= boot_renew_register_2_en;
-                register1_num_reg <= rd1_cur;
-                rd_stack_ins <= rd_PC_stack_en;
-                if(reti_det) begin        // Renew interrupt
-                    interrupt_handling_1_reg <= interrupt_handling_1_update_remain;
-                    interrupt_handling_2_reg <= interrupt_handling_2_update_remain;
-                    interrupt_handling_3_reg <= interrupt_handling_3_update_remain;
-                    RETI_1_reg <= (interrupt_handling_1) ? 1'b1 : 1'b0;
-                    RETI_2_reg <= (interrupt_handling_2) ? 1'b1 : 1'b0;
-                    RETI_3_reg <= (interrupt_handling_3) ? 1'b1 : 1'b0;
-                    // Quick update PC (Force return from interrupt0
-                    PC <= PC_update_ins_flow;
-                end
-            end
-            DETECT_HIGHER_PRIO_PROGRAM_STATE: begin
-                program_state <= detect_interrupt_state;
-                PC <= PC_update_main_flow; 
-                x1 <= (opcode_space == JAL_TYPE_ENCODE) ? PC_next : x1;
-                processor_prev <= (boot_processor_1_reg) ? 1 : (boot_processor_2_reg) ? 2 : 0;
-                if(restore_PC_en) begin
-                    PC_info_in_stack <= {cur_program_encode, PC};
-                    wr_stack_ins <= 1;
-                end
-                contain_ins <= contain_ins_update;
-                interrupt_handling_1_reg <= interrupt_handling_1_update_new;
-                interrupt_handling_2_reg <= interrupt_handling_2_update_new;
-                interrupt_handling_3_reg <= interrupt_handling_3_update_new;
-                // Reset boot
-                boot_processor_1_reg <= 0;
-                boot_renew_register_1_reg <= 0;
-                boot_processor_2_reg <= 0;
-                boot_renew_register_2_reg <= 0;
-            end
-            RECOVERY_PC_STATE: begin
-                program_state <= PROGRAM_IDLE_STATE;
-                active_stack_clk <= 1;
-                // Recovery RETI state
-                RETI_1_reg <= 0;
-                RETI_2_reg <= 0;
-                RETI_3_reg <= 0;
-            end
-            RESTORE_PC_STATE: begin
-                program_state <= FETCH_INS_STATE;
-                // Write PC to Stack
-                active_stack_clk <= 1;
-            end
-            EXIT_STATE: begin
-                
-                // Reset clk
-                boot_processor_1_reg <= 0;
-                boot_processor_2_reg <= 0;
-            end
-            default: begin
-            
-            end
-        endcase
+            program_state <= program_state_n;                                                                          
+            PC <= PC_n;                                                                                         
+            x1 <= x1_n;    
+            IR_2ins <= IR_2ins_n;
+            IR_processor_1 <= IR_processor_1_n;
+            IR_processor_2 <= IR_processor_2_n;
+            contain_ins <= contain_ins_n;                                                                          
+            boot_processor_1_reg <= boot_processor_1_n;                                                                  
+            boot_processor_2_reg <= boot_processor_2_n;                                                                  
+//            active_stack_clk <= active_stack_clk_n;                                                                      
+            PC_info_in_stack <= PC_info_in_stack_n;                                                                      
+            wr_stack_ins <= wr_stack_ins_n;                                                                          
+            rd_stack_ins <= rd_stack_ins_n;                                                                          
+            register1_num_reg <= register1_num_n;                                                                     
+            register2_num_reg <= register2_num_n;                                                                     
+            register3_num_reg <= register3_num_n;                                                                     
+            boot_renew_register_1_reg <= boot_renew_register_1_n;                                                             
+            boot_renew_register_2_reg <= boot_renew_register_2_n;                                                             
+            RETI_1_reg <= RETI_1_n;                                                                            
+            RETI_2_reg <= RETI_2_n;                                                                            
+            RETI_3_reg <= RETI_3_n;                                                                            
+            interrupt_handling_1_reg <= interrupt_handling_1_n;                                                              
+            interrupt_handling_2_reg <= interrupt_handling_2_n;                                                              
+            interrupt_handling_3_reg <= interrupt_handling_3_n;                                                                       
+            processor_prev <= processor_prev_n;    
         end
     end
 endmodule

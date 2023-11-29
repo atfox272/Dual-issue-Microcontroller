@@ -137,31 +137,95 @@ module RX_controller
         endcase
     end
     assign fifo_wr = (!transaction_en) & (rx_state == RECV_STATE);
+    
+    logic rx_state_n;
+    logic transaction_start_toggle_n;
+    always_comb begin
+        rx_state_n = rx_state;
+        transaction_start_toggle_n = transaction_start_toggle;
+        case(rx_state) 
+            IDLE_STATE: begin
+                if(RX == START_BIT) begin
+                    rx_state_n = RECV_STATE;
+                    transaction_start_toggle_n = ~transaction_stop_toggle;
+                end
+            end 
+            RECV_STATE: begin
+                if(!transaction_en) begin
+                    rx_state_n = IDLE_STATE;
+                end 
+            end
+        endcase
+    end 
     always @(posedge clk) begin
         if(!rst_n) begin
             rx_state <= IDLE_STATE;
             transaction_start_toggle <= 0;
-//            fifo_wr_reg <= 0;
         end 
         else begin
-            case(rx_state) 
-                IDLE_STATE: begin
-                    if(RX == START_BIT) begin
-                        rx_state <= RECV_STATE;
-                        transaction_start_toggle <= ~transaction_stop_toggle;
-                    end
-//                    fifo_wr_reg <= 0;
-                end 
-                RECV_STATE: begin
-                    if(!transaction_en) begin
-                        rx_state <= IDLE_STATE;
-//                        fifo_wr_reg <= 1;
-                    end 
-                end
-            endcase
+            rx_state <= rx_state_n;
+            transaction_start_toggle <= transaction_start_toggle_n;
         end
     end 
     
+    logic [2:0]                      transaction_state_n;
+    logic                            transaction_stop_toggle_n;
+    logic                            parity_buffer_n;
+    logic [DATA_WIDTH - 1:0]         rx_buffer_n;
+    logic [DATA_COUNTER_WIDTH - 1:0] data_counter_n;
+    logic                            stop_bit_counter_n;
+    always_comb begin
+        transaction_state_n = transaction_state;
+        transaction_stop_toggle_n = transaction_stop_toggle;
+        parity_buffer_n = parity_buffer;
+        rx_buffer_n = rx_buffer;
+        data_counter_n = data_counter;
+        stop_bit_counter_n = stop_bit_counter;
+        case(transaction_state)
+            IDLE_STATE: begin
+                transaction_state_n = START_BIT_STATE;
+                data_counter_n = data_counter_load;
+                stop_bit_counter_n = stop_bit_counter_load;
+            end 
+            START_BIT_STATE: begin
+                transaction_state_n = DATA_STATE;
+                rx_buffer_n[buffer_pointer] = RX; 
+                data_counter_n = data_counter_decr;
+            end 
+            DATA_STATE: begin
+                if(data_counter == {DATA_COUNTER_WIDTH{1'b1}}) begin   // Overflow
+                    if(parity_option == PARITY_NOT_ENCODE) begin
+                        transaction_state_n = IDLE_STATE;
+                        transaction_stop_toggle_n = transaction_start_toggle;
+                    end 
+                    else begin
+                        transaction_state_n = PARITY_STATE;
+                        parity_buffer_n = RX;
+                    end
+                    data_counter_n = data_counter_load;
+                end 
+                else begin
+                    rx_buffer_n[buffer_pointer] = RX; 
+                    data_counter_n = data_counter_decr;
+                end
+            end 
+            PARITY_STATE: begin
+                transaction_state_n = IDLE_STATE;
+                transaction_stop_toggle_n = transaction_start_toggle;        
+            end 
+            STOP_STATE: begin
+                // Don't care stop bit
+                // Confirm transaction is STOP
+                transaction_state_n = IDLE_STATE;
+                transaction_stop_toggle_n = transaction_start_toggle; 
+            end
+            default: begin
+                // Confirm transaction is STOP
+                transaction_state_n = IDLE_STATE;
+                transaction_stop_toggle_n = transaction_start_toggle; 
+            end
+        endcase 
+    end 
     always @(posedge clk) begin
         if(!rst_n) begin
             transaction_state <= IDLE_STATE;
@@ -170,50 +234,12 @@ module RX_controller
             rx_buffer <= 0;
         end 
         else if(rx_state == RECV_STATE & baudrate_clk_en) begin
-            case(transaction_state)
-                IDLE_STATE: begin
-                    transaction_state <= START_BIT_STATE;
-                    data_counter <= data_counter_load;
-                    stop_bit_counter <= stop_bit_counter_load;
-                end 
-                START_BIT_STATE: begin
-                    transaction_state <= DATA_STATE;
-                    rx_buffer[buffer_pointer] <= RX; 
-                    data_counter <= data_counter_decr;
-                end 
-                DATA_STATE: begin
-                    if(data_counter == {DATA_COUNTER_WIDTH{1'b1}}) begin   // Overflow
-                        if(parity_option == PARITY_NOT_ENCODE) begin
-                            transaction_state <= IDLE_STATE;
-                            transaction_stop_toggle <= transaction_start_toggle;
-                        end 
-                        else begin
-                            transaction_state <= PARITY_STATE;
-                            parity_buffer <= RX;
-                        end
-                        data_counter <= data_counter_load;
-                    end 
-                    else begin
-                        rx_buffer[buffer_pointer] <= RX; 
-                        data_counter <= data_counter_decr;
-                    end
-                end 
-                PARITY_STATE: begin
-                    transaction_state <= IDLE_STATE;
-                    transaction_stop_toggle <= transaction_start_toggle;        
-                end 
-                STOP_STATE: begin
-                // Don't care stop bit
-                // Confirm transaction is STOP
-                transaction_state <= IDLE_STATE;
-                transaction_stop_toggle <= transaction_start_toggle;
-                end
-                default: begin
-                // Confirm transaction is STOP
-                transaction_state <= IDLE_STATE;
-                transaction_stop_toggle <= transaction_start_toggle;
-                end
-            endcase 
+            transaction_state <= transaction_state_n;
+            transaction_stop_toggle <= transaction_stop_toggle_n;
+            parity_buffer <= parity_buffer_n;
+            rx_buffer <= rx_buffer_n;
+            data_counter <= data_counter_n;
+            stop_bit_counter <= stop_bit_counter_n;
         end 
     end 
     `ifdef DEBUG

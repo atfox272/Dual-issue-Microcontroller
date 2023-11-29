@@ -45,3 +45,5 @@ set_property src_info {type:XDC file:1 line:110 export:INPUT save:INPUT read:REA
 set_property -dict { PACKAGE_PIN V7    IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[1][6] }]; #IO_L11N_T1_SRCC_13  Sch=CK_IO30
 set_property src_info {type:XDC file:1 line:111 export:INPUT save:INPUT read:READ} [current_design]
 set_property -dict { PACKAGE_PIN U8    IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[1][7] }]; #IO_L17N_T2_13       Sch=CK_IO31
+set_property src_info {type:XDC file:1 line:112 export:INPUT save:INPUT read:READ} [current_design]
+set_property -dict { PACKAGE_PIN V8    IOSTANDARD LVCMOS33 } [get_ports { RUNNING_PROGRAM }]; #IO_L15P_T2_DQS_13   Sch=CK_IO32

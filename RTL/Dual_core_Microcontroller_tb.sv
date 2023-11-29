@@ -4,10 +4,10 @@
 //`define SPI_PROT
 //`define I2C_PROT
 // Test case
-`define NORMAL_TESTCASE
+//`define NORMAL_TESTCASE
 //`define GPIO_TESTCASE
 //`define PERIPHERAL_TESTCASE
-//`define INTERRUPT_HANDLER_TESTCASE
+`define INTERRUPT_HANDLER_TESTCASE
 //`define PARALLEL_TESTCASE
 
 module Dual_core_mcu_tb;
@@ -95,8 +95,8 @@ module Dual_core_mcu_tb;
         .TX_2(TX_2),
         .GPIO_PORT(GPIO_PORT),
         .rst(~rst_n)
-        ,.program_memory_wire(program_memory_wire)
-        ,.data_memory_wire(data_memory_wire)
+//        ,.program_memory_wire(program_memory_wire)
+//        ,.data_memory_wire(data_memory_wire)
         );
     // External UART_1                    
     uart_peripheral
@@ -574,7 +574,7 @@ module Dual_core_mcu_tb;
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-            // PC = 0xDC
+            //  PC = 0xDC
             instruction <= {5'd15,20'h80000,LUI_INS_7};      // Load upper 20bit (h30000) to x15 (to map to UART_2)
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
@@ -603,6 +603,7 @@ module Dual_core_mcu_tb;
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
+            
 //            // PC = 0xD8
 //            instruction <= {5'd16,5'd09,5'd07,MUL_INS_17};
 //            begin

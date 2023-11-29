@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="81442300fs"></ZoomStartTime>
-      <ZoomEndTime time="81710501fs"></ZoomEndTime>
-      <Cursor1Time time="81487000fs"></Cursor1Time>
+      <ZoomStartTime time="60126217fs"></ZoomStartTime>
+      <ZoomEndTime time="60166918fs"></ZoomEndTime>
+      <Cursor1Time time="60133000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="196"></NameColumnWidth>
+      <NameColumnWidth column_width="181"></NameColumnWidth>
       <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="44" />
+   <WVObjectSize size="55" />
    <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -45,13 +45,17 @@
       <obj_property name="ElementShortName">external_int_pin</obj_property>
       <obj_property name="ObjectShortName">external_int_pin</obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/program_memory_wire" type="array">
-      <obj_property name="ElementShortName">program_memory_wire[0:1023][7:0]</obj_property>
-      <obj_property name="ObjectShortName">program_memory_wire[0:1023][7:0]</obj_property>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/DMEM/registers" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">registers[0:255][7:0]</obj_property>
+      <obj_property name="ObjectShortName">registers[0:255][7:0]</obj_property>
+      <obj_property name="label">DMEM[256]</obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/data_memory_wire" type="array">
-      <obj_property name="ElementShortName">data_memory_wire[0:255][7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_memory_wire[0:255][7:0]</obj_property>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/IMEM/registers" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">registers[0:1023][7:0]</obj_property>
+      <obj_property name="ObjectShortName">registers[0:1023][7:0]</obj_property>
+      <obj_property name="label">IMEM[1024]</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/processor_registers_1" type="array">
       <obj_property name="ElementShortName">processor_registers_1[0:31][63:0]</obj_property>
@@ -197,5 +201,49 @@
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/s_ati_dmem_p1_wr_available" type="logic">
       <obj_property name="ElementShortName">s_ati_dmem_p1_wr_available</obj_property>
       <obj_property name="ObjectShortName">s_ati_dmem_p1_wr_available</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/program_state" type="array">
+      <obj_property name="ElementShortName">program_state[2:0]</obj_property>
+      <obj_property name="ObjectShortName">program_state[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/decode_state" type="array">
+      <obj_property name="ElementShortName">decode_state[4:0]</obj_property>
+      <obj_property name="ObjectShortName">decode_state[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/synchronized_processors" type="logic">
+      <obj_property name="ElementShortName">synchronized_processors</obj_property>
+      <obj_property name="ObjectShortName">synchronized_processors</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/cur_instruction" type="array">
+      <obj_property name="ElementShortName">cur_instruction[31:0]</obj_property>
+      <obj_property name="ObjectShortName">cur_instruction[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/contain_ins" type="logic">
+      <obj_property name="ElementShortName">contain_ins</obj_property>
+      <obj_property name="ObjectShortName">contain_ins</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/IR_2ins" type="array">
+      <obj_property name="ElementShortName">IR_2ins[63:0]</obj_property>
+      <obj_property name="ObjectShortName">IR_2ins[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/program_stack_empty" type="logic">
+      <obj_property name="ElementShortName">program_stack_empty</obj_property>
+      <obj_property name="ObjectShortName">program_stack_empty</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/rd_stack_ins_n" type="logic">
+      <obj_property name="ElementShortName">rd_stack_ins_n</obj_property>
+      <obj_property name="ObjectShortName">rd_stack_ins_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/PC_out_stack" type="array">
+      <obj_property name="ElementShortName">PC_out_stack[9:0]</obj_property>
+      <obj_property name="ObjectShortName">PC_out_stack[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/rd_stack_ins" type="logic">
+      <obj_property name="ElementShortName">rd_stack_ins</obj_property>
+      <obj_property name="ObjectShortName">rd_stack_ins</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/data_bus_rd_pm" type="array">
+      <obj_property name="ElementShortName">data_bus_rd_pm[63:0]</obj_property>
+      <obj_property name="ObjectShortName">data_bus_rd_pm[63:0]</obj_property>
    </wvobject>
 </wave_config>

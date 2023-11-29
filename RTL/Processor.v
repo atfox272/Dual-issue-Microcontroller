@@ -317,6 +317,7 @@ module Processor
     localparam DMEM_RD_ACCESS_STATE         = 3'd3;
     localparam DMEM_WR_ACCESS_STATE         = 3'd5;
     localparam SYSTEM_ACCESS_STATE          = 3'd4;
+    localparam LOAD_REG_STATE               = 3'd6;
     
     assign main_state = main_state_reg;
     assign RX_use_1 = RX_use_1_reg;
@@ -423,7 +424,7 @@ module Processor
                 wb_immediate_value = alu_result_1cycle;
             end
             EXECUTION_MULTI_CYCLE: begin   
-                exec_state = WRITE_BACK_STATE;
+                exec_state = LOAD_REG_STATE;
                 // ALU control 
                 alu_operand_1 = rs1_regFile;
                 alu_operand_2 = rs2_regFile;
@@ -445,7 +446,7 @@ module Processor
                 wb_immediate_value = alu_result_1cycle;
             end
             EXECUTION_MULTI_CYCLE_IMM: begin  
-                exec_state = WRITE_BACK_STATE;
+                exec_state = LOAD_REG_STATE;
                 // ALU control  
                 alu_operand_1 = rs1_regFile;
                 alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
@@ -676,25 +677,79 @@ module Processor
                 .rst_n(rst_n)
                 );             
                 
-    // Main state controller
+    // Main state 
+    logic [1:0]                 main_state_n;
+    always_comb begin           : MAIN_FSM_GENERATOR
+        main_state_n = main_state_reg;
+        case(main_state_reg)
+            IDLE_STATE: main_state_n = (RX_flag_1) ? STORE_PROGRAM_STATE : main_state_reg;
+            STORE_PROGRAM_STATE: main_state_n = (stored_program_state_reg == FINISH_PROGRAMMING_STATE) ? RUNNING_PROGRAM_STATE : main_state_reg;
+            RUNNING_PROGRAM_STATE: main_state_n = main_state_reg;
+        endcase
+    end 
+    
     always @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
             main_state_reg <= IDLE_STATE;
         end
-        else begin
-            case(main_state_reg) 
-                IDLE_STATE:          main_state_reg <= (RX_flag_1) ? STORE_PROGRAM_STATE : main_state_reg;
-                STORE_PROGRAM_STATE: main_state_reg <= (stored_program_state_reg == FINISH_PROGRAMMING_STATE) ? RUNNING_PROGRAM_STATE : main_state_reg;
-                RUNNING_PROGRAM_STATE: begin
-                
-                end
-                default: begin
-                
-                end
-            endcase 
-        end
+        else main_state_reg <= main_state_n;
     end
     
+    logic [1:0]                 stored_program_state_n;
+    logic                       RX_use_1_n;
+    logic [1:0]                 _4byte_counter_n;
+    logic [DATA_WIDTH - 1:0]    data_bus_wr_pm_n;
+    logic [ADDR_WIDTH_PM - 1:0] addr_wr_pm_n;
+    logic                       wr_ins_pm_n;
+    always_comb begin           : STORE_PROGRAM_FSM_GENERATOR
+        stored_program_state_n = stored_program_state_reg;
+        RX_use_1_n = RX_use_1_reg;
+        _4byte_counter_n = _4byte_counter;
+        data_bus_wr_pm_n = data_bus_wr_pm_reg;
+        addr_wr_pm_n = addr_wr_pm_reg;
+        wr_ins_pm_n = wr_ins_pm_reg;
+        case(stored_program_state_reg)
+            IDLE_STATE: begin
+                if(finish_program_condition) begin
+                    stored_program_state_n = FINISH_PROGRAMMING_STATE;
+                    RX_use_1_n = (RX_flag_1 == 1) ? 1'b1 : 1'b0;   // Clear FIFO
+                end
+                else begin
+                    stored_program_state_n = RD_FIFO_STATE;
+                    data_bus_wr_pm_n = data_bus_out_uart_1;
+                    RX_use_1_n = 1'b1;
+                    _4byte_counter_n = _4byte_counter + 1;
+                end
+            end
+            RD_FIFO_STATE: begin
+                RX_use_1_n = 0;
+                if(wr_idle_pm) begin
+                    stored_program_state_n = WR_RAM_STATE;
+                    wr_ins_pm_n = 1'b1;
+                end
+            end
+            WR_RAM_STATE: begin
+                wr_ins_pm_n = 0;
+                if(finish_program_condition) begin              // Finish program
+                    stored_program_state_n = FINISH_PROGRAMMING_STATE;
+                    RX_use_1_n = (RX_flag_1 == 1) ? 1'b1 : 1'b0;   // Clear FIFO
+                end    
+                else if(RX_flag_1) begin
+                    stored_program_state_n = RD_FIFO_STATE;
+                    // UART signal
+                    RX_use_1_n = 1;
+                    // Program memory signal
+                    data_bus_wr_pm_n = data_bus_out_uart_1;
+                    addr_wr_pm_n = addr_wr_pm_reg + 1'b1;
+                    _4byte_counter_n = _4byte_counter + 1'b1;
+                end
+            end
+            FINISH_PROGRAMMING_STATE: begin
+                stored_program_state_n = IDLE_STATE;
+                RX_use_1_n = 1'b0;
+            end
+        endcase
+    end
     // Store program FSM
     always @(posedge clk) begin
         if(!rst_n) begin
@@ -708,55 +763,81 @@ module Processor
             wr_ins_pm_reg <= 0;
         end
         else if(main_state_reg == STORE_PROGRAM_STATE) begin
-        case(stored_program_state_reg) 
-            IDLE_STATE: begin
-                if(finish_program_condition) begin              // Finish program
-                    stored_program_state_reg <= FINISH_PROGRAMMING_STATE;
-                    RX_use_1_reg <= (RX_flag_1 == 1) ? 1 : 0;   // Clear FIFO
-                end    
-                else begin
-                    stored_program_state_reg <= RD_FIFO_STATE;
-                    data_bus_wr_pm_reg <= data_bus_out_uart_1;
-                    RX_use_1_reg <= 1;
-                    _4byte_counter <= _4byte_counter + 1;
+            stored_program_state_reg <= stored_program_state_n;
+            RX_use_1_reg <= RX_use_1_n;
+            _4byte_counter <= _4byte_counter_n;
+            data_bus_wr_pm_reg <= data_bus_wr_pm_n;
+            addr_wr_pm_reg <= addr_wr_pm_n;
+            wr_ins_pm_reg <= wr_ins_pm_n;
+        end
+    end
+    logic [2:0]                     running_program_state_n;
+    logic                           alu_enable_seq_n;
+    logic [DOUBLEWORD_WIDTH - 1:0]  registers_owner_n    [0:REGISTER_AMOUNT - 1];
+    logic [ADDR_BUS_WIDTH - 1:0]    addr_rd_n;
+    logic [ADDR_BUS_WIDTH - 1:0]    addr_wr_n;
+    logic                           rd_ins_n;
+    logic                           wr_ins_n;
+    logic [DOUBLEWORD_WIDTH - 1:0]  data_bus_wr_n;
+    always_comb begin               : RUNNING_PROGRAM_FSM_GENERATOR
+        running_program_state_n = running_program_state_reg;
+        alu_enable_seq_n = alu_enable_seq;// Reset register in processor
+        for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+        registers_owner_n[i] = registers_owner[i];
+        end
+        addr_rd_n = addr_rd_reg;
+        addr_wr_n = addr_wr_reg;
+        rd_ins_n = rd_ins_reg;
+        wr_ins_n = wr_ins_reg;
+        data_bus_wr_n = data_bus_wr_reg;
+        
+        case(running_program_state_reg) 
+            EXECUTE_INSTRUCTION_STATE: begin
+                if(boot_processor) begin
+                    running_program_state_n = exec_state;
+                    alu_enable_seq_n = (multi_cycle_type) ? 1'b1 : 1'b0;
+                    if(wb_immediate_en) registers_owner_n[rd_space] = wb_immediate_value;
+                    // DMEM ACESS
+                    addr_rd_n = dmem_addr_rd;
+                    addr_wr_n = dmem_addr_wr;
+                    rd_ins_n = dmem_ins_rd_en;
+                    wr_ins_n = dmem_ins_wr_en;
+                    data_bus_wr_n = dmem_data_wr;
+                end
+                else if(synchronization_processor) begin
+                    for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) registers_owner_n[i] = registers_renew[i];
                 end
             end
-            RD_FIFO_STATE: begin
-                // Reset signal
-                RX_use_1_reg <= 0;
-                if(wr_idle_pm) begin
-                    stored_program_state_reg <= WR_RAM_STATE;
-                    wr_ins_pm_reg <= 1;
+            WRITE_BACK_STATE: begin
+                if(alu_idle == 1) begin
+                    registers_owner_n[rd_space] = alu_result_multi_cycle;
+                    running_program_state_n = EXECUTE_INSTRUCTION_STATE;
                 end
             end
-            WR_RAM_STATE: begin
-                // Reset signal
-                wr_ins_pm_reg <= 0;
-                if(finish_program_condition) begin              // Finish program
-                    stored_program_state_reg <= FINISH_PROGRAMMING_STATE;
-                    RX_use_1_reg <= (RX_flag_1 == 1) ? 1 : 0;   // Clear FIFO
-                end    
-                else if(RX_flag_1) begin
-                    stored_program_state_reg <= RD_FIFO_STATE;
-                    // UART signal
-                    RX_use_1_reg <= 1;
-                    // Program memory signal
-                    data_bus_wr_pm_reg <= data_bus_out_uart_1;
-                    addr_wr_pm_reg <= addr_wr_pm_reg + 1;
-                    _4byte_counter <= _4byte_counter + 1;
+            DMEM_RD_ACCESS_STATE: begin
+                if(rd_idle) begin
+                    running_program_state_n = EXECUTE_INSTRUCTION_STATE;
+                    registers_owner_n[rd_space] = data_bus_rd_sign_extend;
+                    rd_ins_n = 0;
                 end
             end
-            FINISH_PROGRAMMING_STATE: begin
-                stored_program_state_reg <= IDLE_STATE;
-                RX_use_1_reg <= 0;
+            DMEM_WR_ACCESS_STATE: begin
+                if(wr_access) begin // Write Memory completely
+                    running_program_state_n = EXECUTE_INSTRUCTION_STATE;
+                    wr_ins_n = 0;
+                end
+            end
+            SYSTEM_ACCESS_STATE: begin
+            
+            end
+            LOAD_REG_STATE: begin
+                running_program_state_n = WRITE_BACK_STATE;
             end
             default: begin
             
-            end
-        endcase 
-        end
+            end        
+        endcase
     end
-    
     // Critical path: 
     always @(posedge clk) begin
         if(!rst_n) begin
@@ -765,7 +846,6 @@ module Processor
             for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
                 registers_owner[i] <= REGISTER_DEFAULT[i];
             end
-            
             addr_rd_reg <= 0;
             addr_wr_reg <= 0;
             rd_ins_reg <= 0;
@@ -773,69 +853,19 @@ module Processor
             data_bus_wr_reg <= 0;
         end
         else if(main_state_reg == RUNNING_PROGRAM_STATE) begin
-            case(running_program_state_reg) 
-            DISPATH_STATE: begin
+            running_program_state_reg <= running_program_state_n;
+            alu_enable_seq <= alu_enable_seq_n;// Reset register in processor
+            for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+            registers_owner[i] <= registers_owner_n[i];
+            end
+            addr_rd_reg <= addr_rd_n;
+            addr_wr_reg <= addr_wr_n;
+            rd_ins_reg <= rd_ins_n;
+            wr_ins_reg <= wr_ins_n;
+            data_bus_wr_reg <= data_bus_wr_n;
             
-            end
-            EXECUTE_INSTRUCTION_STATE: begin
-                if(boot_processor) begin
-                    running_program_state_reg <= exec_state;
-                    alu_enable_seq <= (multi_cycle_type) ? 1'b1 : 1'b0;
-                    if(wb_immediate_en) registers_owner[rd_space] <= wb_immediate_value;
-                    // DMEM ACESS
-                    addr_rd_reg <= dmem_addr_rd;
-                    addr_wr_reg <= dmem_addr_wr;
-                    rd_ins_reg <= dmem_ins_rd_en;
-                    wr_ins_reg <= dmem_ins_wr_en;
-                    data_bus_wr_reg <= dmem_data_wr;
-                end
-                else begin
-                    if(synchronization_processor) begin
-                        for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) registers_owner[i] <= registers_renew[i];
-                    end
-                end
-            end
-            WRITE_BACK_STATE: begin
-                if(alu_idle == 1) begin
-                    registers_owner[rd_space] <= alu_result_multi_cycle;
-                    running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                end
-            end
-            DMEM_RD_ACCESS_STATE: begin
-                if(rd_idle) begin
-                    running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                    registers_owner[rd_space] <= data_bus_rd_sign_extend;
-                    rd_ins_reg <= 0;
-                end
-            end
-            DMEM_WR_ACCESS_STATE: begin
-                if(wr_access) begin // Write Memory completely
-                    running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                    wr_ins_reg <= 0;
-                end
-            end
-            SYSTEM_ACCESS_STATE: begin
-//                if(funct3_space == DEBUG_ENCODE) begin
-//                    if(snd_debug_available) begin
-//                        send_debug_clk_reg <= 1;
-//                        running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-//                    end
-//                end
-            end
-            default: begin
-            
-            end
-            endcase
         end
     end
-    // Synchronization reigsters block
-//    always @(posedge clk) begin
-//        if(synchronization_processor) begin
-//            for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
-//                registers_owner[i] <= registers_renew[i];
-//            end
-//        end
-//    end
     `ifdef DEBUG
     // Debug area
 //    assign debug_1 = {32'b0, alu_result_1cycle};
@@ -918,6 +948,7 @@ module Processor
     localparam DMEM_RD_ACCESS_STATE         = 3'd3;
     localparam DMEM_WR_ACCESS_STATE         = 3'd5;
     localparam SYSTEM_ACCESS_STATE          = 3'd4;
+    localparam LOAD_REG_STATE               = 3'd6;
     // Synchronization primitive
     // -- Common
     always_comb begin
@@ -1023,7 +1054,7 @@ module Processor
                 wb_immediate_value = alu_result_1cycle;
             end
             EXECUTION_MULTI_CYCLE: begin   
-                exec_state = WRITE_BACK_STATE;
+                exec_state = LOAD_REG_STATE;
                 // ALU control 
                 alu_operand_1 = rs1_regFile;
                 alu_operand_2 = rs2_regFile;
@@ -1045,7 +1076,7 @@ module Processor
                 wb_immediate_value = alu_result_1cycle;
             end
             EXECUTION_MULTI_CYCLE_IMM: begin  
-                exec_state = WRITE_BACK_STATE;
+                exec_state = LOAD_REG_STATE;
                 // ALU control  
                 alu_operand_1 = rs1_regFile;
                 alu_operand_2 = {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
@@ -1247,17 +1278,81 @@ module Processor
         .rst_n(rst_n)
         ); 
                 
-    
-    always @(posedge clk, negedge rst_n) begin
+    logic [2:0]                     running_program_state_n;
+    logic                           alu_enable_seq_n;
+    logic [DOUBLEWORD_WIDTH - 1:0]  registers_owner_n    [0:REGISTER_AMOUNT - 1];
+    logic [ADDR_BUS_WIDTH - 1:0]    addr_rd_n;
+    logic [ADDR_BUS_WIDTH - 1:0]    addr_wr_n;
+    logic                           rd_ins_n;
+    logic                           wr_ins_n;
+    logic [DOUBLEWORD_WIDTH - 1:0]  data_bus_wr_n;
+    always_comb begin               : RUNNING_PROGRAM_FSM_GENERATOR
+        running_program_state_n = running_program_state_reg;
+        alu_enable_seq_n = alu_enable_seq;// Reset register in processor
+        for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+        registers_owner_n[i] = registers_owner[i];
+        end
+        addr_rd_n = addr_rd_reg;
+        addr_wr_n = addr_wr_reg;
+        rd_ins_n = rd_ins_reg;
+        wr_ins_n = wr_ins_reg;
+        data_bus_wr_n = data_bus_wr_reg;
+        
+        case(running_program_state_reg) 
+            EXECUTE_INSTRUCTION_STATE: begin
+                if(boot_processor) begin
+                    running_program_state_n = exec_state;
+                    alu_enable_seq_n = (multi_cycle_type) ? 1'b1 : 1'b0;
+                    if(wb_immediate_en) registers_owner_n[rd_space] = wb_immediate_value;
+                    // DMEM ACESS
+                    addr_rd_n = dmem_addr_rd;
+                    addr_wr_n = dmem_addr_wr;
+                    rd_ins_n = dmem_ins_rd_en;
+                    wr_ins_n = dmem_ins_wr_en;
+                    data_bus_wr_n = dmem_data_wr;
+                end
+                else if(synchronization_processor) begin
+                    for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) registers_owner_n[i] = registers_renew[i];
+                end
+            end
+            WRITE_BACK_STATE: begin
+                if(alu_idle == 1) begin
+                    registers_owner_n[rd_space] = alu_result_multi_cycle;
+                    running_program_state_n = EXECUTE_INSTRUCTION_STATE;
+                end
+            end
+            DMEM_RD_ACCESS_STATE: begin
+                if(rd_idle) begin
+                    running_program_state_n = EXECUTE_INSTRUCTION_STATE;
+                    registers_owner_n[rd_space] = data_bus_rd_sign_extend;
+                    rd_ins_n = 0;
+                end
+            end
+            DMEM_WR_ACCESS_STATE: begin
+                if(wr_access) begin // Write Memory completely
+                    running_program_state_n = EXECUTE_INSTRUCTION_STATE;
+                    wr_ins_n = 0;
+                end
+            end
+            SYSTEM_ACCESS_STATE: begin
+            
+            end
+            LOAD_REG_STATE: begin
+                running_program_state_n = WRITE_BACK_STATE;
+            end
+            default: begin
+            
+            end        
+        endcase
+    end
+    // Critical path: 
+    always @(posedge clk) begin
         if(!rst_n) begin
             running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-            // Reset register in processor
+            alu_enable_seq <= 0;// Reset register in processor
             for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
                 registers_owner[i] <= REGISTER_DEFAULT[i];
             end
-            // Reset buffer interact ALU block
-            alu_enable_seq <= 0;
-            // Reset buffer interact with RAM 
             addr_rd_reg <= 0;
             addr_wr_reg <= 0;
             rd_ins_reg <= 0;
@@ -1265,61 +1360,20 @@ module Processor
             data_bus_wr_reg <= 0;
         end
         else begin
-            case(running_program_state_reg) 
-            DISPATH_STATE: begin
+            running_program_state_reg <= running_program_state_n;
+            alu_enable_seq <= alu_enable_seq_n;// Reset register in processor
+            for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
+            registers_owner[i] <= registers_owner_n[i];
+            end
+            addr_rd_reg <= addr_rd_n;
+            addr_wr_reg <= addr_wr_n;
+            rd_ins_reg <= rd_ins_n;
+            wr_ins_reg <= wr_ins_n;
+            data_bus_wr_reg <= data_bus_wr_n;
             
-            end
-            EXECUTE_INSTRUCTION_STATE: begin
-                if(boot_processor) begin
-                    running_program_state_reg <= exec_state;
-                    alu_enable_seq <= (multi_cycle_type) ? 1'b1 : 1'b0;
-                    if(wb_immediate_en) registers_owner[rd_space] <= wb_immediate_value;
-                    // DMEM ACESS
-                    addr_rd_reg <= dmem_addr_rd;
-                    addr_wr_reg <= dmem_addr_wr;
-                    rd_ins_reg <= dmem_ins_rd_en;
-                    wr_ins_reg <= dmem_ins_wr_en;
-                    data_bus_wr_reg <= dmem_data_wr;
-                end
-                else begin
-                    if(synchronization_processor) begin
-                        for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) registers_owner[i] <= registers_renew[i];
-                    end
-                end
-            end
-            WRITE_BACK_STATE: begin
-                if(alu_idle == 1) begin
-                    registers_owner[rd_space] <= alu_result_multi_cycle;
-                    running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                end
-            end
-            DMEM_RD_ACCESS_STATE: begin
-                if(rd_idle) begin
-                running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                registers_owner[rd_space] <= data_bus_rd_sign_extend;
-                rd_ins_reg <= 0;
-                end
-            end
-            DMEM_WR_ACCESS_STATE: begin
-                if(wr_access) begin // Write Memory completely
-                    running_program_state_reg <= EXECUTE_INSTRUCTION_STATE;
-                    wr_ins_reg <= 0;
-                end
-            end
-            default: begin
-            
-            end
-            endcase
         end
     end
     // Synchronization reigsters block
-//    always @(posedge clk) begin
-//        if(synchronization_processor) begin
-//            for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
-//                registers_owner[i] <= registers_renew[i];
-//            end
-//        end
-//    end
     `ifdef DEBUG
     // Debug area
 //    assign debug_2 = {32'b0, 32'b0};

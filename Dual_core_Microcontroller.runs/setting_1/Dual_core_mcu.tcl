@@ -71,8 +71,7 @@ proc create_report { reportName command } {
 }
 OPTRACE "setting_1" START { ROLLUP_AUTO }
 set_param chipscope.maxJobs 2
-set_param synth.incrementalSynthesisCache C:/Users/atfox/AppData/Roaming/Xilinx/Vivado/.Xil/Vivado-4752-LAPTOP-UGQ0I2VJ/incrSyn
-set_msg_config -id {Common 17-41} -limit 10000000
+set_param synth.incrementalSynthesisCache C:/Users/atfox/AppData/Roaming/Xilinx/Vivado/.Xil/Vivado-15232-LAPTOP-UGQ0I2VJ/incrSyn
 set_msg_config -id {HDL 9-1061} -limit 100000
 set_msg_config -id {HDL 9-1654} -limit 100000
 set_msg_config -id {Synth 8-256} -limit 10000
@@ -98,10 +97,10 @@ read_verilog L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.src
 read_verilog -library xil_defaultlib -sv {
   L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv
   L:/Projects/GPIO_module/GPIO_module.srcs/sources_1/new/GPIO_module.sv
-  L:/Projects/LIFO_module/LIFO_module.srcs/sources_1/new/LIFO_module.sv
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v
   L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/RX_controller.v
+  L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v
   L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/TX_controller.v
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/alu.sv
   L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/baudrate_generator.sv
@@ -111,12 +110,12 @@ read_verilog -library xil_defaultlib -sv {
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/ram_pm.sv
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/registers_management.sv
   L:/Projects/fifo_sync/fifo_sync.srcs/sources_1/new/sync_fifo.sv
+  L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/sync_lifo.sv
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/timer_INT_handler.sv
   L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v
 }
 read_verilog -library xil_defaultlib {
-  L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v
   L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/real_time.v
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/RF_module_3modules/waiting_module.v

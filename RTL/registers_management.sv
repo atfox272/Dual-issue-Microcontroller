@@ -36,11 +36,7 @@ module Registers_management
     reg                         processor_main_updater_state;
     reg                         processor_sub_updater_state;
     reg [REG_CTN_WIDTH - 1:0]   register1_num_buf_1;
-    reg [REG_CTN_WIDTH - 1:0]   register2_num_buf_1;
-    reg [REG_CTN_WIDTH - 1:0]   register3_num_buf_1;
     reg [REG_CTN_WIDTH - 1:0]   register1_num_buf_2;
-    reg [REG_CTN_WIDTH - 1:0]   register2_num_buf_2;
-    reg [REG_CTN_WIDTH - 1:0]   register3_num_buf_2;
     wire                        synchronized_processor_1;
     reg                         synchronized_processor_1_true;
     reg                         synchronized_processor_1_false;
@@ -50,8 +46,8 @@ module Registers_management
     reg                         synchronization_processor_1_reg;
     reg                         synchronization_processor_2_reg;
     
-    localparam IDLE_STATE = 0;
-    localparam UPDATING_STATE = 1;
+    localparam IDLE_STATE       = 1'd0;
+    localparam UPDATING_STATE   = 1'd1;
 //    localparam PRE_UPDATING_STATE = 3;
 //    localparam SPEC_UPDATING_STATE = 2;
 //    localparam SPEC_PRE_UPDATING_STATE = 4;
@@ -77,6 +73,51 @@ module Registers_management
                            
                             
     // Processor 1 (main) updater
+    logic [0:REGISTER_AMOUNT - 1]   new_data_register_reg_main_n;
+    logic                           processor_main_updater_state_n;
+    logic                           synchronization_processor_1_n;
+    logic [0:REGISTER_AMOUNT - 1]   processing_register_table_reg_1_n;
+    logic                           synchronized_processor_1_true_n;
+    logic                           synchronized_processor_2_false_n;
+    logic [REG_CTN_WIDTH - 1:0]     register1_num_buf_1_n;
+    always_comb begin
+        new_data_register_reg_main_n = new_data_register_reg_main;
+        processor_main_updater_state_n = processor_main_updater_state;
+        synchronization_processor_1_n = synchronization_processor_1_reg;
+        processing_register_table_reg_1_n = processing_register_table_reg_1;
+        synchronized_processor_1_true_n = synchronized_processor_1_true;
+        synchronized_processor_2_false_n = synchronized_processor_2_false;
+        register1_num_buf_1_n = register1_num_buf_1;
+        case(processor_main_updater_state) 
+            IDLE_STATE: begin
+                synchronization_processor_1_n = 0;
+                if(boot_renew_register_1 == 1) begin
+                    processor_main_updater_state_n = UPDATING_STATE;
+                    register1_num_buf_1_n = register_num[4:0];
+                    processing_register_table_reg_1_n[register_num[4:0]] = 1'b1;
+                    synchronized_processor_2_false_n = synchronized_processor_2_true;    // A ^ B == 0 (A == B)
+                end
+                else if(synchronized_processor_1 == 0 & processor_sub_updater_state == IDLE_STATE & processor_idle_1 == 1 & boot_renew_register_2 == 0) begin
+                    processor_main_updater_state_n = IDLE_STATE;
+                    synchronization_processor_1_n = 1;
+                    synchronized_processor_1_true_n = ~synchronized_processor_1_false;// A ^ B == 1 (A == ~B)
+                end
+            end
+            UPDATING_STATE : begin
+                if(processor_idle_1) begin
+                    processor_main_updater_state_n = IDLE_STATE;
+                    // Update data flag (change HIGH)
+                    new_data_register_reg_main_n[register1_num_buf_1] = ~new_data_register_reg_sub[register1_num_buf_1];
+                    // Update processor_register_table
+                    processing_register_table_reg_1_n[register1_num_buf_1] = 1'b0;
+                end
+                else processor_main_updater_state_n = processor_main_updater_state;
+            end
+            default: begin
+                
+            end
+        endcase
+    end
     always @(posedge clk) begin
         if(!rst_n) begin
             new_data_register_reg_main[0:REGISTER_AMOUNT - 1] <= {32{1'b1}}; 
@@ -87,39 +128,62 @@ module Registers_management
             synchronized_processor_2_false <= 0;
         end
         else begin
-            case(processor_main_updater_state) 
-                IDLE_STATE: begin
-                    synchronization_processor_1_reg <= 0;
-                    if(boot_renew_register_1 == 1) begin
-                        processor_main_updater_state <= UPDATING_STATE;
-                        register1_num_buf_1 <= register_num[4:0];
-                        processing_register_table_reg_1[register_num[4:0]] <= 1'b1;
-                        synchronized_processor_2_false <= synchronized_processor_2_true;    // A ^ B == 0 (A == B)
-                    end
-                    else if(synchronized_processor_1 == 0 & processor_sub_updater_state == IDLE_STATE & processor_idle_1 == 1 & boot_renew_register_2 == 0) begin
-                        processor_main_updater_state <= IDLE_STATE;
-                        synchronization_processor_1_reg <= 1;
-                        synchronized_processor_1_true <= ~synchronized_processor_1_false;// A ^ B == 1 (A == ~B)
-                    end
-                end
-                UPDATING_STATE : begin
-                    if(processor_idle_1) begin
-                        processor_main_updater_state <= IDLE_STATE;
-                        // Update data flag (change HIGH)
-                        new_data_register_reg_main[register1_num_buf_1] <= ~new_data_register_reg_sub[register1_num_buf_1];
-                        // Update processor_register_table
-                        processing_register_table_reg_1[register1_num_buf_1] <= 1'b0;
-                    end
-                    else processor_main_updater_state <= processor_main_updater_state;
-                end
-                default: begin
-                    
-                end
-            endcase
+            new_data_register_reg_main <= new_data_register_reg_main_n;
+            processor_main_updater_state <= processor_main_updater_state_n;
+            synchronization_processor_1_reg <= synchronization_processor_1_n;
+            processing_register_table_reg_1 <= processing_register_table_reg_1_n;
+            synchronized_processor_1_true <= synchronized_processor_1_true_n;
+            synchronized_processor_2_false <= synchronized_processor_2_false_n;
+            register1_num_buf_1 <= register1_num_buf_1_n;
         end
     end
     // Processor 2 (sub) upadater
-    always @(posedge clk, negedge rst_n) begin
+    logic [0:REGISTER_AMOUNT - 1]   new_data_register_reg_sub_n;
+    logic                           processor_sub_updater_state_n;
+    logic                           synchronization_processor_2_n;
+    logic [0:REGISTER_AMOUNT - 1]   processing_register_table_reg_2_n;
+    logic                           synchronized_processor_2_true_n;
+    logic                           synchronized_processor_1_false_n;
+    logic [REG_CTN_WIDTH - 1:0]     register1_num_buf_2_n;  
+    always_comb begin
+        new_data_register_reg_sub_n = new_data_register_reg_sub;
+        processor_sub_updater_state_n = processor_sub_updater_state;
+        synchronization_processor_2_n = synchronization_processor_2_reg;
+        processing_register_table_reg_2_n = processing_register_table_reg_2;
+        synchronized_processor_2_true_n = synchronized_processor_2_true;
+        synchronized_processor_1_false_n = synchronized_processor_1_false;
+        register1_num_buf_2_n = register1_num_buf_2;
+        case(processor_sub_updater_state) 
+            IDLE_STATE: begin
+                synchronization_processor_2_n = 0;
+                if(boot_renew_register_2 == 1) begin
+                    processor_sub_updater_state_n = UPDATING_STATE;
+                    register1_num_buf_2_n = register_num[4:0];
+                    synchronized_processor_1_false_n = synchronized_processor_1_true;    // A ^ B == 0 (A == B)
+                    processing_register_table_reg_2_n[register_num[4:0]] = 1'b1;
+                end
+                else if(synchronized_processor_2 == 0 & processor_main_updater_state == IDLE_STATE & processor_idle_2 == 1 & boot_renew_register_1 == 0) begin
+                    processor_sub_updater_state_n = IDLE_STATE;
+                    synchronization_processor_2_n = 1;
+                    synchronized_processor_2_true_n = ~synchronized_processor_2_false;   // A ^ B == 1 (A == ~B)
+                end
+            end
+            UPDATING_STATE: begin
+                if(processor_idle_2) begin
+                    processor_sub_updater_state_n = IDLE_STATE;
+                    // Update data flag (change LOW)
+                    new_data_register_reg_sub_n[register1_num_buf_2] = new_data_register_reg_main[register1_num_buf_2];
+                    // Update processor_register_table
+                    processing_register_table_reg_2_n[register1_num_buf_2] = 1'b0;
+                end
+                else processor_sub_updater_state_n = processor_sub_updater_state;
+            end
+            default: begin
+            
+            end
+        endcase
+    end
+    always @(posedge clk) begin
         if(!rst_n) begin
             new_data_register_reg_sub[0:REGISTER_AMOUNT - 1] <= {32{1'b0}};
             processor_sub_updater_state <= IDLE_STATE;
@@ -129,35 +193,13 @@ module Registers_management
             synchronized_processor_1_false <= 0;
         end
         else begin
-            case(processor_sub_updater_state) 
-                IDLE_STATE: begin
-                    synchronization_processor_2_reg <= 0;
-                    if(boot_renew_register_2 == 1) begin
-                        processor_sub_updater_state <= UPDATING_STATE;
-                        register1_num_buf_2 <= register_num[4:0];
-                        synchronized_processor_1_false <= synchronized_processor_1_true;    // A ^ B == 0 (A == B)
-                        processing_register_table_reg_2[register_num[4:0]] <= 1'b1;
-                    end
-                    else if(synchronized_processor_2 == 0 & processor_main_updater_state == IDLE_STATE & processor_idle_2 == 1 & boot_renew_register_1 == 0) begin
-                        processor_sub_updater_state <= IDLE_STATE;
-                        synchronization_processor_2_reg <= 1;
-                        synchronized_processor_2_true <= ~synchronized_processor_2_false;   // A ^ B == 1 (A == ~B)
-                    end
-                end
-                UPDATING_STATE: begin
-                    if(processor_idle_2) begin
-                        processor_sub_updater_state <= IDLE_STATE;
-                        // Update data flag (change LOW)
-                        new_data_register_reg_sub[register1_num_buf_2] <= new_data_register_reg_main[register1_num_buf_2];
-                        // Update processor_register_table
-                        processing_register_table_reg_2[register1_num_buf_2] <= 1'b0;
-                    end
-                    else processor_sub_updater_state <= processor_sub_updater_state;
-                end
-                default: begin
-                
-                end
-            endcase
+            new_data_register_reg_sub <= new_data_register_reg_sub_n;
+            processor_sub_updater_state <= processor_sub_updater_state_n;
+            synchronization_processor_2_reg <= synchronization_processor_2_n;
+            processing_register_table_reg_2 <= processing_register_table_reg_2_n;
+            synchronized_processor_2_true <= synchronized_processor_2_true_n;
+            synchronized_processor_1_false <= synchronized_processor_1_false_n;
+            register1_num_buf_2 <= register1_num_buf_2_n;
         end
     end
 endmodule

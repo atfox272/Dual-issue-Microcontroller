@@ -80,12 +80,24 @@ module timer_INT_handler
         endcase 
     end
     // Clock source
+    wire [PRESCALER_COUNTER - 1:0] prescaler_counter_next;
+    assign prescaler_counter_next = prescaler_counter + 1'b1;
     always @(posedge clk) begin
         if(!rst_n) begin
             prescaler_counter <= 0;
         end
         else if(enable_interrupt & prescaler_selector != 0) begin
-            prescaler_counter <= prescaler_counter + 1;
+            prescaler_counter <= prescaler_counter_next;
+        end
+    end
+    logic [REGISTER_WIDTH*2 - 1:0]  timer_counter_next;
+    logic                           interrupt_request_next;
+    always_comb begin
+        timer_counter_next = timer_counter + 1;
+        interrupt_request_next = 0;
+        if(timer_counter == interrupt_value) begin
+            timer_counter_next = 0;
+            interrupt_request_next = 1;
         end
     end
     always @(posedge clk) begin
@@ -94,12 +106,8 @@ module timer_INT_handler
             interrupt_request_reg <= 0;
         end
         else if(clk_en_int) begin
-            timer_counter <= timer_counter + 1;
-            interrupt_request_reg <= 0;
-            if(timer_counter == interrupt_value) begin
-                timer_counter <= 0;
-                interrupt_request_reg <= 1;
-            end
+            timer_counter <= timer_counter_next;
+            interrupt_request_reg <= interrupt_request_next;
         end
     end
 endmodule

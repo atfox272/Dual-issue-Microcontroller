@@ -109,7 +109,7 @@ set_property -dict { PACKAGE_PIN V6    IOSTANDARD LVCMOS33 } [get_ports { GPIO_P
 set_property -dict { PACKAGE_PIN U7    IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[1][5] }]; #IO_L11P_T1_SRCC_13  Sch=CK_IO29
 set_property -dict { PACKAGE_PIN V7    IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[1][6] }]; #IO_L11N_T1_SRCC_13  Sch=CK_IO30
 set_property -dict { PACKAGE_PIN U8    IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[1][7] }]; #IO_L17N_T2_13       Sch=CK_IO31
-#set_property -dict { PACKAGE_PIN V8    IOSTANDARD LVCMOS33 } [get_ports {         }]; #IO_L15P_T2_DQS_13   Sch=CK_IO32
+set_property -dict { PACKAGE_PIN V8    IOSTANDARD LVCMOS33 } [get_ports { RUNNING_PROGRAM }]; #IO_L15P_T2_DQS_13   Sch=CK_IO32
 #set_property -dict { PACKAGE_PIN V10   IOSTANDARD LVCMOS33 } [get_ports {         }]; #IO_L21N_T3_DQS_13   Sch=CK_IO33
 #set_property -dict { PACKAGE_PIN W10   IOSTANDARD LVCMOS33 } [get_ports { ck_io34 }]; #IO_L16P_T2_13       Sch=CK_IO34
 #set_property -dict { PACKAGE_PIN W6    IOSTANDARD LVCMOS33 } [get_ports { ck_io35 }]; #IO_L22N_T3_13       Sch=CK_IO35

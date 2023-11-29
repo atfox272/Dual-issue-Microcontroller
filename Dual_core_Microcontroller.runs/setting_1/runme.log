@@ -11,7 +11,6 @@
 
 source Dual_core_mcu.tcl -notrace
 WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {17-179}  -suppress '. The existing rule will be replaced.
-create_project: Time (s): cpu = 00:00:01 ; elapsed = 00:00:05 . Memory (MB): peak = 1132.027 ; gain = 0.000
 Command: synth_design -top Dual_core_mcu -part xc7z020clg400-1
 Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7z020'
@@ -20,9 +19,9 @@ INFO: [Device 21-403] Loading part xc7z020clg400-1
 INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
 INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
 WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {17-179}  -suppress '. The existing rule will be replaced.
-INFO: [Synth 8-7075] Helper process launched with PID 31364
+INFO: [Synth 8-7075] Helper process launched with PID 18272
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:03 ; elapsed = 00:00:06 . Memory (MB): peak = 1201.348 ; gain = 69.320
+Starting RTL Elaboration : Time (s): cpu = 00:00:02 ; elapsed = 00:00:05 . Memory (MB): peak = 1201.863 ; gain = 21.059
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'Dual_core_mcu' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:9]
 	Parameter INTERNAL_CLOCK bound to: 125000000 - type: integer 
@@ -220,7 +219,7 @@ INFO: [Synth 8-6157] synthesizing module 'Processor' [L:/Projects/Dual_core_Micr
 	Parameter AMOUNT_SND_WIDTH bound to: 4 - type: integer 
 	Parameter AMOUNT_RCV_WIDTH bound to: 4 - type: integer 
 	Parameter SIGN_EXTEND_WIDTH bound to: 52 - type: integer 
-INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:413]
+INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:414]
 INFO: [Synth 8-6157] synthesizing module 'alu' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/alu.sv:4]
 	Parameter OPERAND_WIDTH bound to: 64 - type: integer 
 	Parameter IDLE_STATE bound to: 0 - type: integer 
@@ -236,7 +235,7 @@ INFO: [Synth 8-6157] synthesizing module 'waiting_module' [L:/Projects/Dual_core
 	Parameter LEVEL_PULSE bound to: 1 - type: integer 
 	Parameter LIMIT_COUNTER_WIDTH bound to: 21 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'waiting_module' (3#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/RF_module_3modules/waiting_module.v:1]
-INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:711]
+INFO: [Synth 8-155] case statement is not full and has no default [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:684]
 INFO: [Synth 8-6155] done synthesizing module 'Processor' (4#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:3]
 INFO: [Synth 8-6157] synthesizing module 'Processor__parameterized0' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:3]
 	Parameter MAIN_RPOCESSOR bound to: 1'b0 
@@ -433,7 +432,7 @@ INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameteri
 	Parameter BYTE_WIDTH bound to: 8 - type: integer 
 	Parameter WORD_WIDTH bound to: 32 - type: integer 
 	Parameter DOUBLEWORD_WIDTH bound to: 64 - type: integer 
-WARNING: [Synth 8-693] zero replication count - replication ignored [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:503]
+WARNING: [Synth 8-693] zero replication count - replication ignored [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:514]
 INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized0' (5#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'pram_consistency' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v:2]
 	Parameter DOUBLEWORD_WIDTH bound to: 64 - type: integer 
@@ -445,7 +444,7 @@ INFO: [Synth 8-6157] synthesizing module 'pram_consistency' [L:/Projects/Dual_co
 	Parameter P1_WR_STATE bound to: 2'b01 
 	Parameter P2_WR_STATE bound to: 2'b10 
 	Parameter ACCESS_STATE bound to: 2'b11 
-INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v:85]
+INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v:83]
 INFO: [Synth 8-6155] done synthesizing module 'pram_consistency' (6#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Sync_primitive.v:2]
 INFO: [Synth 8-6157] synthesizing module 'ram' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/ram.sv:6]
 	Parameter DATA_WIDTH bound to: 8 - type: integer 
@@ -477,10 +476,10 @@ INFO: [Synth 8-6157] synthesizing module 'Registers_management' [L:/Projects/Dua
 	Parameter REGISTER_AMOUNT bound to: 32 - type: integer 
 	Parameter REGISTER_WIDTH bound to: 64 - type: integer 
 	Parameter REG_CTN_WIDTH bound to: 5 - type: integer 
-	Parameter IDLE_STATE bound to: 0 - type: integer 
-	Parameter UPDATING_STATE bound to: 1 - type: integer 
-INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/registers_management.sv:90]
-INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/registers_management.sv:132]
+	Parameter IDLE_STATE bound to: 1'b0 
+	Parameter UPDATING_STATE bound to: 1'b1 
+INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/registers_management.sv:91]
+INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/registers_management.sv:156]
 INFO: [Synth 8-6155] done synthesizing module 'Registers_management' (8#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/registers_management.sv:1]
 INFO: [Synth 8-6157] synthesizing module 'Multi_processor_manager' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v:1]
 	Parameter INSTRUCTION_WIDTH bound to: 32 - type: integer 
@@ -568,23 +567,21 @@ INFO: [Synth 8-6157] synthesizing module 'Multi_processor_manager' [L:/Projects/
 	Parameter PROGRAM_IDLE_STATE bound to: 3'b000 
 	Parameter FETCH_INS_STATE bound to: 3'b111 
 	Parameter DISPATCH_INS_STATE bound to: 3'b010 
-	Parameter RESTORE_PC_STATE bound to: 3'b011 
 	Parameter DETECT_HIGHER_PRIO_PROGRAM_STATE bound to: 3'b100 
-	Parameter RECOVERY_PC_STATE bound to: 3'b101 
 	Parameter EXIT_STATE bound to: 3'b110 
 	Parameter EQUAL_RESULT bound to: 0 - type: integer 
 	Parameter GREATER_RESULT bound to: 1 - type: integer 
 	Parameter LESS_RESULT bound to: 2 - type: integer 
 	Parameter NOTHING_RESULT bound to: 3 - type: integer 
-INFO: [Synth 8-6157] synthesizing module 'sync_lifo' [L:/Projects/LIFO_module/LIFO_module.srcs/sources_1/new/LIFO_module.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'sync_lifo' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/sync_lifo.sv:1]
 	Parameter DATA_WIDTH bound to: 12 - type: integer 
 	Parameter LIFO_DEPTH bound to: 16 - type: integer 
-	Parameter POINTER_WIDTH bound to: 4 - type: integer 
-INFO: [Synth 8-6155] done synthesizing module 'sync_lifo' (9#1) [L:/Projects/LIFO_module/LIFO_module.srcs/sources_1/new/LIFO_module.sv:1]
-INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v:370]
-INFO: [Synth 8-155] case statement is not full and has no default [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v:599]
-INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v:669]
-INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v:862]
+	Parameter STACK_POINTER_WIDTH bound to: 4 - type: integer 
+INFO: [Synth 8-155] case statement is not full and has no default [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/sync_lifo.sv:66]
+INFO: [Synth 8-6155] done synthesizing module 'sync_lifo' (9#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/sync_lifo.sv:1]
+INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v:374]
+INFO: [Synth 8-155] case statement is not full and has no default [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v:603]
+INFO: [Synth 8-226] default block is never used [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v:673]
 INFO: [Synth 8-6155] done synthesizing module 'Multi_processor_manager' (10#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Multi_processor_manager.v:1]
 INFO: [Synth 8-6157] synthesizing module 'ram_pm' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/ram_pm.sv:4]
 	Parameter DATA_WIDTH bound to: 8 - type: integer 
@@ -729,7 +726,7 @@ INFO: [Synth 8-6157] synthesizing module 'real_time' [L:/Projects/Dual_core_Micr
 	Parameter MAX_COUNTER bound to: 260416 - type: integer 
 	Parameter MAX_COUNTER_WIDTH bound to: 18 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'real_time' (18#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/real_time.v:23]
-INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:248]
+INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:251]
 INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized2' (18#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'uart_peripheral' [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
 	Parameter INTERNAL_CLOCK bound to: 125000000 - type: integer 
@@ -783,8 +780,8 @@ INFO: [Synth 8-6157] synthesizing module 'TX_controller' [L:/Projects/peripheral
 	Parameter STOP_STATE bound to: 4 - type: integer 
 	Parameter START_BIT bound to: 1'b0 
 	Parameter STOP_BIT bound to: 1'b1 
-INFO: [Synth 8-155] case statement is not full and has no default [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/TX_controller.v:145]
-INFO: [Synth 8-155] case statement is not full and has no default [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/TX_controller.v:170]
+INFO: [Synth 8-155] case statement is not full and has no default [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/TX_controller.v:148]
+INFO: [Synth 8-155] case statement is not full and has no default [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/TX_controller.v:187]
 INFO: [Synth 8-6155] done synthesizing module 'TX_controller' (19#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/TX_controller.v:8]
 INFO: [Synth 8-6157] synthesizing module 'RX_controller' [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/RX_controller.v:2]
 	Parameter DATA_WIDTH bound to: 8 - type: integer 
@@ -915,7 +912,7 @@ INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameteri
 	Parameter BYTE_WIDTH bound to: 8 - type: integer 
 	Parameter WORD_WIDTH bound to: 32 - type: integer 
 	Parameter DOUBLEWORD_WIDTH bound to: 64 - type: integer 
-INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:248]
+INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:251]
 INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized3' (22#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'uart_peripheral__parameterized0' [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
 	Parameter INTERNAL_CLOCK bound to: 125000000 - type: integer 
@@ -942,18 +939,18 @@ INFO: [Synth 8-6155] done synthesizing module 'sync_fifo__parameterized1' (22#1)
 INFO: [Synth 8-6155] done synthesizing module 'uart_peripheral__parameterized0' (22#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
 INFO: [Synth 8-6155] done synthesizing module 'Dual_core_mcu' (23#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:9]
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:14 ; elapsed = 00:00:26 . Memory (MB): peak = 1721.168 ; gain = 589.141
+Finished RTL Elaboration : Time (s): cpu = 00:00:11 ; elapsed = 00:00:22 . Memory (MB): peak = 1760.387 ; gain = 579.582
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:15 ; elapsed = 00:00:29 . Memory (MB): peak = 1721.168 ; gain = 589.141
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:12 ; elapsed = 00:00:24 . Memory (MB): peak = 1760.387 ; gain = 579.582
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:15 ; elapsed = 00:00:29 . Memory (MB): peak = 1721.168 ; gain = 589.141
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:12 ; elapsed = 00:00:24 . Memory (MB): peak = 1760.387 ; gain = 579.582
 ---------------------------------------------------------------------------------
-Netlist sorting complete. Time (s): cpu = 00:00:03 ; elapsed = 00:00:04 . Memory (MB): peak = 1764.398 ; gain = 15.977
+Netlist sorting complete. Time (s): cpu = 00:00:02 ; elapsed = 00:00:04 . Memory (MB): peak = 1793.297 ; gain = 16.621
 INFO: [Netlist 29-17] Analyzing 16 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
@@ -966,27 +963,27 @@ INFO: [Project 1-236] Implementation specific constraints were found while readi
 Resolution: To avoid this warning, move constraints listed in [.Xil/Dual_core_mcu_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
 Completed Processing XDC Constraints
 
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 3283.250 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.006 . Memory (MB): peak = 3284.562 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
   A total of 16 instances were transformed.
   IOBUF => IOBUF (IBUF, OBUFT): 16 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.147 . Memory (MB): peak = 3283.250 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.131 . Memory (MB): peak = 3284.562 ; gain = 0.000
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:42 ; elapsed = 00:01:14 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Constraint Validation : Time (s): cpu = 00:00:32 ; elapsed = 00:01:03 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7z020clg400-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:42 ; elapsed = 00:01:14 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:32 ; elapsed = 00:01:03 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:42 ; elapsed = 00:01:14 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:32 ; elapsed = 00:01:03 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'alu_state_reg_reg' in module 'alu'
 INFO: [Synth 8-802] inferred FSM for state register 'MAIN_RPOCESSOR_BLOCK.main_state_reg_reg' in module 'Processor'
@@ -1031,19 +1028,21 @@ INFO: [Synth 8-3354] encoded FSM with state register 'MAIN_RPOCESSOR_BLOCK.main_
                    State |                     New Encoding |                Previous Encoding 
 ---------------------------------------------------------------------------------------------------
 EXECUTE_INSTRUCTION_STATE |                              000 |                              000
-        WRITE_BACK_STATE |                              001 |                              010
-    DMEM_RD_ACCESS_STATE |                              010 |                              011
-    DMEM_WR_ACCESS_STATE |                              011 |                              101
-     SYSTEM_ACCESS_STATE |                              100 |                              100
+          LOAD_REG_STATE |                              001 |                              110
+        WRITE_BACK_STATE |                              010 |                              010
+    DMEM_RD_ACCESS_STATE |                              011 |                              011
+    DMEM_WR_ACCESS_STATE |                              100 |                              101
+     SYSTEM_ACCESS_STATE |                              101 |                              100
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'MAIN_RPOCESSOR_BLOCK.running_program_state_reg_reg' using encoding 'sequential' in module 'Processor'
 ---------------------------------------------------------------------------------------------------
                    State |                     New Encoding |                Previous Encoding 
 ---------------------------------------------------------------------------------------------------
-EXECUTE_INSTRUCTION_STATE |                               00 |                              000
-        WRITE_BACK_STATE |                               01 |                              010
-    DMEM_RD_ACCESS_STATE |                               10 |                              011
-    DMEM_WR_ACCESS_STATE |                               11 |                              101
+EXECUTE_INSTRUCTION_STATE |                              000 |                              000
+          LOAD_REG_STATE |                              001 |                              110
+        WRITE_BACK_STATE |                              010 |                              010
+    DMEM_RD_ACCESS_STATE |                              011 |                              011
+    DMEM_WR_ACCESS_STATE |                              100 |                              101
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'SUB_PROCESSOR_BLOCK.running_program_state_reg_reg' using encoding 'sequential' in module 'Processor__parameterized0'
 ---------------------------------------------------------------------------------------------------
@@ -1070,9 +1069,7 @@ INFO: [Synth 8-3354] encoded FSM with state register 'state_counter_wr_reg' usin
          FETCH_INS_STATE |                              010 |                              111
       DISPATCH_INS_STATE |                              011 |                              010
 DETECT_HIGHER_PRIO_PROGRAM_STATE |                              100 |                              100
-        RESTORE_PC_STATE |                              101 |                              011
-              EXIT_STATE |                              110 |                              110
-       RECOVERY_PC_STATE |                              111 |                              101
+              EXIT_STATE |                              101 |                              110
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'program_state_reg' using encoding 'sequential' in module 'Multi_processor_manager'
 ---------------------------------------------------------------------------------------------------
@@ -1118,7 +1115,7 @@ INFO: [Synth 8-3354] encoded FSM with state register 'transaction_state_reg' usi
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'transaction_state_reg' using encoding 'sequential' in module 'RX_controller'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:52 ; elapsed = 00:01:30 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:40 ; elapsed = 00:01:18 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start RTL Component Statistics 
@@ -1143,7 +1140,7 @@ Detailed RTL Component Info :
 	   2 Input    2 Bit       Adders := 5     
 +---XORs : 
 	   2 Input     64 Bit         XORs := 2     
-	   2 Input      1 Bit         XORs := 62    
+	   2 Input      1 Bit         XORs := 60    
 +---XORs : 
 	                8 Bit    Wide XORs := 4     
 +---Registers : 
@@ -1160,7 +1157,7 @@ Detailed RTL Component Info :
 	                4 Bit    Registers := 1     
 	                3 Bit    Registers := 6     
 	                2 Bit    Registers := 4     
-	                1 Bit    Registers := 120   
+	                1 Bit    Registers := 115   
 +---RAMs : 
 	              512 Bit	(64 X 8 bit)          RAMs := 2     
 	              256 Bit	(4 X 64 bit)          RAMs := 2     
@@ -1168,10 +1165,11 @@ Detailed RTL Component Info :
 	               32 Bit	(32 X 1 bit)          RAMs := 3     
 	                8 Bit	(4 X 2 bit)          RAMs := 2     
 +---Muxes : 
-	   2 Input   64 Bit        Muxes := 108   
-	   4 Input   64 Bit        Muxes := 54    
+	   2 Input   64 Bit        Muxes := 104   
+	   4 Input   64 Bit        Muxes := 20    
 	   7 Input   64 Bit        Muxes := 5     
 	   8 Input   64 Bit        Muxes := 3     
+	   6 Input   64 Bit        Muxes := 32    
 	   5 Input   64 Bit        Muxes := 32    
 	   2 Input   32 Bit        Muxes := 9     
 	   2 Input   21 Bit        Muxes := 2     
@@ -1180,7 +1178,7 @@ Detailed RTL Component Info :
 	   2 Input   15 Bit        Muxes := 6     
 	   2 Input   10 Bit        Muxes := 8     
 	   5 Input   10 Bit        Muxes := 2     
-	   8 Input   10 Bit        Muxes := 1     
+	   6 Input   10 Bit        Muxes := 1     
 	   2 Input    8 Bit        Muxes := 28    
 	   8 Input    8 Bit        Muxes := 2     
 	   4 Input    8 Bit        Muxes := 2     
@@ -1191,28 +1189,27 @@ Detailed RTL Component Info :
 	   8 Input    4 Bit        Muxes := 2     
 	   7 Input    4 Bit        Muxes := 1     
 	   6 Input    4 Bit        Muxes := 1     
-	   3 Input    4 Bit        Muxes := 1     
 	   8 Input    3 Bit        Muxes := 3     
-	   7 Input    3 Bit        Muxes := 1     
+	   7 Input    3 Bit        Muxes := 2     
 	   3 Input    3 Bit        Muxes := 1     
 	   2 Input    3 Bit        Muxes := 11    
+	   6 Input    3 Bit        Muxes := 4     
 	   5 Input    3 Bit        Muxes := 3     
-	   6 Input    3 Bit        Muxes := 3     
 	  13 Input    3 Bit        Muxes := 1     
-	  56 Input    3 Bit        Muxes := 1     
+	  55 Input    3 Bit        Muxes := 1     
 	   4 Input    3 Bit        Muxes := 4     
-	   4 Input    2 Bit        Muxes := 12    
+	   4 Input    2 Bit        Muxes := 11    
 	   2 Input    2 Bit        Muxes := 30    
-	   7 Input    2 Bit        Muxes := 2     
+	   7 Input    2 Bit        Muxes := 1     
 	   3 Input    2 Bit        Muxes := 3     
-	   2 Input    1 Bit        Muxes := 2307  
-	   4 Input    1 Bit        Muxes := 92    
-	   8 Input    1 Bit        Muxes := 33    
+	   2 Input    1 Bit        Muxes := 2325  
+	   4 Input    1 Bit        Muxes := 67    
+	   8 Input    1 Bit        Muxes := 3     
 	   3 Input    1 Bit        Muxes := 9     
-	   5 Input    1 Bit        Muxes := 45    
+	   6 Input    1 Bit        Muxes := 80    
 	   7 Input    1 Bit        Muxes := 3     
+	   5 Input    1 Bit        Muxes := 45    
 	  13 Input    1 Bit        Muxes := 3     
-	   6 Input    1 Bit        Muxes := 14    
 ---------------------------------------------------------------------------------
 Finished RTL Component Statistics 
 ---------------------------------------------------------------------------------
@@ -1229,7 +1226,7 @@ Finished Part Resource Summary
 Start Cross Boundary and Area Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:02:15 ; elapsed = 00:03:50 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:46 ; elapsed = 00:03:20 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -1257,13 +1254,13 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:02:19 ; elapsed = 00:03:58 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:49 ; elapsed = 00:03:27 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:02:19 ; elapsed = 00:03:58 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Timing Optimization : Time (s): cpu = 00:01:49 ; elapsed = 00:03:27 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -1290,7 +1287,7 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:02:26 ; elapsed = 00:04:09 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Technology Mapping : Time (s): cpu = 00:01:54 ; elapsed = 00:03:36 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start IO Insertion
@@ -1409,37 +1406,37 @@ WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][29
 WARNING: [Synth 8-3295] tying undriven pin ATI_PROC2_BUS2:m_atis_rdata_bus[2][28] to constant 0
 INFO: [Common 17-14] Message 'Synth 8-3295' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:02:31 ; elapsed = 00:04:16 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished IO Insertion : Time (s): cpu = 00:01:57 ; elapsed = 00:03:44 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:02:31 ; elapsed = 00:04:16 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:57 ; elapsed = 00:03:44 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:32 ; elapsed = 00:04:17 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:58 ; elapsed = 00:03:45 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:02:32 ; elapsed = 00:04:17 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:58 ; elapsed = 00:03:45 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:02:33 ; elapsed = 00:04:19 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:59 ; elapsed = 00:03:47 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:02:33 ; elapsed = 00:04:20 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:59 ; elapsed = 00:03:47 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -1455,41 +1452,41 @@ Report Cell Usage:
 +------+---------+------+
 |      |Cell     |Count |
 +------+---------+------+
-|1     |BUFG     |     2|
+|1     |BUFG     |     1|
 |2     |CARRY4   |   225|
-|3     |LUT1     |   188|
-|4     |LUT2     |  2903|
-|5     |LUT3     |  1138|
-|6     |LUT4     |  2827|
-|7     |LUT5     |  1887|
-|8     |LUT6     | 17501|
-|9     |MUXF7    |  4876|
-|10    |MUXF8    |  1863|
+|3     |LUT1     |   181|
+|4     |LUT2     |   760|
+|5     |LUT3     |  2588|
+|6     |LUT4     |  2820|
+|7     |LUT5     |  4869|
+|8     |LUT6     | 14623|
+|9     |MUXF7    |  4915|
+|10    |MUXF8    |  1854|
 |11    |RAM16X1D |     4|
 |12    |RAM32M   |    26|
 |13    |RAM64M   |     4|
 |14    |RAM64X1D |     4|
-|15    |FDCE     |  2400|
-|16    |FDPE     |    10|
-|17    |FDRE     | 14558|
-|18    |FDSE     |    80|
+|15    |FDCE     |    86|
+|16    |FDPE     |     1|
+|17    |FDRE     | 16884|
+|18    |FDSE     |    89|
 |19    |IBUF     |     4|
 |20    |IOBUF    |    16|
 |21    |OBUF     |     3|
 +------+---------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:02:33 ; elapsed = 00:04:20 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:59 ; elapsed = 00:03:47 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 ---------------------------------------------------------------------------------
 Synthesis finished with 0 errors, 0 critical warnings and 200 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:01:55 ; elapsed = 00:03:41 . Memory (MB): peak = 3283.250 ; gain = 589.141
-Synthesis Optimization Complete : Time (s): cpu = 00:02:33 ; elapsed = 00:04:20 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+Synthesis Optimization Runtime : Time (s): cpu = 00:01:29 ; elapsed = 00:03:14 . Memory (MB): peak = 3284.562 ; gain = 579.582
+Synthesis Optimization Complete : Time (s): cpu = 00:01:59 ; elapsed = 00:03:48 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 INFO: [Project 1-571] Translating synthesized netlist
-Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.830 . Memory (MB): peak = 3283.250 ; gain = 0.000
-INFO: [Netlist 29-17] Analyzing 7018 Unisim elements for replacement
+Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:01 . Memory (MB): peak = 3284.562 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 7048 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.015 . Memory (MB): peak = 3283.250 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.028 . Memory (MB): peak = 3284.562 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
   A total of 54 instances were transformed.
   IOBUF => IOBUF (IBUF, OBUFT): 16 instances
@@ -1501,8 +1498,8 @@ INFO: [Project 1-111] Unisim Transformation Summary:
 INFO: [Common 17-83] Releasing license: Synthesis
 124 Infos, 103 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:02:44 ; elapsed = 00:04:48 . Memory (MB): peak = 3283.250 ; gain = 2151.223
+synth_design: Time (s): cpu = 00:02:09 ; elapsed = 00:04:10 . Memory (MB): peak = 3284.562 ; gain = 2103.758
 INFO: [Common 17-1381] The checkpoint 'L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.runs/setting_1/Dual_core_mcu.dcp' has been generated.
-write_checkpoint: Time (s): cpu = 00:00:04 ; elapsed = 00:00:08 . Memory (MB): peak = 3283.250 ; gain = 0.000
+write_checkpoint: Time (s): cpu = 00:00:05 ; elapsed = 00:00:09 . Memory (MB): peak = 3284.562 ; gain = 0.000
 INFO: [runtcl-4] Executing : report_utilization -file Dual_core_mcu_utilization_synth.rpt -pb Dual_core_mcu_utilization_synth.pb
-INFO: [Common 17-206] Exiting Vivado at Mon Nov 27 23:40:27 2023...
+INFO: [Common 17-206] Exiting Vivado at Wed Nov 29 21:02:09 2023...

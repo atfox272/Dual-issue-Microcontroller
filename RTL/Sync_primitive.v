@@ -73,8 +73,47 @@ module pram_consistency
     assign data_type_wr_dm = (wr_access_p1_reg) ? data_type_wr_p1 : data_type_wr_p2;
     assign wr_ins_dm = (wr_access_p1_reg) ? wr_ins_p1 : (wr_access_p2_reg) ? wr_ins_p2 : 1'b0; 
     
-    
-    always @(posedge clk, negedge rst_n) begin
+    logic [1:0] wr_sync_primitive_state_n;
+    logic       wr_access_p1_n;
+    logic       wr_access_p2_n;
+    always_comb begin
+        wr_sync_primitive_state_n = wr_sync_primitive_state;
+        wr_access_p1_n = wr_access_p1_reg;
+        wr_access_p2_n = wr_access_p2_reg;
+        case(wr_sync_primitive_state)
+            IDLE_STATE: begin
+                if(wr_ins_p1) begin
+                    wr_sync_primitive_state_n = ACCESS_STATE;
+                    wr_access_p1_n = 1;
+                end
+                else if(wr_ins_p2) begin
+                    wr_sync_primitive_state_n = ACCESS_STATE;
+                    wr_access_p2_n = 1;
+                end
+            end
+            ACCESS_STATE: begin
+                if(~wr_idle_dm) begin   // Access successfully
+                    wr_sync_primitive_state_n = (wr_access_p1_reg) ? P1_WR_STATE : P2_WR_STATE;
+                end
+            end
+            P1_WR_STATE: begin
+                if(wr_idle_dm) begin
+                    wr_sync_primitive_state_n = IDLE_STATE;
+                    wr_access_p1_n = 0;
+                end
+            end
+            P2_WR_STATE: begin
+                if(wr_idle_dm) begin
+                    wr_sync_primitive_state_n = IDLE_STATE;
+                    wr_access_p2_n = 0;
+                end
+            end
+            default: begin
+            
+            end
+        endcase
+    end
+    always @(posedge clk) begin
         if(!rst_n) begin
             wr_sync_primitive_state <= IDLE_STATE;
             //
@@ -82,39 +121,9 @@ module pram_consistency
             wr_access_p2_reg <= 0;
         end
         else begin
-            case(wr_sync_primitive_state)
-                IDLE_STATE: begin
-                    if(wr_ins_p1) begin
-                        wr_sync_primitive_state <= ACCESS_STATE;
-                        wr_access_p1_reg <= 1;
-                    end
-                    else if(wr_ins_p2) begin
-                        wr_sync_primitive_state <= ACCESS_STATE;
-                        wr_access_p2_reg <= 1;
-                    end
-                    else wr_sync_primitive_state <= wr_sync_primitive_state;
-                end
-                ACCESS_STATE: begin
-                    if(~wr_idle_dm) begin   // Access successfully
-                        wr_sync_primitive_state <= (wr_access_p1_reg) ? P1_WR_STATE : P2_WR_STATE;
-                    end
-                end
-                P1_WR_STATE: begin
-                    if(wr_idle_dm) begin
-                        wr_sync_primitive_state <= IDLE_STATE;
-                        wr_access_p1_reg <= 0;
-                    end
-                end
-                P2_WR_STATE: begin
-                    if(wr_idle_dm) begin
-                        wr_sync_primitive_state <= IDLE_STATE;
-                        wr_access_p2_reg <= 0;
-                    end
-                end
-                default: begin
-                
-                end
-            endcase 
+            wr_sync_primitive_state <= wr_sync_primitive_state_n;
+            wr_access_p1_reg <= wr_access_p1_n;
+            wr_access_p2_reg <= wr_access_p2_n; 
         end
     end
 endmodule

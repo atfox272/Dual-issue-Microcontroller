@@ -135,6 +135,31 @@ module TX_controller
     assign buffer_pointer_msb_first = data_counter;
     assign buffer_pointer_lsb_first = ~data_counter;
     assign buffer_pointer = (1'b1) ? buffer_pointer_lsb_first : buffer_pointer_msb_first;
+    
+    logic [2:0]                 tx_state_n;
+    logic [DATA_WIDTH - 1:0]    tx_buffer_n;
+    logic                       fifo_rd_n;
+    logic                       transaction_start_toggle_n;
+    always_comb begin
+        tx_state_n = tx_state;
+        fifo_rd_n = fifo_rd_reg;
+        tx_buffer_n = tx_buffer;
+        transaction_start_toggle_n = transaction_start_toggle;
+        case(tx_state)
+            IDLE_STATE: begin
+                if(fifo_available) begin
+                    tx_state_n = TRANS_STATE;
+                    tx_buffer_n = data_in_tx;                                   // Load data
+                    transaction_start_toggle_n = ~transaction_stop_toggle;   // en == 1 -> start
+                    fifo_rd_n = 1'b1;
+                end
+            end 
+            TRANS_STATE: begin
+                tx_state_n = (transaction_en) ? tx_state : IDLE_STATE ;
+                fifo_rd_n = 1'b0;
+            end 
+        endcase
+    end
     always @(posedge clk) begin
         if(!rst_n) begin
             tx_state <= IDLE_STATE;
@@ -142,23 +167,68 @@ module TX_controller
             transaction_start_toggle <= 1'b0;   // INIT: stop
         end 
         else begin
-        case(tx_state) 
-            IDLE_STATE: begin
-                if(fifo_available) begin
-                    tx_state <= TRANS_STATE;
-                    tx_buffer <= data_in_tx;                                   // Load data
-                    transaction_start_toggle <= ~transaction_stop_toggle;   // en == 1 -> start
-                    fifo_rd_reg <= 1;
-                end
-            end 
-            TRANS_STATE: begin
-                tx_state <= (transaction_en) ? tx_state : IDLE_STATE ;
-                fifo_rd_reg <= 0;
-            end 
-            
-        endcase 
+            tx_state <= tx_state_n;
+            tx_buffer <= tx_buffer_n;                                   // Load data
+            transaction_start_toggle <= transaction_start_toggle_n;   // en == 1 -> start
+            fifo_rd_reg <= fifo_rd_n;
         end
     end 
+    logic [2:0]                         transaction_state_n;
+    logic                               TX_next;
+    logic [DATA_COUNTER_WIDTH - 1:0]    data_counter_n;
+    logic                               stop_bit_counter_n;
+    logic                               transaction_stop_toggle_n;
+    always_comb begin
+        transaction_state_n = transaction_state;
+        TX_next = TX_reg;
+        data_counter_n = data_counter;
+        stop_bit_counter_n = stop_bit_counter;
+        transaction_stop_toggle_n = transaction_stop_toggle;
+        case(transaction_state)
+            IDLE_STATE: begin
+                transaction_state_n = START_BIT_STATE;
+                data_counter_n = data_counter_load;
+                stop_bit_counter_n = stop_bit_counter_load;
+                TX_next = START_BIT;
+            end 
+            START_BIT_STATE: begin
+                transaction_state_n = DATA_STATE;
+                TX_next = cur_bit;
+                data_counter_n = data_counter_decr;
+            end 
+            DATA_STATE: begin
+                if(data_counter == {DATA_COUNTER_WIDTH{1'b1}}) begin   // Overflow
+                    if(parity_option == PARITY_NOT_ENCODE) begin
+                        transaction_state_n = STOP_STATE;
+                        TX_next = STOP_BIT;
+                    end 
+                    else begin
+                        transaction_state_n = PARITY_STATE;
+                        TX_next = parity_bit_load;
+                    end
+                    data_counter_n = data_counter_load;  // Update for next usage
+                end 
+                else begin
+                    TX_next = cur_bit;
+                    data_counter_n = data_counter_decr;
+                end
+            end 
+            PARITY_STATE: begin
+                transaction_state_n = STOP_STATE;
+                TX_next = STOP_BIT;
+            end
+            STOP_STATE: begin
+                if(stop_bit_counter == {1{1'b0}}) begin    // Overflow
+                    transaction_state_n = IDLE_STATE;
+                    stop_bit_counter_n = stop_bit_counter_load;
+                    transaction_stop_toggle_n = transaction_start_toggle;
+                end
+                else begin
+                    stop_bit_counter_n = stop_bit_counter_decr;
+                end 
+            end
+        endcase
+    end
     always @(posedge clk) begin
         if(!rst_n) begin
             transaction_state <= IDLE_STATE;
@@ -167,50 +237,11 @@ module TX_controller
             transaction_stop_toggle <= 1'b0;
         end
         else if(tx_state == TRANS_STATE & baudrate_clk_en) begin
-            case(transaction_state)
-                IDLE_STATE: begin
-                    transaction_state <= START_BIT_STATE;
-                    data_counter <= data_counter_load;
-                    stop_bit_counter <= stop_bit_counter_load;
-                    TX_reg <= START_BIT;
-                end 
-                START_BIT_STATE: begin
-                    transaction_state <= DATA_STATE;
-                    TX_reg <= cur_bit;
-                    data_counter <= data_counter_decr;
-                end 
-                DATA_STATE: begin
-                    if(data_counter == {DATA_COUNTER_WIDTH{1'b1}}) begin   // Overflow
-                        if(parity_option == PARITY_NOT_ENCODE) begin
-                            transaction_state <= STOP_STATE;
-                            TX_reg <= STOP_BIT;
-                        end 
-                        else begin
-                            transaction_state <= PARITY_STATE;
-                            TX_reg <= parity_bit_load;
-                        end
-                        data_counter <= data_counter_load;  // Update for next usage
-                    end 
-                    else begin
-                        TX_reg <= cur_bit;
-                        data_counter <= data_counter_decr;
-                    end
-                end 
-                PARITY_STATE: begin
-                    transaction_state <= STOP_STATE;
-                    TX_reg <= STOP_BIT;
-                end
-                STOP_STATE: begin
-                    if(stop_bit_counter == {1{1'b0}}) begin    // Overflow
-                        transaction_state <= IDLE_STATE;
-                        stop_bit_counter <= stop_bit_counter_load;
-                        transaction_stop_toggle <= transaction_start_toggle;
-                    end
-                    else begin
-                        stop_bit_counter <= stop_bit_counter_decr;
-                    end 
-                end
-            endcase 
+            transaction_state <= transaction_state_n;
+            data_counter <= data_counter_n;
+            stop_bit_counter <= stop_bit_counter_n;
+            TX_reg <= TX_next;
+            transaction_stop_toggle <= transaction_stop_toggle_n;
         end 
     end 
 endmodule
