@@ -28,81 +28,93 @@ module external_INT_handler
     wire stop_counting_debounce_signal;
     reg  interrupt_request_reg;
     
-    localparam RISING_DETECT_STATE = 0;
-    localparam FALLING_DETECT_STATE = 2;
-    localparam DEBOUNCE_STATE = 1;
+    localparam RISING_DETECT_STATE  = 2'd0;
+    localparam FALLING_DETECT_STATE = 2'd2;
+    localparam DEBOUNCE_STATE       = 2'd1;
     
     assign interrupt_request = interrupt_request_reg;
     assign start_counting_debounce_time = (state == DEBOUNCE_STATE);
     
-    waiting_module #(
-                    .END_COUNTER(DEBOUNCE_TIMEOUT),
-                    .WAITING_TYPE(0),
-                    .LEVEL_PULSE(1)
-                    )timout_debounce(
-                    .clk(clk),
-                    .start_counting(start_counting_debounce_time),
-                    .reach_limit(stop_counting_debounce_signal),
-                    .stop_counting(),
-                    .rst_counting(),
-                    .rst_n(rst_n)
-                    );
-                    
+    real_time
+        #(
+        .MAX_COUNTER(DEBOUNCE_TIMEOUT)
+        )debounce(
+        .clk(clk),
+        .counter_enable(start_counting_debounce_time),
+        .limit_counter(DEBOUNCE_TIMEOUT),
+        .limit_flag(stop_counting_debounce_signal),
+        .rst_n(rst_n)
+        );
+             
+    logic [1:0] state_n;
+    logic       prev_int_pin_n;
+    logic       prev_detect_n;
+    logic       interrupt_request_next;
+    always_comb begin
+        state_n = state;
+        prev_int_pin_n = prev_int_pin;
+        prev_detect_n = prev_detect;
+        interrupt_request_next = 0;
+        case(state) 
+            RISING_DETECT_STATE: begin
+                if(interrupt_sense_control == FALL_SENSE_CONTROL) begin
+                    state_n = FALLING_DETECT_STATE;
+                end
+                else begin      // Rising - Change
+                    if(~prev_int_pin & int_pin) begin
+                        state_n = (debounce_option) ? DEBOUNCE_STATE : (interrupt_sense_control == CHANGE_SENSE_CONTROL) ? FALLING_DETECT_STATE : RISING_DETECT_STATE;
+                        interrupt_request_next = 1;
+                        prev_detect_n = 1;
+                    end
+                    prev_int_pin_n = int_pin;
+                end
+            end
+            DEBOUNCE_STATE: begin
+                if(stop_counting_debounce_signal) begin
+                    case(interrupt_sense_control)
+                        RISE_SENSE_CONTROL: begin
+                            state_n = RISING_DETECT_STATE;
+                        end
+                        FALL_SENSE_CONTROL: begin
+                            state_n = FALLING_DETECT_STATE;                            
+                        end
+                        CHANGE_SENSE_CONTROL: begin
+                            state_n = (prev_detect) ? FALLING_DETECT_STATE : RISING_DETECT_STATE;
+                        end
+                        default: begin
+                        end
+                    endcase 
+                end
+            end
+            FALLING_DETECT_STATE: begin
+                if(interrupt_sense_control == RISE_SENSE_CONTROL) begin
+                    state_n = RISING_DETECT_STATE;
+                end
+                else begin
+                    if(prev_int_pin & ~int_pin) begin
+                        state_n = (debounce_option) ? DEBOUNCE_STATE : (interrupt_sense_control == CHANGE_SENSE_CONTROL) ? RISING_DETECT_STATE : FALLING_DETECT_STATE;
+                        interrupt_request_next = 1;
+                        prev_detect_n = 0;
+                    end
+                    prev_int_pin_n = int_pin;
+                end
+            end
+            default: begin
+            end
+        endcase 
+    end
     always @(posedge clk) begin
         if(!rst_n) begin
             state <= FALLING_DETECT_STATE;
             prev_int_pin <= PIN_IDLE_STATE;
             interrupt_request_reg <= 0;
+            
         end
         else if(enable_interrupt) begin
-            interrupt_request_reg <= 0;
-            case(state) 
-                RISING_DETECT_STATE: begin
-                    if(interrupt_sense_control == FALL_SENSE_CONTROL) begin
-                        state <= FALLING_DETECT_STATE;
-                    end
-                    else begin      // Rising - Change
-                        if(~prev_int_pin & int_pin) begin
-                            state <= (debounce_option) ? DEBOUNCE_STATE : (interrupt_sense_control == CHANGE_SENSE_CONTROL) ? FALLING_DETECT_STATE : RISING_DETECT_STATE;
-                            interrupt_request_reg <= 1;
-                            prev_detect <= 1;
-                        end
-                        prev_int_pin <= int_pin;
-                    end
-                end
-                DEBOUNCE_STATE: begin
-                    if(stop_counting_debounce_signal) begin
-                        case(interrupt_sense_control)
-                            RISE_SENSE_CONTROL: begin
-                                state <= RISING_DETECT_STATE;
-                            end
-                            FALL_SENSE_CONTROL: begin
-                                state <= FALLING_DETECT_STATE;                            
-                            end
-                            CHANGE_SENSE_CONTROL: begin
-                                state <= (prev_detect) ? FALLING_DETECT_STATE : RISING_DETECT_STATE;
-                            end
-                            default: begin
-                            end
-                        endcase 
-                    end
-                end
-                FALLING_DETECT_STATE: begin
-                    if(interrupt_sense_control == RISE_SENSE_CONTROL) begin
-                        state <= RISING_DETECT_STATE;
-                    end
-                    else begin
-                        if(prev_int_pin & ~int_pin) begin
-                            state <= (debounce_option) ? DEBOUNCE_STATE : (interrupt_sense_control == CHANGE_SENSE_CONTROL) ? RISING_DETECT_STATE : FALLING_DETECT_STATE;
-                            interrupt_request_reg <= 1;
-                            prev_detect <= 0;
-                        end
-                        prev_int_pin <= int_pin;
-                    end
-                end
-                default: begin
-                end
-            endcase 
+            state <= state_n;
+            prev_int_pin <= prev_int_pin_n;
+            prev_detect <= prev_detect_n;
+            interrupt_request_reg <= interrupt_request_next;
         end
     end 
     

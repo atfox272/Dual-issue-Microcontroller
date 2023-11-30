@@ -1,24 +1,34 @@
 `timescale 1ns / 1ps
+// System testcase
+//`define REAL_TIME_DEBUG
+`define FINISH_PROGRAM_OPCODE
+
 `define UART_PROT_1
 `define UART_PROT_2
 //`define SPI_PROT
 //`define I2C_PROT
-// Test case
+
+// Instruction testcase 
 //`define NORMAL_TESTCASE
 //`define GPIO_TESTCASE
-//`define PERIPHERAL_TESTCASE
-`define INTERRUPT_HANDLER_TESTCASE
+`define PERIPHERAL_TESTCASE
+//`define INTERRUPT_HANDLER_TESTCASE
 //`define PARALLEL_TESTCASE
 
 module Dual_core_mcu_tb;
     parameter DATA_WIDTH = 8;
     parameter GPIO_PORT_AMOUNT  = 2;
     parameter GPIO_PIN_AMOUNT   = 8;
+    `ifdef REAL_TIME_DEBUG
+    parameter INTERNAL_CLOCK = 125000000;
+    `else 
     parameter INTERNAL_CLOCK = 9600 * 10;
+    `endif
     parameter CLOCK_DIVIDER_UNIQUE_1 = 5;
     parameter PROGRAM_MEMORY_SIZE = 1024;
     parameter DATA_MEMORY_SIZE = 256;
     parameter FINISH_PROGRAM_OPCODE  = 7'b0001011;
+    parameter FINISH_PROGRAM_TIMER = 10000;
     parameter FINISH_RECEIVE_TIMER = 10000;
     reg clk;
     
@@ -86,7 +96,8 @@ module Dual_core_mcu_tb;
     Dual_core_mcu       
         #(
         .INTERNAL_CLOCK(INTERNAL_CLOCK)
-//        ,.FINISH_RECEIVE_TIMER(FINISH_RECEIVE_TIMER)
+        ,.FINISH_RECEIVE_TIMER(FINISH_RECEIVE_TIMER)
+        ,.FINISH_PROGRAM_TIMER(FINISH_PROGRAM_TIMER)
         ) dual_core_mcu (
         .clk(clk),
         .RX_1(RX_1),
@@ -904,11 +915,12 @@ module Dual_core_mcu_tb;
         `endif
     
     // Finish program
+    `ifdef FINISH_PROGRAM_OPCODE
         TX_use_ex <= 0;
         data_bus_in_tx_ex <= {1'b0, FINISH_PROGRAM_OPCODE};
         #3 TX_use_ex <= 1;
         #2 TX_use_ex <= 0;
-        
+    `endif    
     end
     `ifdef GPIO_TESTCASE
     initial begin
@@ -1062,7 +1074,7 @@ module Dual_core_mcu_tb;
     
     `ifdef INTERRUPT_HANDLER_TESTCASE
     initial begin
-        #59950;
+        #89950;
         
 //        interrupt_request_3 <= 0;
 //        #1 interrupt_request_3 <= 1;

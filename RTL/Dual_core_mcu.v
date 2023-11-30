@@ -388,7 +388,7 @@ module Dual_core_mcu
     
     // External Interrupt pin 
     assign exti_pin = GPIO_PORT_i[EXT_GPIO_PORT_INDEX][EXT_GPIO_PIN_INDEX];    
-    (* dont_touch = "yes" *)                     
+//    (* dont_touch = "yes" *)                     
     Processor           
         #(
         .MAIN_RPOCESSOR(1'b1),
@@ -437,7 +437,7 @@ module Dual_core_mcu
         .rst_n(~rst)
         
         );                
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     Processor           
         #(
         .MAIN_RPOCESSOR(1'b0),
@@ -475,7 +475,7 @@ module Dual_core_mcu
         .rst_n(~rst)
         
         );  
-    (* dont_touch = "yes" *)   
+//    (* dont_touch = "yes" *)   
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(),
@@ -522,7 +522,7 @@ module Dual_core_mcu
         .s_ati_wdata_type(),
         .rst_n(~rst)
         );
-    (* dont_touch = "yes" *)   
+//    (* dont_touch = "yes" *)   
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(),
@@ -569,7 +569,7 @@ module Dual_core_mcu
         .s_ati_wdata_type(),
         .rst_n(~rst)
         );
-    (* dont_touch = "yes" *)   
+//    (* dont_touch = "yes" *)   
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_DMEM),
@@ -616,7 +616,7 @@ module Dual_core_mcu
         .rst_n(~rst)
         );
      
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_DMEM),
@@ -662,7 +662,7 @@ module Dual_core_mcu
         .s_ati_wdata_type(s_ati_dmem_p2_data_type_wr),
         .rst_n(~rst)
         ); 
-    (* dont_touch = "yes" *)                   
+//    (* dont_touch = "yes" *)                   
     pram_consistency      
         #(
         .DATA_MEMORY_SIZE(DATA_MEMORY_SIZE)
@@ -695,7 +695,7 @@ module Dual_core_mcu
         .rst_n(~rst)
         );
     
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     // Data Memory (8Kb - 1kB)
     ram                 
          #(
@@ -734,7 +734,7 @@ module Dual_core_mcu
 //        ,.registers_wire(data_memory_wire)
         `endif
         );
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     Registers_management
         #(
         )registers_management(
@@ -756,7 +756,7 @@ module Dual_core_mcu
         .synchronized_processors(synchronized_processors),
         .rst_n(~rst)
         );
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     Multi_processor_manager 
         #(
         .PROGRAM_MEMORY_SIZE(PROGRAM_MEMORY_SIZE)
@@ -802,7 +802,7 @@ module Dual_core_mcu
         );
     
     
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     // Program memory (8Kb)
     ram_pm              
         #(
@@ -828,7 +828,7 @@ module Dual_core_mcu
         `endif
         );
       
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_GPIO),
@@ -895,7 +895,7 @@ module Dual_core_mcu
     end
     end    
     endgenerate    
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     GPIO_module
         #(
         .PORT_AMOUNT(GPIO_PORT_AMOUNT),
@@ -916,7 +916,7 @@ module Dual_core_mcu
         
         .rst_n(~rst)
         );  
-    (* dont_touch = "yes" *)    
+//    (* dont_touch = "yes" *)    
     Interrupt_controller
         #(
         )INT_CONTROLLER(
@@ -938,7 +938,7 @@ module Dual_core_mcu
         .interrupt_enable_3(timer_interrupt_enable),
         .rst_n(~rst)
         ); 
-    (* dont_touch = "yes" *)   
+//    (* dont_touch = "yes" *)   
     timer_INT_handler 
         TIM_INT
         (
@@ -950,7 +950,7 @@ module Dual_core_mcu
         .interrupt_request(interrupt_request_3),
         .rst_n(~rst)
         );
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     external_INT_handler 
         EXT_INT
         (
@@ -965,7 +965,7 @@ module Dual_core_mcu
   
     // Communication peripherals    
     `ifdef UART_PROT_1    
-    (* dont_touch = "yes" *)    
+//    (* dont_touch = "yes" *)    
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_UART1),
@@ -1011,7 +1011,7 @@ module Dual_core_mcu
         .s_ati_wdata_type(),
         .rst_n(~rst)
         );        
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     uart_peripheral
          #(
         .INTERNAL_CLOCK(INTERNAL_CLOCK),
@@ -1039,7 +1039,7 @@ module Dual_core_mcu
         );
     `endif
     `ifdef UART_PROT_2
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_UART2),
@@ -1085,7 +1085,7 @@ module Dual_core_mcu
         .s_ati_wdata_type(),
         .rst_n(~rst)
         );
-    (* dont_touch = "yes" *)  
+//    (* dont_touch = "yes" *)  
     uart_peripheral
         #(
         .INTERNAL_CLOCK(INTERNAL_CLOCK),

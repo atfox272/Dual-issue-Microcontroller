@@ -99,11 +99,8 @@ module ram
     //  + Static: 0.162W
 
     // Common state 
-    localparam INIT_STATE = 3;
-    localparam IDLE_STATE = 0;
-    localparam LOAD_ADDR_STATE = 1;
-    // Write state
-    localparam WRITE_STATE = 2;
+    localparam IDLE_STATE       = 1'd0;
+    localparam LOAD_ADDR_STATE  = 1'd1;
     // Address encode doubleword
     localparam ADDR_DWORD_ENCODE = $clog2(ADDR_DEPTH / 8);
     // Address encode word
@@ -124,7 +121,7 @@ module ram
     wire                            data_type_byte_en;
     wire                            data_type_dword_word_en;
     
-    reg [1:0] state_counter_wr;
+    reg     state_counter_wr;
     
     reg wr_clk_en;         // Write clock 
     wire [ADDR_WIDTH - 1:0] locate_addr_wr  [0:ADDR_DEPTH - 1];
@@ -254,30 +251,45 @@ module ram
     assign invalid_wr_dword_flag =      (data_type_wr_buf == DATA_TYPE_DOUBLEWORD_ENCODE) ? {addr_wr_buf[2:0] != 3'b000} : 1'b0;                   
     assign invalid_wr_word_flag  =      (data_type_wr_buf == DATA_TYPE_WORD_ENCODE)       ? {addr_wr_buf[1:0] != 2'b00}  : 1'b0;                   
     
-    always @(posedge clk, negedge rst_n) begin
+    logic                           state_wr_next;
+    logic [ADDR_WIDTH - 1:0]        addr_wr_buf_next;
+    logic                           wr_clk_en_next;
+    logic [DOUBLEWORD_WIDTH - 1:0]  data_bus_wr_buf_next;
+    logic [DATA_TYPE_WIDTH - 1:0]   data_type_wr_buf_next;
+    always_comb begin
+        state_wr_next = state_counter_wr;
+        addr_wr_buf_next = addr_wr_buf;
+        wr_clk_en_next = 1'b0;
+        data_bus_wr_buf_next = data_bus_wr_buf;
+        data_type_wr_buf_next = data_type_wr_buf;
+        case(state_counter_wr) 
+            IDLE_STATE: begin
+                if(wr_ins) begin
+                    state_wr_next = LOAD_ADDR_STATE;
+                    addr_wr_buf_next = addr_wr;
+                    data_bus_wr_buf_next = data_bus_wr;
+                    data_type_wr_buf_next = data_type_wr;
+                end
+            end
+            LOAD_ADDR_STATE: begin
+                state_wr_next = IDLE_STATE;
+                wr_clk_en_next = (invalid_wr_flag) ? 1'b0 : 1'b1;
+            end
+            default: state_wr_next = IDLE_STATE;
+        endcase 
+    end
+    always @(posedge clk) begin
         if(!rst_n) begin
             state_counter_wr <= IDLE_STATE;
             addr_wr_buf <= DEFAULT_ADDR;
-            wr_clk_en <= 0;
-            // State 
+            wr_clk_en <= 1'b0;
         end
         else begin
-            wr_clk_en <= 0;
-            case(state_counter_wr) 
-                IDLE_STATE: begin
-                    if(wr_ins) begin
-                        state_counter_wr <= LOAD_ADDR_STATE;
-                        addr_wr_buf <= addr_wr[ADDR_WIDTH - 1:0];
-                        data_bus_wr_buf <= data_bus_wr;
-                        data_type_wr_buf <= data_type_wr;
-                    end
-                end
-                LOAD_ADDR_STATE: begin
-                    state_counter_wr <= IDLE_STATE;
-                    wr_clk_en <= (invalid_wr_flag) ? 1'b0 : 1'b1;
-                end
-                default: state_counter_wr <= IDLE_STATE;
-            endcase 
+            state_counter_wr <= state_wr_next;
+            addr_wr_buf <= addr_wr_buf_next;
+            wr_clk_en <= wr_clk_en_next;
+            data_bus_wr_buf <= data_bus_wr_buf_next;
+            data_type_wr_buf <= data_type_wr_buf_next;
         end
     end
 

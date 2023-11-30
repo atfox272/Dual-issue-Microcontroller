@@ -961,7 +961,9 @@ module Multi_processor_manager
                 boot_processor_2_n = 0;
             end
             default: begin
-            
+                program_state_n = INIT_STATE;
+                contain_ins_n = 0;
+                PC_n = MAIN_PROGRAM_ADDR;
             end
         endcase
     end

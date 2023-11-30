@@ -311,13 +311,12 @@ module Processor
     localparam WR_RAM_STATE                 = 2'd2;
     localparam FINISH_PROGRAMMING_STATE     = 2'd3;
     // Running program state 
-    localparam DISPATH_STATE                = 3'd1;
     localparam EXECUTE_INSTRUCTION_STATE    = 3'd0;
     localparam WRITE_BACK_STATE             = 3'd2;
     localparam DMEM_RD_ACCESS_STATE         = 3'd3;
     localparam DMEM_WR_ACCESS_STATE         = 3'd5;
     localparam SYSTEM_ACCESS_STATE          = 3'd4;
-    localparam LOAD_REG_STATE               = 3'd6;
+    localparam LOAD_REG_STATE               = 3'd1;
     
     assign main_state = main_state_reg;
     assign RX_use_1 = RX_use_1_reg;
@@ -664,18 +663,28 @@ module Processor
                 ); 
                 
     // Timer for finishing program (time out)
-    waiting_module #(
-                .END_COUNTER(FINISH_PROGRAM_TIMER),
-                .WAITING_TYPE(0),
-                .LEVEL_PULSE(1)
-                )timout_programming(
-                .clk(clk),
-                .start_counting(start_counting_finish_program_condition),
-                .reach_limit(finish_program_condition_2),
-                .stop_counting(),
-                .rst_counting(),
-                .rst_n(rst_n)
-                );             
+    real_time 
+        #(
+        .MAX_COUNTER(FINISH_PROGRAM_TIMER)
+        ) programming_timeout (
+        .clk(clk),
+        .counter_enable(start_counting_finish_program_condition),
+        .limit_counter(FINISH_PROGRAM_TIMER),
+        .limit_flag(finish_program_condition_2),
+        .rst_n(rst_n)
+        );
+//    waiting_module #(
+//                .END_COUNTER(FINISH_PROGRAM_TIMER),
+//                .WAITING_TYPE(0),
+//                .LEVEL_PULSE(1)
+//                )timout_programming(
+//                .clk(clk),
+//                .start_counting(start_counting_finish_program_condition),
+//                .reach_limit(finish_program_condition_2),
+//                .stop_counting(),
+//                .rst_counting(),
+//                .rst_n(rst_n)
+//                );             
                 
     // Main state 
     logic [1:0]                 main_state_n;
@@ -834,7 +843,7 @@ module Processor
                 running_program_state_n = WRITE_BACK_STATE;
             end
             default: begin
-            
+                running_program_state_n = EXECUTE_INSTRUCTION_STATE;
             end        
         endcase
     end
@@ -942,13 +951,12 @@ module Processor
     
     reg [2:0]                           running_program_state_reg;
     // Running program state 
-    localparam DISPATH_STATE                = 3'd1;
     localparam EXECUTE_INSTRUCTION_STATE    = 3'd0;
     localparam WRITE_BACK_STATE             = 3'd2;
     localparam DMEM_RD_ACCESS_STATE         = 3'd3;
     localparam DMEM_WR_ACCESS_STATE         = 3'd5;
     localparam SYSTEM_ACCESS_STATE          = 3'd4;
-    localparam LOAD_REG_STATE               = 3'd6;
+    localparam LOAD_REG_STATE               = 3'd1;
     // Synchronization primitive
     // -- Common
     always_comb begin
