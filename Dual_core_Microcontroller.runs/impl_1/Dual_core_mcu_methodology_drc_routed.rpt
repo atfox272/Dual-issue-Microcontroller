@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date         : Wed Nov 29 21:06:53 2023
+| Date         : Thu Nov 30 22:55:18 2023
 | Host         : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
 | Command      : report_methodology -file Dual_core_mcu_methodology_drc_routed.rpt -pb Dual_core_mcu_methodology_drc_routed.pb -rpx Dual_core_mcu_methodology_drc_routed.rpx
 | Design       : Dual_core_mcu
@@ -4715,327 +4715,327 @@ Related violations: <none>
 
 TIMING-17#937 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/FSM_sequential_state_counter_wr_reg/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[0]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#938 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[0]/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[1]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#939 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[1]/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[2]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#940 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[2]/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[3]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#941 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[3]/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[3]_rep/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#942 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[3]_rep/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[4]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#943 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[4]/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[4]_rep/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#944 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[4]_rep/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[5]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#945 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[5]/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[6]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#946 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[6]/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[6]_rep/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#947 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[6]_rep/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[7]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#948 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[7]/C is not reached by a timing clock
+The clock pin DMEM/addr_wr_buf_reg[7]_rep/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#949 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/addr_wr_buf_reg[7]_rep/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[0]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#950 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[0]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[10]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#951 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[10]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[11]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#952 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[11]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[12]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#953 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[12]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[13]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#954 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[13]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[14]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#955 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[14]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[15]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#956 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[15]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[16]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#957 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[16]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[17]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#958 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[17]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[18]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#959 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[18]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[19]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#960 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[19]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[1]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#961 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[1]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[20]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#962 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[20]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[21]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#963 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[21]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[22]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#964 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[22]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[23]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#965 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[23]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[24]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#966 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[24]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[25]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#967 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[25]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[26]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#968 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[26]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[27]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#969 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[27]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[28]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#970 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[28]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[29]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#971 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[29]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[2]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#972 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[2]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[30]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#973 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[30]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[31]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#974 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[31]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[32]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#975 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[32]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[33]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#976 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[33]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[34]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#977 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[34]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[35]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#978 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[35]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[36]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#979 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[36]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[37]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#980 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[37]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[38]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#981 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[38]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[39]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#982 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[39]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[3]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#983 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[3]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[40]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#984 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[40]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[41]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#985 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[41]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[42]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#986 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[42]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[43]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#987 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[43]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[44]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#988 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[44]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[45]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#989 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[45]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[46]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#990 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[46]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[47]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#991 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[47]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[48]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#992 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[48]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[49]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#993 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[49]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[4]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#994 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[4]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[50]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#995 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[50]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[51]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#996 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[51]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[52]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#997 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[52]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[53]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#998 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[53]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[54]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#999 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[54]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[55]/C is not reached by a timing clock
 Related violations: <none>
 
 TIMING-17#1000 Critical Warning
 Non-clocked sequential cell  
-The clock pin DMEM/data_bus_wr_buf_reg[55]/C is not reached by a timing clock
+The clock pin DMEM/data_bus_wr_buf_reg[56]/C is not reached by a timing clock
 Related violations: <none>
 
 ULMTCS-1#1 Warning
 Control Sets use limits recommend reduction  
-This design uses 1495 control sets (vs. available limit of 13300, determined by 1 control set per CLB). This exceeds the control set use guideline of 7.5 percent. This is at a level where reduction is RECOMMENDED (see UG949). Use report_control_sets to get more details.
+This design uses 1483 control sets (vs. available limit of 13300, determined by 1 control set per CLB). This exceeds the control set use guideline of 7.5 percent. This is at a level where reduction is RECOMMENDED (see UG949). Use report_control_sets to get more details.
 Related violations: <none>
 
 

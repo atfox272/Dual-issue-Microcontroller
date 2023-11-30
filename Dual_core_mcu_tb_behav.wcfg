@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="60126217fs"></ZoomStartTime>
-      <ZoomEndTime time="60166918fs"></ZoomEndTime>
-      <Cursor1Time time="60133000fs"></Cursor1Time>
+      <ZoomStartTime time="237188960fs"></ZoomStartTime>
+      <ZoomEndTime time="237190121fs"></ZoomEndTime>
+      <Cursor1Time time="237189686fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="181"></NameColumnWidth>
+      <NameColumnWidth column_width="176"></NameColumnWidth>
       <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="55" />
+   <WVObjectSize size="58" />
    <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -245,5 +245,19 @@
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/data_bus_rd_pm" type="array">
       <obj_property name="ElementShortName">data_bus_rd_pm[63:0]</obj_property>
       <obj_property name="ObjectShortName">data_bus_rd_pm[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROCESSOR_1/\MAIN_RPOCESSOR_BLOCK.programming_timeout /counter" type="array">
+      <obj_property name="ElementShortName">counter[20:0]</obj_property>
+      <obj_property name="ObjectShortName">counter[20:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROCESSOR_1/\MAIN_RPOCESSOR_BLOCK.programming_timeout /limit_flag_reg" type="logic">
+      <obj_property name="ElementShortName">limit_flag_reg</obj_property>
+      <obj_property name="ObjectShortName">limit_flag_reg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROCESSOR_1/\MAIN_RPOCESSOR_BLOCK.programming_timeout /limit_counter" type="array">
+      <obj_property name="ElementShortName">limit_counter[20:0]</obj_property>
+      <obj_property name="ObjectShortName">limit_counter[20:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
 </wave_config>

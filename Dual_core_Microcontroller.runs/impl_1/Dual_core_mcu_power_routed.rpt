@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date             : Wed Nov 29 21:07:09 2023
+| Date             : Thu Nov 30 22:55:32 2023
 | Host             : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
 | Command          : report_power -file Dual_core_mcu_power_routed.rpt -pb Dual_core_mcu_power_summary_routed.pb -rpx Dual_core_mcu_power_routed.rpx
 | Design           : Dual_core_mcu
@@ -30,10 +30,10 @@ Table of Contents
 ----------
 
 +--------------------------+-----------------------------------+
-| Total On-Chip Power (W)  | 149.325 (Junction temp exceeded!) |
+| Total On-Chip Power (W)  | 132.560 (Junction temp exceeded!) |
 | Design Power Budget (W)  | Unspecified*                      |
 | Power Budget Margin (W)  | NA                                |
-| Dynamic (W)              | 148.284                           |
+| Dynamic (W)              | 131.519                           |
 | Device Static (W)        | 1.041                             |
 | Effective TJA (C/W)      | 11.5                              |
 | Max Ambient (C)          | 0.0                               |
@@ -52,18 +52,18 @@ Table of Contents
 +--------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
-| Slice Logic              |    63.252 |    50147 |       --- |             --- |
-|   LUT as Logic           |    60.585 |    23976 |     53200 |           45.07 |
-|   F7/F8 Muxes            |     1.262 |     6769 |     53200 |           12.72 |
-|   CARRY4                 |     0.717 |      225 |     13300 |            1.69 |
-|   Register               |     0.595 |    17060 |    106400 |           16.03 |
-|   LUT as Distributed RAM |     0.088 |      132 |     17400 |            0.76 |
+| Slice Logic              |    53.426 |    49798 |       --- |             --- |
+|   LUT as Logic           |    50.926 |    23699 |     53200 |           44.55 |
+|   F7/F8 Muxes            |     1.251 |     6917 |     53200 |           13.00 |
+|   CARRY4                 |     0.708 |      228 |     13300 |            1.71 |
+|   Register               |     0.449 |    16837 |    106400 |           15.82 |
+|   LUT as Distributed RAM |     0.087 |      132 |     17400 |            0.76 |
 |   BUFG                   |     0.006 |        1 |        32 |            3.13 |
-|   Others                 |     0.000 |       78 |       --- |             --- |
-| Signals                  |    72.806 |    30579 |       --- |             --- |
-| I/O                      |    12.226 |       23 |       125 |           18.40 |
+|   Others                 |     0.000 |       66 |       --- |             --- |
+| Signals                  |    66.923 |    30384 |       --- |             --- |
+| I/O                      |    11.170 |       23 |       125 |           18.40 |
 | Static Power             |     1.041 |          |           |                 |
-| Total                    |   149.325 |          |           |                 |
+| Total                    |   132.560 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -73,9 +73,9 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |   136.435 |     136.136 |      0.299 |       NA    | Unspecified | NA         |
-| Vccaux    |       1.800 |     0.545 |       0.445 |      0.100 |       NA    | Unspecified | NA         |
-| Vcco33    |       3.300 |     3.439 |       3.438 |      0.001 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |   120.720 |     120.422 |      0.299 |       NA    | Unspecified | NA         |
+| Vccaux    |       1.800 |     0.507 |       0.407 |      0.100 |       NA    | Unspecified | NA         |
+| Vcco33    |       3.300 |     3.142 |       3.141 |      0.001 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco15    |       1.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -144,92 +144,87 @@ Table of Contents
 3.1 By Hierarchy
 ----------------
 
-+---------------------------------------------+-----------+
-| Name                                        | Power (W) |
-+---------------------------------------------+-----------+
-| Dual_core_mcu                               |   148.284 |
-|   ATI_DMEM_BUS1                             |     0.854 |
-|   ATI_DMEM_BUS2                             |     0.506 |
-|   ATI_GPIO_BUS1                             |     0.478 |
-|   ATI_PROC1_BUS1                            |     0.801 |
-|   ATI_PROC2_BUS2                            |     0.500 |
-|   ATI_UART1_BUS1                            |     1.238 |
-|     INTERFACE_PERP_BLOCK.timeout_packet     |     0.093 |
-|   ATI_UART2_BUS2                            |     1.555 |
-|     INTERFACE_PERP_BLOCK.timeout_packet     |     0.102 |
-|   DMEM                                      |    13.374 |
-|   EXT_INT                                   |     0.033 |
-|     timout_debounce                         |     0.014 |
-|   GPIO                                      |     0.095 |
-|   IMEM                                      |     7.708 |
-|   INT_CONTROLLER                            |     0.050 |
-|     interrupt_request_buffer_1              |     0.007 |
-|     interrupt_request_buffer_2              |     0.025 |
-|       edgedet_rd_req                        |     0.003 |
-|       edgedet_wr_req                        |     0.004 |
-|     interrupt_request_buffer_3              |     0.018 |
-|       edgedet_rd_req                        |     0.001 |
-|       edgedet_wr_req                        |     0.001 |
-|   PRAM_CONSISTENCY                          |     0.205 |
-|   PROCESSOR_1                               |    38.008 |
-|     MAIN_RPOCESSOR_BLOCK.alu                |    21.722 |
-|     MAIN_RPOCESSOR_BLOCK.timout_programming |     0.040 |
-|   PROCESSOR_2                               |    24.115 |
-|     SUB_PROCESSOR_BLOCK.alu                 |    16.890 |
-|   PROGRAM_PROCESSOR                         |    14.606 |
-|     program_buffer                          |     0.098 |
-|   TIM_INT                                   |     0.175 |
-|   UART_PERIPHERAL_1                         |     1.577 |
-|     FIFO_RX_BLOCK.fifo_rx                   |     0.148 |
-|       buffer_reg_0_63_0_2                   |     0.010 |
-|       buffer_reg_0_63_3_5                   |     0.010 |
-|       buffer_reg_0_63_6_6                   |     0.004 |
-|       buffer_reg_0_63_7_7                   |     0.004 |
-|       edgedet_rd_req                        |     0.013 |
-|       edgedet_wr_req                        |     0.019 |
-|     fifo_tx                                 |     0.241 |
-|       buffer_reg_0_63_0_2                   |     0.014 |
-|       buffer_reg_0_63_3_5                   |     0.014 |
-|       buffer_reg_0_63_6_6                   |     0.010 |
-|       buffer_reg_0_63_7_7                   |     0.010 |
-|       edgedet_rd_req                        |     0.019 |
-|       edgedet_wr_req                        |     0.053 |
-|     rx_baudrate_generator                   |     0.384 |
-|     rx_controller                           |     0.228 |
-|     tx_baudrate_generator                   |     0.313 |
-|     tx_controller                           |     0.264 |
-|   UART_PERIPHERAL_2                         |     1.501 |
-|     FIFO_RX_BLOCK.fifo_rx                   |     0.163 |
-|       buffer_reg_0_31_0_5                   |     0.012 |
-|       buffer_reg_0_31_6_7                   |     0.005 |
-|       edgedet_rd_req                        |     0.044 |
-|       edgedet_wr_req                        |     0.018 |
-|     fifo_tx                                 |     0.212 |
-|       buffer_reg_0_31_0_5                   |     0.027 |
-|       buffer_reg_0_31_6_7                   |     0.010 |
-|       edgedet_rd_req                        |     0.019 |
-|       edgedet_wr_req                        |     0.057 |
-|     rx_baudrate_generator                   |     0.356 |
-|     rx_controller                           |     0.170 |
-|     tx_baudrate_generator                   |     0.334 |
-|     tx_controller                           |     0.266 |
-|   genblk1[0].genblk1[0].IOBUF_inst          |     0.684 |
-|   genblk1[0].genblk1[1].IOBUF_inst          |     0.684 |
-|   genblk1[0].genblk1[2].IOBUF_inst          |     0.686 |
-|   genblk1[0].genblk1[3].IOBUF_inst          |     0.650 |
-|   genblk1[0].genblk1[4].IOBUF_inst          |     0.685 |
-|   genblk1[0].genblk1[5].IOBUF_inst          |     0.684 |
-|   genblk1[0].genblk1[6].IOBUF_inst          |     0.684 |
-|   genblk1[0].genblk1[7].IOBUF_inst          |     0.684 |
-|   genblk1[1].genblk1[0].IOBUF_inst          |     0.850 |
-|   genblk1[1].genblk1[1].IOBUF_inst          |     0.849 |
-|   genblk1[1].genblk1[2].IOBUF_inst          |     0.869 |
-|   genblk1[1].genblk1[3].IOBUF_inst          |     0.823 |
-|   genblk1[1].genblk1[4].IOBUF_inst          |     0.868 |
-|   genblk1[1].genblk1[5].IOBUF_inst          |     0.865 |
-|   genblk1[1].genblk1[6].IOBUF_inst          |     0.868 |
-|   genblk1[1].genblk1[7].IOBUF_inst          |     0.869 |
-|   registers_management                      |    27.159 |
-+---------------------------------------------+-----------+
++-----------------------------------------------------+-----------+
+| Name                                                | Power (W) |
++-----------------------------------------------------+-----------+
+| Dual_core_mcu                                       |   131.519 |
+|   ATI_DMEM_BUS1                                     |     0.091 |
+|   ATI_DMEM_BUS2                                     |     0.021 |
+|   ATI_UART1_BUS1                                    |     1.462 |
+|     INTERFACE_PERP_BLOCK.data_type_mbuf_reg_0_3_0_0 |     0.003 |
+|     INTERFACE_PERP_BLOCK.timeout_packet             |     0.119 |
+|   ATI_UART2_BUS2                                    |     2.058 |
+|     INTERFACE_PERP_BLOCK.data_type_mbuf_reg_0_3_0_0 |     0.002 |
+|     INTERFACE_PERP_BLOCK.timeout_packet             |     0.141 |
+|   DMEM                                              |     9.832 |
+|   EXT_INT                                           |     0.058 |
+|     debounce                                        |     0.026 |
+|   GPIO                                              |     0.018 |
+|   IMEM                                              |     1.195 |
+|   INT_CONTROLLER                                    |     0.127 |
+|     interrupt_request_buffer_2                      |     0.079 |
+|       edgedet_wr_req                                |     0.001 |
+|     interrupt_request_buffer_3                      |     0.048 |
+|   PRAM_CONSISTENCY                                  |     0.039 |
+|   PROCESSOR_1                                       |    10.346 |
+|     MAIN_RPOCESSOR_BLOCK.alu                        |     1.973 |
+|     MAIN_RPOCESSOR_BLOCK.programming_timeout        |     0.060 |
+|   PROCESSOR_2                                       |     2.880 |
+|     SUB_PROCESSOR_BLOCK.alu                         |     1.451 |
+|   PROGRAM_PROCESSOR                                 |    51.523 |
+|     program_buffer                                  |     0.251 |
+|   TIM_INT                                           |     0.069 |
+|   UART_PERIPHERAL_1                                 |     1.621 |
+|     FIFO_RX_BLOCK.fifo_rx                           |     0.146 |
+|       buffer_reg_0_63_0_2                           |     0.010 |
+|       buffer_reg_0_63_3_5                           |     0.011 |
+|       buffer_reg_0_63_6_6                           |     0.004 |
+|       buffer_reg_0_63_7_7                           |     0.004 |
+|       edgedet_rd_req                                |     0.002 |
+|       edgedet_wr_req                                |     0.018 |
+|     fifo_tx                                         |     0.254 |
+|       buffer_reg_0_63_0_2                           |     0.012 |
+|       buffer_reg_0_63_3_5                           |     0.012 |
+|       buffer_reg_0_63_6_6                           |     0.008 |
+|       buffer_reg_0_63_7_7                           |     0.008 |
+|       edgedet_rd_req                                |     0.035 |
+|       edgedet_wr_req                                |     0.079 |
+|     rx_baudrate_generator                           |     0.347 |
+|     rx_controller                                   |     0.250 |
+|     tx_baudrate_generator                           |     0.317 |
+|     tx_controller                                   |     0.306 |
+|   UART_PERIPHERAL_2                                 |     1.422 |
+|     FIFO_RX_BLOCK.fifo_rx                           |     0.163 |
+|       buffer_reg_0_31_0_5                           |     0.013 |
+|       buffer_reg_0_31_6_7                           |     0.005 |
+|       edgedet_rd_req                                |     0.052 |
+|       edgedet_wr_req                                |     0.013 |
+|     fifo_tx                                         |     0.218 |
+|       buffer_reg_0_31_0_5                           |     0.028 |
+|       buffer_reg_0_31_6_7                           |     0.010 |
+|       edgedet_rd_req                                |     0.014 |
+|       edgedet_wr_req                                |     0.052 |
+|     rx_baudrate_generator                           |     0.347 |
+|     rx_controller                                   |     0.181 |
+|     tx_baudrate_generator                           |     0.286 |
+|     tx_controller                                   |     0.227 |
+|   genblk1[0].genblk1[0].IOBUF_inst                  |     0.370 |
+|   genblk1[0].genblk1[1].IOBUF_inst                  |     0.685 |
+|   genblk1[0].genblk1[2].IOBUF_inst                  |     0.683 |
+|   genblk1[0].genblk1[3].IOBUF_inst                  |     0.683 |
+|   genblk1[0].genblk1[4].IOBUF_inst                  |     0.682 |
+|   genblk1[0].genblk1[5].IOBUF_inst                  |     0.681 |
+|   genblk1[0].genblk1[6].IOBUF_inst                  |     0.683 |
+|   genblk1[0].genblk1[7].IOBUF_inst                  |     0.681 |
+|   genblk1[1].genblk1[0].IOBUF_inst                  |     0.851 |
+|   genblk1[1].genblk1[1].IOBUF_inst                  |     0.853 |
+|   genblk1[1].genblk1[2].IOBUF_inst                  |     0.857 |
+|   genblk1[1].genblk1[3].IOBUF_inst                  |     0.697 |
+|   genblk1[1].genblk1[4].IOBUF_inst                  |     0.700 |
+|   genblk1[1].genblk1[5].IOBUF_inst                  |     0.696 |
+|   genblk1[1].genblk1[6].IOBUF_inst                  |     0.698 |
+|   genblk1[1].genblk1[7].IOBUF_inst                  |     0.697 |
+|   registers_management                              |    36.196 |
++-----------------------------------------------------+-----------+
 
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="impl_1" LaunchPart="xc7z020clg400-1" LaunchTime="1701266553">
+<GenRun Id="impl_1" LaunchPart="xc7z020clg400-1" LaunchTime="1701359518">
   <File Type="BITSTR-BMM" Name="Dual_core_mcu_bd.bmm"/>
   <File Type="OPT-METHODOLOGY-DRC" Name="Dual_core_mcu_methodology_drc_opted.rpt"/>
   <File Type="INIT-TIMING" Name="Dual_core_mcu_timing_summary_init.rpt"/>
@@ -79,24 +79,6 @@
     <Filter Type="Srcs"/>
     <File Path="$PPRDIR/../peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v">
       <FileInfo>
-        <Attr Name="UsedIn" Val="synthesis"/>
-        <Attr Name="UsedIn" Val="implementation"/>
-        <Attr Name="UsedIn" Val="simulation"/>
-      </FileInfo>
-    </File>
-    <File Path="$PSRCDIR/sources_1/imports/new/real_time.v">
-      <FileInfo>
-        <Attr Name="ImportPath" Val="$PPRDIR/../RF_transceiver_2/RF_transceiver_2.srcs/sources_1/new/real_time.v"/>
-        <Attr Name="ImportTime" Val="1699196992"/>
-        <Attr Name="UsedIn" Val="synthesis"/>
-        <Attr Name="UsedIn" Val="implementation"/>
-        <Attr Name="UsedIn" Val="simulation"/>
-      </FileInfo>
-    </File>
-    <File Path="$PSRCDIR/sources_1/imports/RF_module_3modules/waiting_module.v">
-      <FileInfo>
-        <Attr Name="ImportPath" Val="$PPRDIR/../RF_transceiver_3modules/RF_transceiver_3modules.srcs/sources_1/imports/RF_module_3modules/waiting_module.v"/>
-        <Attr Name="ImportTime" Val="1694606230"/>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
         <Attr Name="UsedIn" Val="simulation"/>
@@ -199,6 +181,15 @@
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
+    <File Path="$PSRCDIR/sources_1/imports/new/real_time.v">
+      <FileInfo SFType="SVerilog">
+        <Attr Name="ImportPath" Val="$PPRDIR/../RF_transceiver_2/RF_transceiver_2.srcs/sources_1/new/real_time.v"/>
+        <Attr Name="ImportTime" Val="1699196992"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
     <File Path="$PSRCDIR/sources_1/new/registers_management.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
@@ -238,6 +229,16 @@
     </File>
     <File Path="$PSRCDIR/sources_1/new/Dual_core_mcu.v">
       <FileInfo SFType="SVerilog">
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/RF_module_3modules/waiting_module.v">
+      <FileInfo>
+        <Attr Name="AutoDisabled" Val="1"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../RF_transceiver_3modules/RF_transceiver_3modules.srcs/sources_1/imports/RF_module_3modules/waiting_module.v"/>
+        <Attr Name="ImportTime" Val="1694606230"/>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
         <Attr Name="UsedIn" Val="simulation"/>

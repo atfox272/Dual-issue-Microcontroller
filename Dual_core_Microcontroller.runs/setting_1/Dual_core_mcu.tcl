@@ -70,12 +70,8 @@ proc create_report { reportName command } {
   }
 }
 OPTRACE "setting_1" START { ROLLUP_AUTO }
-set_param chipscope.maxJobs 2
-set_param synth.incrementalSynthesisCache C:/Users/atfox/AppData/Roaming/Xilinx/Vivado/.Xil/Vivado-15232-LAPTOP-UGQ0I2VJ/incrSyn
 set_msg_config -id {HDL 9-1061} -limit 100000
 set_msg_config -id {HDL 9-1654} -limit 100000
-set_msg_config -id {Synth 8-256} -limit 10000
-set_msg_config -id {Synth 8-638} -limit 10000
 set_msg_config  -id {17-179}  -suppress 
 set_msg_config  -id {17-179}  -suppress 
 OPTRACE "Creating in-memory project" START { }
@@ -108,6 +104,7 @@ read_verilog -library xil_defaultlib -sv {
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/interrupt_control.sv
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/ram.sv
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/ram_pm.sv
+  L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/real_time.v
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/registers_management.sv
   L:/Projects/fifo_sync/fifo_sync.srcs/sources_1/new/sync_fifo.sv
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/sync_lifo.sv
@@ -115,11 +112,7 @@ read_verilog -library xil_defaultlib -sv {
   L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v
 }
-read_verilog -library xil_defaultlib {
-  L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v
-  L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/new/real_time.v
-  L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/imports/RF_module_3modules/waiting_module.v
-}
+read_verilog -library xil_defaultlib L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v
 OPTRACE "Adding files" END { }
 # Mark all dcp files as not used in implementation to prevent them from being
 # stitched into the results of this synthesis run. Any black boxes in the

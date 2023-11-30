@@ -117,8 +117,6 @@ OPTRACE "impl_1" END { }
 
 set_msg_config -id {HDL 9-1061} -limit 100000
 set_msg_config -id {HDL 9-1654} -limit 100000
-set_msg_config -id {Synth 8-256} -limit 10000
-set_msg_config -id {Synth 8-638} -limit 10000
 set_msg_config  -id {17-179}  -suppress 
 set_msg_config  -id {17-179}  -suppress 
 
@@ -130,7 +128,6 @@ set ACTIVE_STEP write_bitstream
 set rc [catch {
   create_msg_db write_bitstream.pb
   set_param chipscope.maxJobs 2
-  set_param synth.incrementalSynthesisCache C:/Users/atfox/AppData/Roaming/Xilinx/Vivado/.Xil/Vivado-15232-LAPTOP-UGQ0I2VJ/incrSyn
   open_checkpoint Dual_core_mcu_routed.dcp
   set_property webtalk.parent_dir L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.cache/wt [current_project]
 set_property TOP Dual_core_mcu [current_fileset]

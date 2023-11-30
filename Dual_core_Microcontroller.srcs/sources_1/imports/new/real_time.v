@@ -22,8 +22,8 @@
 
 module real_time
     #(
-    parameter MAX_COUNTER       = 10000,
-    parameter MAX_COUNTER_WIDTH = $clog2(MAX_COUNTER)
+    parameter  MAX_COUNTER       = 10000,
+    localparam MAX_COUNTER_WIDTH = $clog2(MAX_COUNTER)
     )
     (
     input                           clk,
@@ -39,18 +39,30 @@ module real_time
     
     assign limit_flag = limit_flag_reg;
     
+    logic[MAX_COUNTER_WIDTH - 1:0]  counter_next;
+    logic                           limit_flag_next;
+    always_comb begin
+        counter_next = counter + 1;
+        limit_flag_next = 0;
+        if(!counter_enable) begin
+            counter_next = 0;
+            limit_flag_next = 0;
+        end
+        else begin
+            if(counter == limit_counter) begin
+                counter_next = 0;
+                limit_flag_next = 1;
+            end
+        end
+    end
     always @(posedge clk) begin
         if(!rst_n) begin
             counter <= 0;
             limit_flag_reg <= 0;
         end
-        else if(counter_enable) begin
-            limit_flag_reg <= (counter == limit_counter) ? 1'b1 : limit_flag_reg;   // Greater than => Set high
-            counter <= counter + 1;
-        end
         else begin
-            limit_flag_reg <= 1'b0;
-            counter <= 0;
+            limit_flag_reg <= limit_flag_next;
+            counter <= counter_next;
         end
     end
     
