@@ -1,3 +1,3 @@
 Vivado Simulator 2020.2
 Time resolution is 1 ps
-$stop called at time : 5 us : File "L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/GET_INSTRUCTION/new/get_instruction_hex.sv" Line 88
+$stop called at time : 7 us : File "L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/GET_INSTRUCTION/new/get_instruction_hex.sv" Line 88

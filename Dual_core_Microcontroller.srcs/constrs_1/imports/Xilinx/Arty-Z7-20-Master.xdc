@@ -5,7 +5,7 @@
 
 ## Clock Signal
 set_property -dict { PACKAGE_PIN H16    IOSTANDARD LVCMOS33 } [get_ports { clk }]; #IO_L13P_T2_MRCC_35 Sch=SYSCLK
-#create_clock -add -name sys_clk_pin -period 8.00 -waveform {0 4} [get_ports { clk }];#set
+#create_clock -add -name sys_clk_pin -period 100.00 -waveform {0 50} [get_ports { clk }];#set
 
 ## Switches
 #set_property -dict { PACKAGE_PIN M20    IOSTANDARD LVCMOS33 } [get_ports { sw[0] }]; #IO_L7N_T1_AD2N_35 Sch=SW0
@@ -94,6 +94,7 @@ set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports { TX_2  
 set_property -dict { PACKAGE_PIN V15   IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[0][0] }]; #IO_L10P_T1_34           Sch=CK_IO4
 set_property -dict { PACKAGE_PIN T15   IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[0][1] }]; #IO_L5N_T0_34            Sch=CK_IO5
 set_property -dict { PACKAGE_PIN R16   IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[0][2] }]; #IO_L19P_T3_34           Sch=CK_IO6
+#set_property -dict { PACKAGE_PIN R16   IOSTANDARD LVCMOS33 } [get_ports { clk_out }]; #IO_L19P_T3_34           Sch=CK_IO6
 set_property -dict { PACKAGE_PIN U17   IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[0][3] }]; #IO_L9N_T1_DQS_34        Sch=CK_IO7
 set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[0][4] }]; #IO_L21P_T3_DQS_34       Sch=CK_IO8
 set_property -dict { PACKAGE_PIN V18   IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[0][5] }]; #IO_L21N_T3_DQS_34       Sch=CK_IO9
@@ -110,7 +111,7 @@ set_property -dict { PACKAGE_PIN U7    IOSTANDARD LVCMOS33 } [get_ports { GPIO_P
 set_property -dict { PACKAGE_PIN V7    IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[1][6] }]; #IO_L11N_T1_SRCC_13  Sch=CK_IO30
 set_property -dict { PACKAGE_PIN U8    IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[1][7] }]; #IO_L17N_T2_13       Sch=CK_IO31
 set_property -dict { PACKAGE_PIN V8    IOSTANDARD LVCMOS33 } [get_ports { RUNNING_PROGRAM }]; #IO_L15P_T2_DQS_13   Sch=CK_IO32
-#set_property -dict { PACKAGE_PIN V10   IOSTANDARD LVCMOS33 } [get_ports {         }]; #IO_L21N_T3_DQS_13   Sch=CK_IO33
+#set_property -dict { PACKAGE_PIN V10   IOSTANDARD LVCMOS33 } [get_ports { GPIO_PORT[0][2] }]; #IO_L21N_T3_DQS_13   Sch=CK_IO33
 #set_property -dict { PACKAGE_PIN W10   IOSTANDARD LVCMOS33 } [get_ports { ck_io34 }]; #IO_L16P_T2_13       Sch=CK_IO34
 #set_property -dict { PACKAGE_PIN W6    IOSTANDARD LVCMOS33 } [get_ports { ck_io35 }]; #IO_L22N_T3_13       Sch=CK_IO35
 #set_property -dict { PACKAGE_PIN Y6    IOSTANDARD LVCMOS33 } [get_ports { ck_io36 }]; #IO_L13N_T2_MRCC_13  Sch=CK_IO36

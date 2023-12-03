@@ -346,7 +346,7 @@ module Multi_processor_manager
         .rst_n(rst_n)
         );     
     
-    logic[4:0]                      decode_state;
+    logic[2:0]                      decode_state;
     logic                           boot_p1_en;
     logic                           boot_p2_en;
     logic                           boot_renew_register_1_en;
@@ -701,7 +701,7 @@ module Multi_processor_manager
         
     end
     
-    logic[4:0]  detect_interrupt_state;
+    logic[2:0]  detect_interrupt_state;
     logic       renew_IR_en;  // Renew instruction register enable 
     logic       restore_PC_en;
     logic[1:0]  cur_program_encode;

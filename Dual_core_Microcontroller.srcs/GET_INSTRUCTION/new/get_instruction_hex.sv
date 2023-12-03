@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
-//`define PERIPHERAL_TESTCASE
-`define GPIO_TESTCASE
+`define PERIPHERAL_TESTCASE
+//`define GPIO_TESTCASE
 module get_instruction_hex;
     reg[31:0] instruction;
     wire [7:0] first_hex = instruction[7:0];

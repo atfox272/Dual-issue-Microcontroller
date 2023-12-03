@@ -9,7 +9,7 @@
 module Dual_core_mcu
     #(
     
-    parameter INTERNAL_CLOCK    = 125000000,
+    parameter INTERNAL_CLOCK    = 25000000,
     parameter DATA_WIDTH        = 8,
     parameter WORD_WIDTH        = 32,
     parameter DOUBLEWORD_WIDTH  = 64,
@@ -144,11 +144,13 @@ module Dual_core_mcu
     input   wire                        rst
     
     `ifdef DEBUG
+//    ,output                             clk_out
 //    ,output  wire    [DATA_WIDTH - 1:0]      program_memory_wire [0: PROGRAM_MEMORY_SIZE - 1]
 //    ,output  wire    [DATA_WIDTH - 1:0]      data_memory_wire [0: DATA_MEMORY_SIZE - 1]
     `endif
     );
     
+    wire                                system_tick_25;
     // Declare interface //////////////////////////////////////////////
     // PROCESSOR 1
     wire[INSTRUCTION_WIDTH - 1:0]       fetch_instruction_1;
@@ -388,7 +390,14 @@ module Dual_core_mcu
     
     // External Interrupt pin 
     assign exti_pin = GPIO_PORT_i[EXT_GPIO_PORT_INDEX][EXT_GPIO_PIN_INDEX];    
-//    (* dont_touch = "yes" *)                     
+    
+    /* Clock Generator */
+    clk_wiz_0 system_tick
+        ( 
+        .clk_in1(clk),
+        .clk_out1(system_tick_25)
+        );
+    /* End Clock generator */
     Processor           
         #(
         .MAIN_RPOCESSOR(1'b1),
@@ -399,7 +408,7 @@ module Dual_core_mcu
         )
         PROCESSOR_1
         (
-        .clk(clk),
+        .clk(system_tick_25),
         // UART_1
         .data_bus_out_uart_1(s_ati_uart1_data_in),
         .RX_use_1(RX_use_1_processor),
@@ -436,8 +445,7 @@ module Dual_core_mcu
         .synchronization_processor(synchronization_processor_1),
         .rst_n(~rst)
         
-        );                
-//    (* dont_touch = "yes" *)  
+        );                 
     Processor           
         #(
         .MAIN_RPOCESSOR(1'b0),
@@ -448,7 +456,7 @@ module Dual_core_mcu
         )
         PROCESSOR_2
         (
-        .clk(clk),
+        .clk(system_tick_25),
         // Case 2 start
         // Multi-processor manager
         .fetch_instruction(fetch_instruction_2),
@@ -475,7 +483,6 @@ module Dual_core_mcu
         .rst_n(~rst)
         
         );  
-//    (* dont_touch = "yes" *)   
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(),
@@ -485,7 +492,7 @@ module Dual_core_mcu
         .INTERFACE_GPIO_ENCODE(INTERFACE_GPIO_ENCODE),
         .INTERFACE_TYPE(INTERFACE_MASTER_ENCODE)
         ) ATI_PROC1_BUS1 (
-        .clk(clk),
+        .clk(system_tick_25),
         .m_ati_rdata(m_ati_p1_rdata),
         .m_ati_wdata(m_ati_p1_wdata),
         .m_ati_addr(m_ati_p1_addr),
@@ -521,8 +528,7 @@ module Dual_core_mcu
         .s_ati_rdata_type(),
         .s_ati_wdata_type(),
         .rst_n(~rst)
-        );
-//    (* dont_touch = "yes" *)   
+        );  
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(),
@@ -532,7 +538,7 @@ module Dual_core_mcu
         .INTERFACE_GPIO_ENCODE(INTERFACE_GPIO_ENCODE),
         .INTERFACE_TYPE(INTERFACE_MASTER_ENCODE)
         ) ATI_PROC2_BUS2 (
-        .clk(clk),
+        .clk(system_tick_25),
         .m_ati_rdata(m_ati_p2_rdata),
         .m_ati_wdata(m_ati_p2_wdata),
         .m_ati_addr(m_ati_p2_addr),
@@ -568,8 +574,7 @@ module Dual_core_mcu
         .s_ati_rdata_type(),
         .s_ati_wdata_type(),
         .rst_n(~rst)
-        );
-//    (* dont_touch = "yes" *)   
+        );  
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_DMEM),
@@ -578,7 +583,7 @@ module Dual_core_mcu
         .INTERFACE_GPIO_ENCODE(INTERFACE_GPIO_ENCODE),
         .INTERFACE_TYPE(INTERFACE_DMEM_ENCODE)
         ) ATI_DMEM_BUS1 (
-        .clk(clk),
+        .clk(system_tick_25),
         .m_ati_rdata(),
         .m_ati_wdata(),
         .m_ati_addr(),
@@ -615,8 +620,7 @@ module Dual_core_mcu
         .s_ati_wdata_type(s_ati_dmem_p1_data_type_wr),
         .rst_n(~rst)
         );
-     
-//    (* dont_touch = "yes" *)  
+      
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_DMEM),
@@ -625,7 +629,7 @@ module Dual_core_mcu
         .INTERFACE_GPIO_ENCODE(INTERFACE_GPIO_ENCODE),
         .INTERFACE_TYPE(INTERFACE_DMEM_ENCODE)  
         ) ATI_DMEM_BUS2 (
-        .clk(clk),
+        .clk(system_tick_25),
         .m_ati_rdata(),
         .m_ati_wdata(),
         .m_ati_addr(),
@@ -661,13 +665,12 @@ module Dual_core_mcu
         .s_ati_rdata_type(s_ati_dmem_p2_data_type_rd),
         .s_ati_wdata_type(s_ati_dmem_p2_data_type_wr),
         .rst_n(~rst)
-        ); 
-//    (* dont_touch = "yes" *)                   
+        );                   
     pram_consistency      
         #(
         .DATA_MEMORY_SIZE(DATA_MEMORY_SIZE)
         )PRAM_CONSISTENCY(  /* Sequential Parallel-Random-Access-Machine Consistency */ 
-        .clk(clk),
+        .clk(system_tick_25),
         // Processor 1
         // - write
         .data_bus_wr_p1(s_ati_dmem_p1_data_out),
@@ -695,7 +698,6 @@ module Dual_core_mcu
         .rst_n(~rst)
         );
     
-//    (* dont_touch = "yes" *)  
     // Data Memory (8Kb - 1kB)
     ram                 
          #(
@@ -705,7 +707,7 @@ module Dual_core_mcu
         .ADDR_BUS_WIDTH(ADDR_BUS_WIDTH),
         .DUAL_READ_HANDLER(1'b1)
         )DMEM(
-        .clk(clk),
+        .clk(system_tick_25),
         // -- write
         .data_bus_wr(data_bus_wr_dm),
         .data_type_wr(data_type_wr_dm),    // Write byte (8bit)
@@ -733,12 +735,11 @@ module Dual_core_mcu
         `ifdef DEBUG
 //        ,.registers_wire(data_memory_wire)
         `endif
-        );
-//    (* dont_touch = "yes" *)  
+        ); 
     Registers_management
         #(
         )registers_management(
-        .clk(clk),
+        .clk(system_tick_25),
         .processor_registers_1(processor_registers_1),
         .processor_registers_2(processor_registers_2),
         .processor_idle_1(processor_idle_1),
@@ -755,13 +756,12 @@ module Dual_core_mcu
         .synchronization_processor_2(synchronization_processor_2),
         .synchronized_processors(synchronized_processors),
         .rst_n(~rst)
-        );
-//    (* dont_touch = "yes" *)  
+        ); 
     Multi_processor_manager 
         #(
         .PROGRAM_MEMORY_SIZE(PROGRAM_MEMORY_SIZE)
         ) PROGRAM_PROCESSOR (
-        .clk(clk),
+        .clk(system_tick_25),
         // Program memory
         .data_bus_rd_pm(data_bus_rd_pm),
         .rd_idle_pm(rd_idle_pm),
@@ -802,14 +802,13 @@ module Dual_core_mcu
         );
     
     
-//    (* dont_touch = "yes" *)  
     // Program memory (8Kb)
     ram_pm              
         #(
         .ADDR_DEPTH(PROGRAM_MEMORY_SIZE),
         .RESERVED_REG_AMOUNT(1'b1)
         )IMEM(
-        .clk(clk),
+        .clk(system_tick_25),
         .data_bus_wr(data_bus_wr_pm),
         .data_type_wr(2'b00),    // Write byte (8bit)
         .addr_wr(addr_wr_pm),
@@ -827,8 +826,7 @@ module Dual_core_mcu
 //        ,.registers_wire(program_memory_wire)
         `endif
         );
-      
-//    (* dont_touch = "yes" *)  
+       
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_GPIO),
@@ -840,7 +838,7 @@ module Dual_core_mcu
         .PORT_AMOUNT(GPIO_PORT_AMOUNT),
         .PIN_AMOUNT(GPIO_PIN_AMOUNT)
         ) ATI_GPIO_BUS1 (
-        .clk(clk),
+        .clk(system_tick_25),
         .m_ati_rdata(),
         .m_ati_wdata(),
         .m_ati_addr(),
@@ -895,13 +893,13 @@ module Dual_core_mcu
     end
     end    
     endgenerate    
-//    (* dont_touch = "yes" *)  
+     
     GPIO_module
         #(
         .PORT_AMOUNT(GPIO_PORT_AMOUNT),
         .PIN_AMOUNT(GPIO_PIN_AMOUNT)
         )GPIO(
-        .clk(clk),
+        .clk(system_tick_25),
         .rdata_PORT(s_ati_gpio_data_in),
         .wdata_PORT(s_ati_gpio_data_out),
         .raddr_PORT(s_ati_gpio_addr_rd),
@@ -916,11 +914,10 @@ module Dual_core_mcu
         
         .rst_n(~rst)
         );  
-//    (* dont_touch = "yes" *)    
     Interrupt_controller
         #(
         )INT_CONTROLLER(
-        .clk(clk),
+        .clk(system_tick_25),
         .interrupt_flag_1(interrupt_flag_1),
         .interrupt_flag_2(interrupt_flag_2),
         .interrupt_flag_3(interrupt_flag_3),
@@ -937,24 +934,22 @@ module Dual_core_mcu
         .interrupt_enable_2(exti_enable),
         .interrupt_enable_3(timer_interrupt_enable),
         .rst_n(~rst)
-        ); 
-//    (* dont_touch = "yes" *)   
+        );    
     timer_INT_handler 
         TIM_INT
         (
-        .clk(clk),
+        .clk(system_tick_25),
         .enable_interrupt(timer_interrupt_enable),
         .interrupt_option(timer_interrupt_option),
         .prescaler_selector(timer_prescaler),
         .timer_limit_value(timer_interrupt_limit_value),
         .interrupt_request(interrupt_request_3),
         .rst_n(~rst)
-        );
-//    (* dont_touch = "yes" *)  
+        );  
     external_INT_handler 
         EXT_INT
         (
-        .clk(clk),
+        .clk(system_tick_25),
         .int_pin(exti_pin),
         .enable_interrupt(exti_enable),
         .interrupt_sense_control(exti_sense),
@@ -964,8 +959,7 @@ module Dual_core_mcu
         );                   
   
     // Communication peripherals    
-    `ifdef UART_PROT_1    
-//    (* dont_touch = "yes" *)    
+    `ifdef UART_PROT_1        
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_UART1),
@@ -974,7 +968,7 @@ module Dual_core_mcu
         .INTERFACE_GPIO_ENCODE(INTERFACE_GPIO_ENCODE),
         .INTERFACE_TYPE(INTERFACE_PERP_ENCODE)
         ) ATI_UART1_BUS1 (
-        .clk(clk),
+        .clk(system_tick_25),
         .m_ati_rdata(),
         .m_ati_wdata(),
         .m_ati_addr(),
@@ -1010,15 +1004,14 @@ module Dual_core_mcu
         .s_ati_rdata_type(),
         .s_ati_wdata_type(),
         .rst_n(~rst)
-        );        
-//    (* dont_touch = "yes" *)  
+        );          
     uart_peripheral
          #(
         .INTERNAL_CLOCK(INTERNAL_CLOCK),
         .RX_FLAG_TYPE(1'b1),              // Use internal FIFO
         .FIFO_DEPTH(FIFO_BUFFER_SIZE)
         )UART_PERIPHERAL_1(
-        .clk(clk),
+        .clk(system_tick_25),
         .TX(TX_1),
         .RX(RX_1),
         // TX
@@ -1038,8 +1031,7 @@ module Dual_core_mcu
         .rst_n(~rst)
         );
     `endif
-    `ifdef UART_PROT_2
-//    (* dont_touch = "yes" *)  
+    `ifdef UART_PROT_2  
     Atfox_exTensible_Interface
         #(
         .CHANNEL_ID(CHANNEL_ID_UART2),
@@ -1048,7 +1040,7 @@ module Dual_core_mcu
         .INTERFACE_GPIO_ENCODE(INTERFACE_GPIO_ENCODE),
         .INTERFACE_TYPE(INTERFACE_PERP_ENCODE)
         ) ATI_UART2_BUS2 (
-        .clk(clk),
+        .clk(system_tick_25),
         .m_ati_rdata(),
         .m_ati_wdata(),
         .m_ati_addr(),
@@ -1084,8 +1076,7 @@ module Dual_core_mcu
         .s_ati_rdata_type(),
         .s_ati_wdata_type(),
         .rst_n(~rst)
-        );
-//    (* dont_touch = "yes" *)  
+        );  
     uart_peripheral
         #(
         .INTERNAL_CLOCK(INTERNAL_CLOCK),
@@ -1093,7 +1084,7 @@ module Dual_core_mcu
         )             
         UART_PERIPHERAL_2
         (
-        .clk(clk),
+        .clk(system_tick_25),
         // TX 
         .data_in(s_ati_uart2_data_out),
         .TX_use(s_ati_uart2_wr_req),
@@ -1125,5 +1116,7 @@ module Dual_core_mcu
     assign RUNNING_PROGRAM          = (main_state == RUNNING_PROGRAM_STATE);
     assign RX_use_1                 = (RUNNING_PROGRAM) ? s_ati_uart1_rd_req : RX_use_1_processor;    
     assign s_ati_uart1_rd_available = (RUNNING_PROGRAM) ? RX_flag_1 : 1'b0;
-    
+    `ifdef DEBUG 
+//    assign clk_out = clk;
+    `endif 
 endmodule

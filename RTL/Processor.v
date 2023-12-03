@@ -406,7 +406,7 @@ module Processor
     assign alu_sign_extend_imm2 = {52{fetch_instruction[IMM_2_SPACE_MSB]}}; 
     assign alu_sign_extend_imm3 = {52{fetch_instruction[IMM_3_SPACE_MSB]}};
     
-    logic [3:0]                     exec_state;
+    logic [2:0]                     exec_state;
     logic                           wb_immediate_en;
     logic [DOUBLEWORD_WIDTH - 1:0]  wb_immediate_value;
     always_comb begin
@@ -1045,7 +1045,7 @@ module Processor
     assign alu_sign_extend_imm3 = {52{fetch_instruction[IMM_3_SPACE_MSB]}}; 
     
     
-    logic [3:0]                     exec_state;
+    logic [2:0]                     exec_state;
     logic                           wb_immediate_en;
     logic [DOUBLEWORD_WIDTH - 1:0]  wb_immediate_value;
     always_comb begin
