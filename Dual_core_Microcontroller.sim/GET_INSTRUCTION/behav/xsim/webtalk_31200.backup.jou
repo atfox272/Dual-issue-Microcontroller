@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Webtalk v2020.2 (64-bit)
+# SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
+# IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+# Start of session at: Sat Dec  2 15:02:54 2023
+# Process ID: 31200
+# Current directory: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/GET_INSTRUCTION/behav/xsim
+# Command line: wbtcv.exe -mode batch -source L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/GET_INSTRUCTION/behav/xsim/xsim.dir/get_instruction_hex_behav/webtalk/xsim_webtalk.tcl -notrace
+# Log file: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/GET_INSTRUCTION/behav/xsim/webtalk.log
+# Journal file: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/GET_INSTRUCTION/behav/xsim\webtalk.jou
+#-----------------------------------------------------------
+source L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.sim/GET_INSTRUCTION/behav/xsim/xsim.dir/get_instruction_hex_behav/webtalk/xsim_webtalk.tcl -notrace

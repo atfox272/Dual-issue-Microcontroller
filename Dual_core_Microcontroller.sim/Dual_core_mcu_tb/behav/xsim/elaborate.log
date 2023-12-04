@@ -1,0 +1,68 @@
+Vivado Simulator 2020.2
+Copyright 1986-1999, 2001-2020 Xilinx, Inc. All Rights Reserved.
+Running: L:/Application/Xilinx/Vivado/2020.2/bin/unwrapped/win64.o/xelab.exe -wto 73584962560a4b06b71b478ab20fffe9 --incr --debug typical --relax --mt 2 -L xil_defaultlib -L uvm -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot Dual_core_mcu_tb_behav xil_defaultlib.Dual_core_mcu_tb xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+WARNING: [VRFC 10-2861] module 'Dual_core_mcu' does not have a parameter named FINISH_RECEIVE_TIMER [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:99]
+WARNING: [VRFC 10-2861] module 'uart_peripheral' does not have a parameter named SLEEP_MODE [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:115]
+WARNING: [VRFC 10-2861] module 'uart_peripheral' does not have a parameter named SLEEP_MODE [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:131]
+WARNING: [VRFC 10-2861] module 'uart_peripheral' does not have a parameter named RX_FLAG_CONFIG [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:132]
+WARNING: [VRFC 10-3091] actual bit length 32 differs from formal bit length 14 for port 'limit_counter' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Processor.v:672]
+WARNING: [VRFC 10-3091] actual bit length 8 differs from formal bit length 64 for port 'addr_wr' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:714]
+WARNING: [VRFC 10-3091] actual bit length 32 differs from formal bit length 16 for port 'limit_counter' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/external_INT_handler.sv:44]
+WARNING: [VRFC 10-3091] actual bit length 32 differs from formal bit length 18 for port 'limit_counter' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:215]
+WARNING: [VRFC 10-5021] port 'RX' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_Microcontroller_tb.sv:113]
+WARNING: [VRFC 10-5021] port 'rd_access' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:401]
+WARNING: [VRFC 10-5021] port 'rd_access' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:449]
+WARNING: [VRFC 10-5021] port 'main_program_state' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:739]
+WARNING: [VRFC 10-5021] port 'rd_ins' is not connected on this instance [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:806]
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling package xil_defaultlib.$unit_Atfox_exTensible_Interface...
+Compiling module unisims_ver.IBUF
+Compiling module unisims_ver.PLLE2_ADV(CLKFBOUT_MULT=33,CLKIN...
+Compiling module unisims_ver.BUFG
+Compiling module xil_defaultlib.clk_wiz_0_clk_wiz
+Compiling module xil_defaultlib.clk_wiz_0
+Compiling module xil_defaultlib.alu
+Compiling module xil_defaultlib.real_time_default
+Compiling module xil_defaultlib.Processor(MAIN_RPOCESSOR=1'b1,DA...
+Compiling module xil_defaultlib.Processor(MAIN_RPOCESSOR=1'b0,DA...
+Compiling module xil_defaultlib.Atfox_exTensible_Interface(INTER...
+Compiling module xil_defaultlib.Atfox_exTensible_Interface(INTER...
+Compiling module xil_defaultlib.pram_consistency(DATA_MEMORY_SIZ...
+Compiling module xil_defaultlib.ram(ADDR_DEPTH=256,DUAL_READ_HAN...
+Compiling module xil_defaultlib.Registers_management_default
+Compiling module xil_defaultlib.sync_lifo(DATA_WIDTH=12,LIFO_DEP...
+Compiling module xil_defaultlib.Multi_processor_manager_default
+Compiling module xil_defaultlib.ram_pm(ADDR_DEPTH=1024,RESERVED_...
+Compiling module xil_defaultlib.Atfox_exTensible_Interface(CHANN...
+Compiling module unisims_ver.IOBUF
+Compiling module xil_defaultlib.GPIO_module_default
+Compiling module xil_defaultlib.edgedet
+Compiling module xil_defaultlib.sync_fifo(DATA_WIDTH=1)
+Compiling module xil_defaultlib.Interrupt_controller
+Compiling module xil_defaultlib.timer_INT_handler_default
+Compiling module xil_defaultlib.real_time(MAX_COUNTER=50000)
+Compiling module xil_defaultlib.external_INT_handler_default
+Compiling module xil_defaultlib.real_time(MAX_COUNTER=260416)
+Compiling module xil_defaultlib.Atfox_exTensible_Interface(CHANN...
+Compiling module xil_defaultlib.TX_controller_default
+Compiling module xil_defaultlib.RX_controller_default
+Compiling module xil_defaultlib.baudrate_generator(INTERNAL_CLOC...
+Compiling module xil_defaultlib.baudrate_generator(INTERNAL_CLOC...
+Compiling module xil_defaultlib.sync_fifo(FIFO_DEPTH=64)
+Compiling module xil_defaultlib.uart_peripheral(INTERNAL_CLOCK=9...
+Compiling module xil_defaultlib.Atfox_exTensible_Interface(CHANN...
+Compiling module xil_defaultlib.sync_fifo_default
+Compiling module xil_defaultlib.uart_peripheral(INTERNAL_CLOCK=9...
+Compiling module xil_defaultlib.Dual_core_mcu(INTERNAL_CLOCK=960...
+Compiling module xil_defaultlib.sync_fifo(FIFO_DEPTH=65536)
+Compiling module xil_defaultlib.uart_peripheral(INTERNAL_CLOCK=9...
+Compiling module xil_defaultlib.uart_peripheral(INTERNAL_CLOCK=9...
+Compiling module xil_defaultlib.Dual_core_mcu_tb
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot Dual_core_mcu_tb_behav

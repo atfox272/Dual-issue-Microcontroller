@@ -1,5 +1,5 @@
 # compile verilog/system verilog design source files
-sv xil_defaultlib  --include "../../../../Dual_core_Microcontroller.srcs/sources_1/new" \
+sv xil_defaultlib  --include "../../../../Dual_core_Microcontroller.gen/sources_1/ip/clk_wiz_0" --include "../../../../Dual_core_Microcontroller.srcs/sources_1/new" \
 "../../../../Dual_core_Microcontroller.srcs/GET_INSTRUCTION/new/get_instruction_hex.sv" \
 
 # compile glbl module

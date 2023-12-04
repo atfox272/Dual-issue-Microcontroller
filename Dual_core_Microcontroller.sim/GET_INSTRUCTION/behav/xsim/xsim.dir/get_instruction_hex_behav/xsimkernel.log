@@ -1,7 +1,7 @@
-Running: xsim.dir/get_instruction_hex_behav/xsimk.exe -simmode gui -wdb get_instruction_hex_behav.wdb -simrunnum 0 -socket 56041
+Running: xsim.dir/get_instruction_hex_behav/xsimk.exe -simmode gui -wdb get_instruction_hex_behav.wdb -simrunnum 0 -socket 50402
 Design successfully loaded
-Design Loading Memory Usage: 6720 KB (Peak: 6720 KB)
-Design Loading CPU Usage: 31 ms
+Design Loading Memory Usage: 6816 KB (Peak: 6816 KB)
+Design Loading CPU Usage: 15 ms
 Simulation completed
-Simulation Memory Usage: 7456 KB (Peak: 7456 KB)
-Simulation CPU Usage: 46 ms
+Simulation Memory Usage: 7524 KB (Peak: 7524 KB)
+Simulation CPU Usage: 15 ms

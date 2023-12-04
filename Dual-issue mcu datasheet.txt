@@ -1,0 +1,134 @@
+Dual-issue mcu datasheet
+### Features:
+- High performance with dual-issue
+- System Clock up to 39MHz (Depended on LUTs technology of Xilinx FPGA)
+- RISC Architecture
+	+ 34 instructions - most single-clock execution
+	+ 32 general purpose register 
+- Memory:
+	+ 1Kb of Data-memory (SRAM)
+	+ 8Kb of Program-memory (SRAM)
+- All Features:
+	+ One 16-bit Timer/Counter with separate prescaler, compare mode
+	+ One external interrupt 
+	+ One internal interrupt 
+	+ Two UART peripheral 
+	+ One SPI peripheral 
+	+ One I2C peripheral
+	+ 16 general purpose input-output
+	
+1. Pin Configurations:
+* Pinout 
+	<image: PinOut.png>
+
+1 Pin Description:
+1.1 Pin Description:
+1.1.1. VCC 
+1.1.2. GND
+1.1.3 Port A (PA0:7): External Interrupt
+	+ Port A is an 8bit bidirectional IO port, with 1 external-interrupt pin 
+1.1.4 Port B (PB0:7)
+	+ Port B is an 8bit bidirectional IO port
+1.1.5 Periperhal Port:
+	+  Peripehral Port consists of 2 UART peripheral
+
+2. Overview
+
+2.1 Block Diagram
+
+- Dual-issue microcontroller is a 64-bit risc-v microntroller with dual-issue and 39MHz syttem-clock
+- Dual-issue cores have 2 32-general-purpose-register set, so there are not depended on another in Execution stage (exception Data-hazard case)
+- Dual-issue microcontroller provides th feature: 8Kb Program-memory (SRAM), 1Kb Data-memory (SRAM), 16 Gernal purpose I/O, dual-issure, UART periperhal, SPI peripheral (not complete), I2C periperhal (not complete), external interrupt and timer/counter. 
+- Additionally, Data memory has Read-while-write mechanism, 2 read-handler to support 2 issue-core. Program memory has "half" alignment mechanism to fecth 2 instructions at the same time.
+
+	Figure: Block diagram
+	<image: BlockDiagram.png>
+
+
+
+3. IDE:
+- In this datasheet, we will provide some example code to use or configure peripherals and hardware-components via assembly code
+
+	<link: Assembler and Program Device>
+
+4. Central Processing Unit
+
+a. Overview
+The CPU is able to access data-memory, calculate, control peripheral and handle interrupts with dual issure core.
+
+The CPU uses Havard architecture. Instructions are executed with multi-cycle pipeline (2-stage & dual isssue). Program processor is multi-cycle-clock processor and processes Instruction Fetch stage
+(consist of Instruction Fetch + Interrupt Detect + Instruction Dispath).
+Two Issue processor is multi-cycle-clock processor and processes Execution stage (consist of Execution + Data Memory Access + Write Back)
+
+	<Image: CPU.png>
+
+
+Instructions set consist of arithmetic instruction, logical instruction, conditional-jump instruction, unconditional-jump instruction, data-transfer instruction and some system instruction (hardware supportive instruction).
+
+When Program processor acknowledge interrupt flag is high (from Interrupt Controller) in Interrupt-detect state, Program processor will store current PC to internal stack buffer (It's not Data memory -> reduce clock-cycle when Processor access Data memory)
+
+Data memory consist of some memory space for Data memory space, Peripheral memory space, GPIO memory space. Users can use data-transfer instructions to configure or use them 
+
+
+b. ALU 
+- The ALU (in single issue) is connected to 32 GPRs directly. 
+- Have 2 types of calculation 
+	+ single-cycle calculation
+	+ multi-cycle calculation (for multiplication arithmetic)
+- Have 3 categories:
+	+ Arithmetic (without division)
+	+ Logical
+	+ Bit-function 
+
+c. General purpose registers
+- 32 general purpose registers (GPRs) are 64-bit registers
+- Note: Data in registers is not restored when program enter interrupt service routine. So, the user or compiler must add restored-and-recovery step like calling procedure to ISR memory space
+
+	<Image: GeneralPurposeRegisters.png>
+
+- Register description
++ Stack pointer (x2 - 0xF0 is initial value)
+	- To store address of stack space in Data memory
++ Global pointer register (x3 - 0x2B is initial value)
+	- To store address of global data space in Data memory
+
++ Instruction execution timing
+  _1 square block - 1 clock cycle_
+
+	- Without interrupt case and jump case 
+	Figure 1: Wort case (4 Load-instructions) 
+
+	<image: WorstExecInstCase.png>
+
+	
+	Figure 2: Best case (4 1-cycle-arithmetic-instructions)
+
+	<image: BestExecInstCase.png>
+
+5. Memories
+- This microcontroller has 2 main memory spaces, the data memory and the program memory. And both of them are SRAM
+
+a. SRAM Data memory
+	i. Memory Map 
+	<image: DataMemory_overview.png>
+
+	ii. Access Time
+	- Data memory has 2 read-handler and 1 write-handler. when CPU put address to address_port, Address will be valid after 1 cycle clock
+		
+b. I/O & Peripheral Memory 
+	<GPIO memory Overview: GPIO space in Data Memory>
+	<Peripheral memory Overview>
+	<More detail in another section>
+	
+	<And some configuration register> <Overview>
+	i.  GPIO register 1	<More detail in another section>
+	ii. GPIO register 2	<More detail in another section>
+	iii.Peripheral register <More detail in another section>
+		+ UART 1 peripheral 
+		+ UART 2 peripheral
+	iv.  Interrupt register 
+		+ Timer/Counter register
+		+ External interrupt register
+	v.   
+c. SRAM Program memory
+
