@@ -107,49 +107,49 @@ c. General purpose registers
 5. Memories
 - This microcontroller has 2 main memory spaces, the data memory and the program memory. And both of them are SRAM
 
-a. SRAM Data memory
+5.1. SRAM Data memory
 	i. Memory Map 
 	<image: DataMemory_overview.png>
 
 	ii. Access Time
 	- Data memory has 2 read-handler and 1 write-handler. when CPU put address to address_port, Address will be valid after 1 cycle clock
 		
-b. I/O & Peripheral Memory 
+5.2. I/O & Peripheral Memory 
 - Peripherals and I/Os in dual-issue microcontroller are accessed and configured via Data Memory. Data package is available for Byte size (without protocol peripheral), Word size, Double-word size. CPU use general purpose registers to transfer or receive data from peripherals or I/Os (More detail in later section)
 
-c. General Purpose I/O Registers:
+5.3. General Purpose I/O Registers:
 - The Dual-issue microcontroller has 2 configuration registers to configure state of GPIO and 2 registers to set the value of the output state.
 
-d. Register Description
+5.4. Register Description
 - All configuration registers are placed from 0x00 to 0x10 in Data memory.
 
-d.1. GPIO Port A - General Purpose I/O Configuration Register 1
+5.4.1. GPIO Port A - General Purpose I/O Configuration Register 1
 	<image: configRegister_PORTA>
-d.2. GPIO Port B - General Purpose I/O Configuration Register 1
+5.4.2. GPIO Port B - General Purpose I/O Configuration Register 1
 	<image: configRegister_PORTB.png>
-d.3. UART RX 1 - UART RX 1 Configuration Register
+5.4.3. UART RX 1 - UART RX 1 Configuration Register
 	<image: configRegister_RX1.png>
-d.4. UART TX 1 - UART TX 1 Configuration Register
+5.4.4. UART TX 1 - UART TX 1 Configuration Register
 	<image: configRegister_TX1.png>
-d.5. Comunication peripheral - Comunication peripheral Configuration Register
+5.4.5. Comunication peripheral - Comunication peripheral Configuration Register
 	<image: configRegister_COM_PERIPHERAL.png>
-d.6. UART RX 2 - UART RX 2 Configuration Register
+5.4.6. UART RX 2 - UART RX 2 Configuration Register
 	<image: configRegister_RX2.png>
-d.7. UART TX 2 - UART TX 2 Configuration Register
+5.4.7. UART TX 2 - UART TX 2 Configuration Register
 	<image: configRegister_RX2.png>
-d.8. SPI - SPI Configuration Register
+5.4.8. SPI - SPI Configuration Register
 	<image: configRegister_SPI.png>
 
-d.9. I2C - I2C Configuration Register
+5.4.9. I2C - I2C Configuration Register
 	<image: configRegister_I2C.png>
 
-d.10. EXT INT - External Interrupt Configuration Register
+5.4.10. EXT INT - External Interrupt Configuration Register
 	<image: configRegister_ExternalInterrupt.png>
 
-d.11. TIM INT - Timer Interrupt Configuration Register
+5.4.11. TIM INT - Timer Interrupt Configuration Register
 	<image: configRegister_TimerInterrupt.png>
 
-d.12. TIM LIM - Timer Limit Configuration Register
+5.4.12. TIM LIM - Timer Limit Configuration Register
 	<image: configRegister_TimerLimit.png>
 
 6. Interrupts:
@@ -169,9 +169,66 @@ Users can configure sense of external interrupt (rising edge, falling edge, pin-
 Additionally, the dual-issue microcontroller provides debounce mechanism for external interrupt
 7.2. Register Description:
 7.2.1. External Interrupt Register
+
 	<image: configRegister_ExternalInterrupt>
+
 	+ Bit 7: External Interrupt Enable
 	Enable request of External Interrupt to Interrupt Controller (IC)
 	+ Bit 6 - 5: Sense Control
-	
+	<image: ExternalInterrupt_SenseControl.png>
+
+	+ Bit 4: Debounce option
+	Enable/Disable debounce for interrupt pin
+
+	+ Bit 3 - 0: Reserved
+
+8. General-Purpose I/O
+
+8.1. Overview
+The dual-issue microcontroller provides digital 16 I/O pins. Users can configure the state of pins via GPIO registers.
+
+8.2. Block Diagram
+	<image: GPIO_BlockDiagram.png>
+
+
+8.3. Configuring the Pin 
+Each port pin consists of 2 register bits: PORTx and PIN_BUFx. 
+
+The PORTx bits are accessed at 0x00 - 0x01 (shown in Section 5.4 "Register Description") to set state of PINx. "0" value is the output and "1" value is the input.
+
+The PIN_BUFx bits are accessed from 0x40000000000000 to 0x40000000000001 to set value of output state. "0" value is LOW (0.0v) and "1" value is HIGH (3.3v)
+
+8.4. Assembly Code Example:
+
+- Reading/Writing pin value:
+
+The following code example shows how to set port B pin 7, 5 HIGH and 6, 4 LOW as output state. Set pin 3, 2, 1, 0 as input state, then read pin value from pin 3, 0
+
+// Configure pin state
+ADDI x9, x0, 8'b11110000	// Set PB[7:4] as Input state and PB[3:0] as Output state
+SB   x9, 1(x0)			// Load configuration data to Configuration register
+
+// Set up address mapping value
+LUI  x10, 0x40000		// Address mapping to GPIO Channel
+ADDI x10, x10, 1		// Address mapping to PORT B
+
+// Write pin value
+LB   x11, 0(x10) 		// Restore some unchanged value
+ORI  x11, x11, 8'b10100000	// Mask value (set pin 7 and pin 5 HIGH)
+ANDI x11, x11, 8'b10101111	// Mask value (set pin 6 and pin 4 LOW)
+SB   x11, 0(x10)		// Write pin value to pin buffer
+
+// Read pin value (Read pin0's value to LSB of x13 and pin3's value to LSB of x14)
+LB   x12, 0(x12)		// Read pin value
+ADD  x13, x12, 0		// Move data from x12 to x13
+ANDI x13, x13, 0x01		// Clear others bit
+ADD  x14, x12, 0		// Move data from x12 to x14
+SRL  x14, x14, 3		// Move pin3's value to LSB of x14
+ANDI x14, x14, 0x01		// Clear others bit
+
+8.5 Alternate Port Functions:
+(Update later)
+
+9. 16-bit Timer/Counter:
+
 
