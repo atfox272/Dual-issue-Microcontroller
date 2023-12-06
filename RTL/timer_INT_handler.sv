@@ -27,6 +27,9 @@ module timer_INT_handler
     
     output  wire                            interrupt_request,
     
+    // Alternative Port Function
+    output  reg                             TLTF,                   // Timer limit toggle flag
+    
     input   wire                            rst_n
     );
     
@@ -92,22 +95,27 @@ module timer_INT_handler
     end
     logic [REGISTER_WIDTH*2 - 1:0]  timer_counter_next;
     logic                           interrupt_request_next;
+    logic                           TLTF_next;
     always_comb begin
         timer_counter_next = timer_counter + 1;
         interrupt_request_next = 0;
+        TLTF_next = TLTF;
         if(timer_counter == interrupt_value) begin
             timer_counter_next = 0;
             interrupt_request_next = 1;
+            TLTF_next = ~TLTF;
         end
     end
     always @(posedge clk) begin
         if(!rst_n) begin
             timer_counter <= 0;
             interrupt_request_reg <= 0;
+            TLTF <= 0;
         end
         else if(clk_en_int) begin
             timer_counter <= timer_counter_next;
             interrupt_request_reg <= interrupt_request_next;
+            TLTF <= TLTF_next;
         end
     end
 endmodule

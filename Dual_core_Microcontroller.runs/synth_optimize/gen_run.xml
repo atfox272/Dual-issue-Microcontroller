@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GenRun Id="synth_optimize" LaunchPart="xc7z020clg400-1" LaunchTime="1701623867">
   <File Type="PA-TCL" Name="Dual_core_mcu.tcl"/>
-  <File Type="RDS-PROPCONSTRS" Name="Dual_core_mcu_drc_synth.rpt"/>
   <File Type="REPORTS-TCL" Name="Dual_core_mcu_reports.tcl"/>
   <File Type="RDS-RDS" Name="Dual_core_mcu.vds"/>
   <File Type="RDS-UTIL" Name="Dual_core_mcu_utilization_synth.rpt"/>
   <File Type="RDS-UTIL-PB" Name="Dual_core_mcu_utilization_synth.pb"/>
   <File Type="RDS-DCP" Name="Dual_core_mcu.dcp"/>
-  <File Type="VDS-TIMINGSUMMARY" Name="Dual_core_mcu_timing_summary_synth.rpt"/>
-  <File Type="VDS-TIMING-PB" Name="Dual_core_mcu_timing_summary_synth.pb"/>
   <FileSet Name="sources" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1" RelGenDir="$PGENDIR/sources_1">
     <Filter Type="Srcs"/>
     <File Path="$PSRCDIR/sources_1/ip/clk_wiz_0/clk_wiz_0.xci">

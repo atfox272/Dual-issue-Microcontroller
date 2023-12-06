@@ -21,7 +21,6 @@ Dual-issue mcu datasheet
 * Pinout 
 	<image: PinOut.png>
 
-1 Pin Description:
 1.1 Pin Description:
 1.1.1. VCC 
 1.1.2. GND
@@ -153,10 +152,11 @@ c. General purpose registers
 	<image: configRegister_TimerLimit.png>
 
 6. Interrupts:
-- The Dual-issue microcontroller has External Interrupt, Timer Interrupt and Reset Interrupt
+The Dual-issue microcontroller has External Interrupt, Timer Interrupt and Reset Interrupt
+
  _Caution_: User must boot Reset Program to Program memory (Recovery Stack pointer - Disable Reset Interrupt - Jump to 0xC0)
 
-- The ISR of each interrupt is placed on top of the Program memory. Each Routine can contain up to 16 instructions
+The ISR of each interrupt is placed on top of the Program memory. Each Routine can contain up to 16 instructions
 
 <image: InterruptRoutineAddress.png>
 
@@ -172,12 +172,12 @@ Additionally, the dual-issue microcontroller provides debounce mechanism for ext
 
 	<image: configRegister_ExternalInterrupt>
 
-	+ Bit 7: External Interrupt Enable
+	* Bit 7: External Interrupt Enable
 	Enable request of External Interrupt to Interrupt Controller (IC)
-	+ Bit 6 - 5: Sense Control
+	* Bit 6 - 5: Sense Control
 	<image: ExternalInterrupt_SenseControl.png>
 
-	+ Bit 4: Debounce option
+	* Bit 4: Debounce option
 	Enable/Disable debounce for interrupt pin
 
 	+ Bit 3 - 0: Reserved
@@ -200,7 +200,7 @@ The PIN_BUFx bits are accessed from 0x40000000000000 to 0x40000000000001 to set 
 
 8.4. Assembly Code Example:
 
-- Reading/Writing pin value:
+8.4.1 Reading/Writing pin value:
 
 The following code example shows how to set port B pin 7, 5 HIGH and 6, 4 LOW as output state. Set pin 3, 2, 1, 0 as input state, then read pin value from pin 3, 0
 
@@ -230,5 +230,9 @@ ANDI x14, x14, 0x01		// Clear others bit
 (Update later)
 
 9. 16-bit Timer/Counter:
+9.1. Features:
+	* Clear timer when comparing math automatically
+	* Counter width is up to 16-bit
+9.2. Overview:
 
 

@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="237188960fs"></ZoomStartTime>
-      <ZoomEndTime time="237190121fs"></ZoomEndTime>
-      <Cursor1Time time="237189686fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="590000001fs"></ZoomEndTime>
+      <Cursor1Time time="221800000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="176"></NameColumnWidth>
+      <NameColumnWidth column_width="166"></NameColumnWidth>
       <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="58" />
+   <WVObjectSize size="60" />
    <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -207,8 +207,8 @@
       <obj_property name="ObjectShortName">program_state[2:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/decode_state" type="array">
-      <obj_property name="ElementShortName">decode_state[4:0]</obj_property>
-      <obj_property name="ObjectShortName">decode_state[4:0]</obj_property>
+      <obj_property name="ElementShortName">decode_state[2:0]</obj_property>
+      <obj_property name="ObjectShortName">decode_state[2:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROGRAM_PROCESSOR/synchronized_processors" type="logic">
       <obj_property name="ElementShortName">synchronized_processors</obj_property>
@@ -247,8 +247,8 @@
       <obj_property name="ObjectShortName">data_bus_rd_pm[63:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROCESSOR_1/\MAIN_RPOCESSOR_BLOCK.programming_timeout /counter" type="array">
-      <obj_property name="ElementShortName">counter[20:0]</obj_property>
-      <obj_property name="ObjectShortName">counter[20:0]</obj_property>
+      <obj_property name="ElementShortName">counter[13:0]</obj_property>
+      <obj_property name="ObjectShortName">counter[13:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROCESSOR_1/\MAIN_RPOCESSOR_BLOCK.programming_timeout /limit_flag_reg" type="logic">
@@ -256,8 +256,17 @@
       <obj_property name="ObjectShortName">limit_flag_reg</obj_property>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/PROCESSOR_1/\MAIN_RPOCESSOR_BLOCK.programming_timeout /limit_counter" type="array">
-      <obj_property name="ElementShortName">limit_counter[20:0]</obj_property>
-      <obj_property name="ObjectShortName">limit_counter[20:0]</obj_property>
+      <obj_property name="ElementShortName">limit_counter[13:0]</obj_property>
+      <obj_property name="ObjectShortName">limit_counter[13:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/timer_limit_toggle_flag" type="logic">
+      <obj_property name="ElementShortName">timer_limit_toggle_flag</obj_property>
+      <obj_property name="ObjectShortName">timer_limit_toggle_flag</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/TLTF_PIN" type="array">
+      <obj_property name="ElementShortName">TLTF_PIN[0:1][31:0]</obj_property>
+      <obj_property name="ObjectShortName">TLTF_PIN[0:1][31:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
 </wave_config>

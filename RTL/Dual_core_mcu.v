@@ -1,11 +1,17 @@
 `timescale 1ns / 1ps
 `define DEBUG
-`define EXTI
-`define TIM
+`define EXT_INT
+`define TIM_INT
+//`define RST_INT
 `define UART_PROT_1    
 `define UART_PROT_2 
 //`define SPI_PROT
 //`define I2C_PROT
+
+// Port Name
+`define PA  0
+`define PB  1
+
 module Dual_core_mcu
     #(
     
@@ -87,17 +93,17 @@ module Dual_core_mcu
     // Timer interrupt
     parameter PRESCALER_TIMER_WIDTH = 3,
     parameter REGISTER_TIMER_WIDTH  = 8,
-    // External Interrupt
-    parameter EXT_GPIO_PORT_INDEX   = 0,
-    parameter EXT_GPIO_PIN_INDEX    = 2,
     // Address mapping  (protocol peripheral)
     parameter ADDR_MAPPING_PERIPHERAL   = 5,
     parameter ADDDR_MAPPING_WIDTH       = $clog2(ADDR_MAPPING_PERIPHERAL),
-    // Protocol peripheral communication 
-    parameter AMOUNT_SND_BYTE           = 16,  
-    parameter AMOUNT_RCV_BYTE           = 16,
-    parameter AMOUNT_SND_WIDTH          = $clog2(AMOUNT_SND_BYTE),
-    parameter AMOUNT_RCV_WIDTH          = $clog2(AMOUNT_RCV_BYTE),
+    
+    // Alternative function of pin
+    /* External Interrupt (PA2) */
+    parameter EXT_GPIO_PORT_INDEX   = `PA,
+    parameter EXT_GPIO_PIN_INDEX    =  2,
+    /* Timer interrupt flag Interrupt (PB1) */
+    parameter TLTF_PIN_PORT_INDEX   = `PB, 
+    parameter TLTF_PIN_PIN_INDEX    =  1,  
     
     // Deep configuration
     parameter DATA_TYPE             = 3,                // byte - word - doubleword
@@ -140,7 +146,12 @@ module Dual_core_mcu
     // GPIO
     inout   [GPIO_PIN_AMOUNT - 1:0]     GPIO_PORT [0:GPIO_PORT_AMOUNT - 1],
     
-    // Reset negedge
+    // Reset program pin
+    `ifdef RST_INT 
+    input                               rst_pin,
+    `endif
+    
+    // Reset all
     input   wire                        rst
     
     `ifdef DEBUG
@@ -202,7 +213,8 @@ module Dual_core_mcu
     wire                                timer_interrupt_option;     // Overflow counter / Limit counter
     wire [PRESCALER_TIMER_WIDTH - 1:0]  timer_prescaler;
     wire [REGISTER_TIMER_WIDTH*2 - 1:0] timer_interrupt_limit_value;
-                                                                   
+    wire                                timer_limit_toggle_flag;    // TLTF                                                               
+    wire                                timer_limit_toggle_flag_en; // TLTF enable 
     // SYNCHRONIZATION PRIMITIVE (sp)
     // -- Write-Handler of processor 1
     wire                                wr_idle_p1;   
@@ -384,6 +396,7 @@ module Dual_core_mcu
     assign exti_debounce_option         =  reserved_registers[8'h0D][8'h04];
     assign timer_interrupt_enable       =  reserved_registers[8'h0E][8'h07];
     assign timer_interrupt_option       =  reserved_registers[8'h0E][8'h06];
+    assign timer_limit_toggle_flag_en   =  reserved_registers[8'h0E][8'h05];
     assign timer_prescaler              =  reserved_registers[8'h0E][8'h02:8'h00];
     assign timer_interrupt_limit_value  = {reserved_registers[8'h0F],
                                            reserved_registers[8'h10]};
@@ -392,12 +405,16 @@ module Dual_core_mcu
     assign exti_pin = GPIO_PORT_i[EXT_GPIO_PORT_INDEX][EXT_GPIO_PIN_INDEX];    
     
     /* Clock Generator */
+    `ifdef DEBUG assign system_tick_25 = clk;
+    `else 
     clk_wiz_0 system_tick
         ( 
         .clk_in1(clk),
         .clk_out1(system_tick_25)
-        );
+        ); 
+    `endif
     /* End Clock generator */
+    
     Processor           
         #(
         .MAIN_RPOCESSOR(1'b1),
@@ -406,7 +423,7 @@ module Dual_core_mcu
         .FINISH_PROGRAM_OPCODE(FINISH_PROGRAM_OPCODE),
         .FINISH_PROGRAM_TIMER(FINISH_PROGRAM_TIMER)
         )
-        PROCESSOR_1
+        ISSUE_PROCESSOR_1
         (
         .clk(system_tick_25),
         // UART_1
@@ -454,7 +471,7 @@ module Dual_core_mcu
         .FINISH_PROGRAM_OPCODE(FINISH_PROGRAM_OPCODE),
         .FINISH_PROGRAM_TIMER(FINISH_PROGRAM_TIMER)
         )
-        PROCESSOR_2
+        ISSUE_PROCESSOR_2
         (
         .clk(system_tick_25),
         // Case 2 start
@@ -875,9 +892,34 @@ module Dual_core_mcu
         .s_ati_wdata_type(),
         .rst_n(~rst)
         );
+    
+    
     generate     
     for(genvar port_index = 0; port_index < GPIO_PORT_AMOUNT; port_index = port_index + 1) begin
-    for(genvar pin_index = 0; pin_index < GPIO_PIN_AMOUNT; pin_index = pin_index + 1) begin    
+    for(genvar pin_index = 0; pin_index < GPIO_PIN_AMOUNT; pin_index = pin_index + 1) begin 
+    // Alternative function pin
+    if(port_index == TLTF_PIN_PORT_INDEX & pin_index == TLTF_PIN_PIN_INDEX) begin
+    wire ALT_en;
+    wire Pin_value;
+    wire Pin_state;    
+    assign ALT_en = timer_limit_toggle_flag_en;
+    assign Pin_value = (ALT_en) ? timer_limit_toggle_flag : GPIO_PORT_o[port_index][pin_index];
+    assign Pin_state = (ALT_en) ? 1'b0 : PORT_CONFIGURATION[port_index][pin_index];
+    IOBUF 
+        #(
+        .DRIVE(12),             // Specify the output drive strength
+        .IBUF_LOW_PWR("TRUE"),  // Low Power - "TRUE", High Performance = "FALSE"
+        .IOSTANDARD("DEFAULT"), // Specify the I/O standard
+        .SLEW("SLOW")           // Specify the output slew rate
+        ) IOBUF_inst (
+        .O(GPIO_PORT_i[port_index][pin_index]),         // Buffer output
+        .IO(GPIO_PORT[port_index][pin_index]),          // Buffer inout port (connect directly to top-level port)
+        .I(Pin_value),         // Buffer input
+        .T(Pin_state)   // 3-state enable input, high=input, low=output
+        );
+    end 
+    // Normal pin
+    else begin   
     IOBUF 
         #(
         .DRIVE(12),             // Specify the output drive strength
@@ -890,6 +932,7 @@ module Dual_core_mcu
         .I(GPIO_PORT_o[port_index][pin_index]),         // Buffer input
         .T(PORT_CONFIGURATION[port_index][pin_index])   // 3-state enable input, high=input, low=output
         );                                              // End of IOBUF_inst instantiation    
+    end
     end
     end    
     endgenerate    
@@ -944,6 +987,7 @@ module Dual_core_mcu
         .prescaler_selector(timer_prescaler),
         .timer_limit_value(timer_interrupt_limit_value),
         .interrupt_request(interrupt_request_3),
+        .TLTF(timer_limit_toggle_flag),
         .rst_n(~rst)
         );  
     external_INT_handler 
@@ -956,8 +1000,20 @@ module Dual_core_mcu
         .debounce_option(exti_debounce_option),
         .interrupt_request(interrupt_request_2),
         .rst_n(~rst)
+        );            
+    `ifdef RST_INT        
+    external_INT_handler 
+        RST_INT
+        (
+        .clk(system_tick_25),
+        .int_pin(rst_pin),
+        .enable_interrupt(1'b1),
+        .interrupt_sense_control(2'b00),    // Rising edge
+        .debounce_option(1'b1),
+        .interrupt_request(interrupt_request_1),
+        .rst_n(~rst)
         );                   
-  
+    `endif
     // Communication peripherals    
     `ifdef UART_PROT_1        
     Atfox_exTensible_Interface

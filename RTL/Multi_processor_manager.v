@@ -79,7 +79,8 @@ module Multi_processor_manager
     parameter BGE_ENCODE           = 3'b101,
     // Funct3 encoder (for SYSTEM-type) 
     parameter BREAK_ENCODE         = 3'b001,            // BREAK: use for debugger
-    parameter DEBUG_ENCODE         = 3'b101,
+    parameter DEBUG_ENCODE         = 3'b101,    
+    parameter RESET_ENCODE         = 3'b100,
     parameter EXIT_ENCODE          = 3'b010,
     parameter RETI_ENCODE          = 3'b011,
     // Funct3 encoder (for MISC-MEM type)
@@ -641,6 +642,11 @@ module Multi_processor_manager
                         decode_state = DISPATCH_INS_STATE;
                         boot_p1_en = 0;
                     end
+                end
+                RESET_ENCODE: begin
+//                    PC_update_ins_flow = MAIN_PROGRAM_ADDR;        // Return init addr of main program
+//                    decode_state = PROGRAM_IDLE_STATE;
+//                    IF_update = 1;
                 end
                 EXIT_ENCODE: begin
                 //

@@ -11,8 +11,8 @@
 // Instruction testcase 
 //`define NORMAL_TESTCASE
 //`define GPIO_TESTCASE
-`define PERIPHERAL_TESTCASE
-//`define INTERRUPT_HANDLER_TESTCASE
+//`define PERIPHERAL_TESTCASE
+`define INTERRUPT_HANDLER_TESTCASE
 //`define PARALLEL_TESTCASE
 
 module Dual_core_mcu_tb;
@@ -161,7 +161,7 @@ module Dual_core_mcu_tb;
 //        IO_driver <= 0;
         for(int port_index = 0; port_index < GPIO_PORT_AMOUNT; port_index = port_index + 1) begin
         for(int pin_index = 0; pin_index < GPIO_PIN_AMOUNT; pin_index = pin_index + 1) begin
-        GPIO_driver[port_index][pin_index] <= 0;
+        GPIO_driver[port_index][pin_index] <= 1;
         end
     end 
         external_int_pin <= 1;
@@ -805,7 +805,7 @@ module Dual_core_mcu_tb;
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
         // PC = 0xCC
-            instruction <= {5'd08,5'd00,12'b11000000,ADDI_INS_10};      // x8 = 8'b11000010 (store configuration data)
+            instruction <= {5'd08,5'd00,12'b11100000,ADDI_INS_10};      // x8 = 8'b11100010 (store configuration data)
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
