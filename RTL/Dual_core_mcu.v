@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`define DEBUG
+`define DEBUG 0
 `define EXT_INT
 `define TIM_INT
 //`define RST_INT
@@ -148,7 +148,7 @@ module Dual_core_mcu
     
     // Reset program pin
     `ifdef RST_INT 
-    input                               rst_pin,
+//    input                               rst_pin,
     `endif
     
     // Reset all
@@ -405,14 +405,18 @@ module Dual_core_mcu
     assign exti_pin = GPIO_PORT_i[EXT_GPIO_PORT_INDEX][EXT_GPIO_PIN_INDEX];    
     
     /* Clock Generator */
-    `ifdef DEBUG assign system_tick_25 = clk;
-    `else 
+    generate
+    if(`DEBUG) begin
+    assign system_tick_25 = clk;
+    end
+    else begin
     clk_wiz_0 system_tick
         ( 
         .clk_in1(clk),
         .clk_out1(system_tick_25)
         ); 
-    `endif
+    end
+    endgenerate
     /* End Clock generator */
     
     Processor           
@@ -1002,17 +1006,17 @@ module Dual_core_mcu
         .rst_n(~rst)
         );            
     `ifdef RST_INT        
-    external_INT_handler 
-        RST_INT
-        (
-        .clk(system_tick_25),
-        .int_pin(rst_pin),
-        .enable_interrupt(1'b1),
-        .interrupt_sense_control(2'b00),    // Rising edge
-        .debounce_option(1'b1),
-        .interrupt_request(interrupt_request_1),
-        .rst_n(~rst)
-        );                   
+//    external_INT_handler 
+//        RST_INT
+//        (
+//        .clk(system_tick_25),
+//        .int_pin(rst_pin),
+//        .enable_interrupt(1'b1),
+//        .interrupt_sense_control(2'b00),    // Rising edge
+//        .debounce_option(1'b1),
+//        .interrupt_request(interrupt_request_1),
+//        .rst_n(~rst)
+//        );                   
     `endif
     // Communication peripherals    
     `ifdef UART_PROT_1        

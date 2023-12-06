@@ -50,46 +50,48 @@ module timer_INT_handler
     assign clk_en_prescaler_2 = (prescaler_counter[PRESCALER_2_WIDTH - 1:0] == PRESCALER_2 - 1);
     assign clk_en_prescaler_3 = (prescaler_counter[PRESCALER_3_WIDTH - 1:0] == PRESCALER_3 - 1);
     assign clk_en_int = (enable_interrupt) ? clk_en_sync : 1'b0;
-    always @* begin
+    always_comb begin
+        clk_en_sync = clk_en_prescaler_0;
         case(prescaler_selector) 
             0: begin
-                clk_en_sync <= clk_en_prescaler_0;
+                clk_en_sync = clk_en_prescaler_0;
             end
             1: begin
-                clk_en_sync <= clk_en_prescaler_1;
+                clk_en_sync = clk_en_prescaler_1;
             end
             2: begin
-                clk_en_sync <= clk_en_prescaler_2;
+                clk_en_sync = clk_en_prescaler_2;
             end
             3: begin
-                clk_en_sync <= clk_en_prescaler_3;
+                clk_en_sync = clk_en_prescaler_3;
             end
             default: begin
-                clk_en_sync <= clk_en_prescaler_0;         
+                clk_en_sync = clk_en_prescaler_0;         
             end
         endcase 
     end
-    always @* begin
+    always_comb begin
+        interrupt_value = MAX_LIMIT_VALUE - 1;
         case(interrupt_option)
             TIMER_INT_OVERFLOW: begin
-                interrupt_value <= MAX_LIMIT_VALUE - 1;
+                interrupt_value = MAX_LIMIT_VALUE - 1;
             end
             TIMER_INT_COMPARE: begin
-                interrupt_value <= timer_limit_value - 1;
+                interrupt_value = timer_limit_value - 1;
             end 
             default: begin
-                interrupt_value <= MAX_LIMIT_VALUE - 1;
+                interrupt_value = MAX_LIMIT_VALUE - 1;
             end
         endcase 
     end
     // Clock source
     wire [PRESCALER_COUNTER - 1:0] prescaler_counter_next;
-    assign prescaler_counter_next = prescaler_counter + 1'b1;
+    assign prescaler_counter_next = (enable_interrupt & prescaler_selector != 0) ? prescaler_counter + 1'b1 : 1'b0;
     always @(posedge clk) begin
         if(!rst_n) begin
             prescaler_counter <= 0;
         end
-        else if(enable_interrupt & prescaler_selector != 0) begin
+        else begin
             prescaler_counter <= prescaler_counter_next;
         end
     end

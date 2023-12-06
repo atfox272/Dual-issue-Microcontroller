@@ -10,9 +10,9 @@
 
 // Instruction testcase 
 //`define NORMAL_TESTCASE
-//`define GPIO_TESTCASE
+`define GPIO_TESTCASE
 //`define PERIPHERAL_TESTCASE
-`define INTERRUPT_HANDLER_TESTCASE
+//`define INTERRUPT_HANDLER_TESTCASE
 //`define PARALLEL_TESTCASE
 
 module Dual_core_mcu_tb;

@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date         : Mon Dec  4 00:36:40 2023
+| Date         : Thu Dec  7 05:16:32 2023
 | Host         : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
 | Command      : report_bus_skew -warn_on_violation -file Dual_core_mcu_bus_skew_postroute_physopted.rpt -pb Dual_core_mcu_bus_skew_postroute_physopted.pb -rpx Dual_core_mcu_bus_skew_postroute_physopted.rpx
 | Design       : Dual_core_mcu

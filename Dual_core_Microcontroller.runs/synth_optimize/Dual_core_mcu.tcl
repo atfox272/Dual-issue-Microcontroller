@@ -116,7 +116,7 @@ read_verilog -library xil_defaultlib -sv {
   L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v
 }
 read_verilog -library xil_defaultlib L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/edgedet.v
-read_ip -quiet l:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.xci
+read_ip -quiet L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.xci
 set_property used_in_implementation false [get_files -all l:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_board.xdc]
 set_property used_in_implementation false [get_files -all l:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.gen/sources_1/ip/clk_wiz_0/clk_wiz_0.xdc]
 set_property used_in_implementation false [get_files -all l:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_ooc.xdc]
