@@ -4,7 +4,7 @@ module external_INT_handler
     parameter RISE_SENSE_CONTROL    = 2'b00,
     parameter FALL_SENSE_CONTROL    = 2'b01,
     parameter CHANGE_SENSE_CONTROL  = 2'b10,
-    parameter DEBOUNCE_TIMEOUT      = 50000,
+    parameter DEBOUNCE_TIMEOUT      = 5000,
     parameter DEBOUNCE_COUNTER      = $clog2(DEBOUNCE_TIMEOUT)
     )
     (

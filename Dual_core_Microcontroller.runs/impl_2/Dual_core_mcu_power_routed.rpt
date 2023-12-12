@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date             : Thu Dec  7 05:16:19 2023
+| Date             : Wed Dec 13 01:53:01 2023
 | Host             : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
 | Command          : report_power -file Dual_core_mcu_power_routed.rpt -pb Dual_core_mcu_power_summary_routed.pb -rpx Dual_core_mcu_power_routed.rpx
 | Design           : Dual_core_mcu
@@ -30,14 +30,14 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.250        |
+| Total On-Chip Power (W)  | 0.278        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.142        |
+| Dynamic (W)              | 0.170        |
 | Device Static (W)        | 0.108        |
 | Effective TJA (C/W)      | 11.5         |
-| Max Ambient (C)          | 82.1         |
-| Junction Temperature (C) | 27.9         |
+| Max Ambient (C)          | 81.8         |
+| Junction Temperature (C) | 28.2         |
 | Confidence Level         | Low          |
 | Setting File             | ---          |
 | Simulation Activity File | ---          |
@@ -52,19 +52,19 @@ Table of Contents
 +--------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
-| Clocks                   |     0.011 |        5 |       --- |             --- |
-| Slice Logic              |     0.014 |    49656 |       --- |             --- |
-|   LUT as Logic           |     0.013 |    23089 |     53200 |           43.40 |
-|   F7/F8 Muxes            |    <0.001 |     6752 |     53200 |           12.69 |
-|   CARRY4                 |    <0.001 |      228 |     13300 |            1.71 |
-|   Register               |    <0.001 |    16853 |    106400 |           15.84 |
+| Clocks                   |     0.019 |        5 |       --- |             --- |
+| Slice Logic              |     0.014 |    48138 |       --- |             --- |
+|   LUT as Logic           |     0.013 |    22081 |     53200 |           41.51 |
+|   F7/F8 Muxes            |    <0.001 |     7176 |     53200 |           13.49 |
+|   CARRY4                 |    <0.001 |      244 |     13300 |            1.83 |
+|   Register               |    <0.001 |    16881 |    106400 |           15.87 |
 |   LUT as Distributed RAM |    <0.001 |      132 |     17400 |            0.76 |
 |   Others                 |     0.000 |       68 |       --- |             --- |
-| Signals                  |     0.017 |    30517 |       --- |             --- |
-| PLL                      |     0.098 |        1 |         4 |           25.00 |
-| I/O                      |     0.003 |       23 |       125 |           18.40 |
+| Signals                  |     0.022 |    28038 |       --- |             --- |
+| PLL                      |     0.109 |        1 |         4 |           25.00 |
+| I/O                      |     0.005 |       23 |       125 |           18.40 |
 | Static Power             |     0.108 |          |           |                 |
-| Total                    |     0.250 |          |           |                 |
+| Total                    |     0.278 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -74,8 +74,8 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.058 |       0.050 |      0.008 |       NA    | Unspecified | NA         |
-| Vccaux    |       1.800 |     0.060 |       0.049 |      0.011 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.074 |       0.066 |      0.008 |       NA    | Unspecified | NA         |
+| Vccaux    |       1.800 |     0.066 |       0.055 |      0.011 |       NA    | Unspecified | NA         |
 | Vcco33    |       3.300 |     0.002 |       0.001 |      0.001 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -138,8 +138,8 @@ Table of Contents
 | Clock              | Domain                              | Constraint (ns) |
 +--------------------+-------------------------------------+-----------------+
 | clk                | clk                                 |             8.0 |
-| clk_out1_clk_wiz_0 | system_tick/inst/clk_out1_clk_wiz_0 |            40.0 |
-| clkfbout_clk_wiz_0 | system_tick/inst/clkfbout_clk_wiz_0 |            40.0 |
+| clk_out1_clk_wiz_0 | system_tick/inst/clk_out1_clk_wiz_0 |            25.0 |
+| clkfbout_clk_wiz_0 | system_tick/inst/clkfbout_clk_wiz_0 |             8.0 |
 +--------------------+-------------------------------------+-----------------+
 
 
@@ -152,16 +152,17 @@ Table of Contents
 +------------------------------+-----------+
 | Name                         | Power (W) |
 +------------------------------+-----------+
-| Dual_core_mcu                |     0.142 |
-|   DMEM                       |     0.004 |
-|   IMEM                       |     0.005 |
+| Dual_core_mcu                |     0.170 |
+|   ATI_UART2_BUS2             |     0.001 |
+|   DMEM                       |     0.006 |
+|   IMEM                       |     0.009 |
 |   ISSUE_PROCESSOR_1          |     0.005 |
-|     MAIN_RPOCESSOR_BLOCK.alu |     0.001 |
-|   ISSUE_PROCESSOR_2          |     0.002 |
-|   PROGRAM_PROCESSOR          |     0.014 |
-|   registers_management       |     0.008 |
-|   system_tick                |     0.098 |
-|     inst                     |     0.098 |
+|     MAIN_RPOCESSOR_BLOCK.alu |     0.003 |
+|   ISSUE_PROCESSOR_2          |     0.004 |
+|   PROGRAM_PROCESSOR          |     0.018 |
+|   registers_management       |     0.009 |
+|   system_tick                |     0.110 |
+|     inst                     |     0.110 |
 +------------------------------+-----------+
 
 

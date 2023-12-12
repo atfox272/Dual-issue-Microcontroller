@@ -99,6 +99,7 @@ module Multi_processor_manager
     // NOT MODIFY
     parameter ADDR_WIDTH_PM         = $clog2(PROGRAM_MEMORY_SIZE),
     parameter REG_SPACE_WIDTH       = $clog2(REGISTER_AMOUNT),
+    parameter SIGN_EXTEND_WIDTH     = 52,
     parameter RUNNING_PROGRAM_STATE = 2
     )
     (
@@ -202,6 +203,8 @@ module Multi_processor_manager
     wire[IMM_2_SPACE_WIDTH - 1:0]       immediate_2_space;
     wire[IMM_3_SPACE_WIDTH - 1:0]       immediate_3_space;
     wire[JUMP_OFS_SPACE_WIDTH - 1:0]    jump_offset_space;
+    wire[SIGN_EXTEND_WIDTH - 1:0]       alu_sign_extend_imm3;
+    wire[SIGN_EXTEND_WIDTH - 1:0]       alu_sign_extend_imm2;
     wire[OPT_SPACE_WIDTH - 1:0]         option_space;
     // Registers management
     reg [REG_SPACE_WIDTH - 1:0]         register1_num_reg;
@@ -250,6 +253,8 @@ module Multi_processor_manager
     assign immediate_2_space = cur_instruction[IMM_2_SPACE_MSB:IMM_2_SPACE_LSB];
     assign immediate_3_space = cur_instruction[IMM_3_SPACE_MSB:IMM_3_SPACE_LSB];
     assign jump_offset_space = cur_instruction[JUMP_OFS_SPACE_MSB:JUMP_OFS_SPACE_LSB];
+    assign alu_sign_extend_imm3 = {52{cur_instruction[IMM_3_SPACE_MSB]}}; 
+    assign alu_sign_extend_imm2 = {52{cur_instruction[IMM_2_SPACE_MSB]}}; 
     assign option_space = cur_instruction[OPT_SPACE_MSB:OPT_SPACE_LSB];
     assign rd2_cur = rs1_cur;
     assign rd3_cur = rs2_cur;
@@ -355,7 +360,8 @@ module Multi_processor_manager
     logic                           rd_PC_stack_en;
     logic                           reti_det;
     logic                           IF_update;
-    logic[DOUBLEWORD_WIDTH - 1:0]   quick_adder_result;
+    logic[DOUBLEWORD_WIDTH - 1:0]   early_store_adder_result;
+    logic[DOUBLEWORD_WIDTH - 1:0]   early_load_adder_result;
     logic[CHANNEL_BUS_WIDTH - 1:0]  bus_module_encode;
     logic                           bus_ready;
     logic                           bus_path_p1;
@@ -366,9 +372,10 @@ module Multi_processor_manager
     logic       interrupt_handling_3_update_remain;
     
     // Quick adder to bus mapping
-    assign quick_adder_result = rs1_regFile + rs2_regFile;
+    assign early_store_adder_result = rs1_regFile + {alu_sign_extend_imm3, immediate_3_space, immediate_1_space};
+    assign early_load_adder_result  = rs1_regFile + {alu_sign_extend_imm2, immediate_2_space, immediate_1_space};
     // Bus module is higher-order
-    assign bus_module_encode[CHANNEL_BUS_WIDTH - 1:0] = quick_adder_result[DOUBLEWORD_WIDTH - 1:DOUBLEWORD_WIDTH - CHANNEL_BUS_WIDTH];
+    assign bus_module_encode[CHANNEL_BUS_WIDTH - 1:0] = (opcode_space == STORE_ENCODE) ? early_store_adder_result[DOUBLEWORD_WIDTH - 1:DOUBLEWORD_WIDTH - CHANNEL_BUS_WIDTH] : early_load_adder_result[DOUBLEWORD_WIDTH - 1:DOUBLEWORD_WIDTH - CHANNEL_BUS_WIDTH];
     always_comb begin                                   : BUS_MODULE_BLOCK
         // Data transfer 
         if(opcode_space == STORE_ENCODE | opcode_space == LOAD_ENCODE) begin

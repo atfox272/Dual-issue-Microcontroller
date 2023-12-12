@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------
 | Tool Version              : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date                      : Thu Dec  7 05:14:01 2023
+| Date                      : Wed Dec 13 01:47:00 2023
 | Host                      : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
 | Command                   : report_io -file Dual_core_mcu_io_placed.rpt
 | Design                    : Dual_core_mcu

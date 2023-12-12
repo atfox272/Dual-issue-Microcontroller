@@ -10,10 +10,15 @@
 
 // Instruction testcase 
 //`define NORMAL_TESTCASE
-`define GPIO_TESTCASE
+//`define GPIO_TESTCASE
 //`define PERIPHERAL_TESTCASE
 //`define INTERRUPT_HANDLER_TESTCASE
 //`define PARALLEL_TESTCASE
+//`define FPGA_UART1_TESTCASE
+//`define FPGA_UART2_TESTCASE
+//`define FPGA_GPIO_TESTCASE
+//`define FPGA_TIMER_TESTCASE
+`define FPGA_EXTINT_TESTCASE
 
 module Dual_core_mcu_tb;
     parameter DATA_WIDTH = 8;
@@ -183,8 +188,14 @@ module Dual_core_mcu_tb;
     parameter ADDI_INS_10   = 10'b0000010011;       // ADDI:    <5-rd><5rs1><12-imm>
     parameter SUB_INS_17    = 17'b10000000000110011;// SUB:     <5-rd><5-rs1><5-rs2>
     parameter SLL_INS_17    = 17'b00000000010110011;// SLL:     <5-rd><5-rs1><5-rs2>
+    parameter SLLI_INS_10   = 10'b0010010011;       // SLLI:    <5-rd><5rs1><12-imm>
     parameter SRL_INS_17    = 17'b00000001010110011;// SRL:     <5-rd><5-rs1><5-rs2>
+    parameter SRLI_INS_10   = 10'b1010010011;       // SRLI:    <5-rd><5rs1><12-imm>
+    parameter XORI_INS_10   = 10'b1000010011;       // XORI:    <5-rd><5rs1><12-imm>
+    
     parameter MUL_INS_17    = 17'b00000010000110011;// MUL:     <5-rd><5-rs1><5-rs2>
+    parameter ORI_INS_10    = 10'b1100010011;       // ORI:     <5-rd><5rs1><12-imm>
+    parameter ANDI_INS_10   = 10'b1110010011;       // ANDI:    <5-rd><5rs1><12-imm>
     // Load                                                     dest  base  offset
     parameter LB_INS_10     = 10'b0000000011;       // LB:      <5-rd><5rs1><12-imm>
     parameter LW_INS_10     = 10'b0100000011;       // LW:      <5-rd><5rs1><12-imm>
@@ -914,6 +925,761 @@ module Dual_core_mcu_tb;
             end
         `endif
     
+        `ifdef FPGA_UART2_TESTCASE
+            // Skip interrupt-program
+            for(i = 0; i < 48; i = i + 1) begin
+                instruction <= {8'h04,8'h03,8'h02,8'h01};
+                begin 
+                    #3;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                end
+            end
+            // PC = 0xC0 
+            instruction <= {5'd08,5'd00,12'h74,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xC4
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xC8
+            instruction <= {5'd08,5'd08,12'h41,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xCC
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD0
+            instruction <= {5'd08,5'd08,12'h20,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD4
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD8
+            instruction <= {5'd08,5'd08,12'h6F,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xDC
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xE0
+            instruction <= {5'd08,5'd08,12'h6C,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xE4
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xE8
+            instruction <= {5'd08,5'd08,12'h6C,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xEC
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xF0
+            instruction <= {5'd08,5'd08,12'h65,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xF4
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xF8
+            instruction <= {5'd08,5'd08,12'h48,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0xFC
+            instruction <= {5'd09,5'd00,12'h21,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x100
+            instruction <= {5'd09,5'd09,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x104
+            instruction <= {5'd09,5'd09,12'h78,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x108
+            instruction <= {5'd09,5'd09,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x10C
+            instruction <= {5'd09,5'd09,12'h6F,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x110
+            instruction <= {5'd09,5'd09,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x114
+            instruction <= {5'd09,5'd09,12'h66,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x118
+            instruction <= {5'd10,20'hC0000,LUI_INS_7};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x11C
+            instruction <= {5'd00,5'd10,5'd08,7'h00,SD_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x120
+            instruction <= {5'd00,5'd10,5'd09,7'h00,SW_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x12C
+            instruction <= {5'd08,5'd10,12'd00,LD_INS_10};          
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x130
+            instruction <= {5'd09,5'd08,12'h0FF,ANDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x134
+            quick_seperate_imm12 <= -2; #1;
+            instruction <= {imm12hi,5'd09,5'd00,imm12lo,BEQ_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x138
+            instruction <= {5'd08,5'd08,12'h16,SRLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x13C
+            instruction <= {25'd00,J_INS_7};                    // While(1);
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        `endif
+        `ifdef FPGA_UART1_TESTCASE
+            // Skip interrupt-program
+            for(i = 0; i < 48; i = i + 1) begin
+                instruction <= {8'h04,8'h03,8'h02,8'h01};
+                begin 
+                    #3;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                end
+            end
+            // PC = 0xC0 
+            instruction <= {5'd08,5'd00,12'h74,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xC4
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xC8
+            instruction <= {5'd08,5'd08,12'h41,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xCC
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD0
+            instruction <= {5'd08,5'd08,12'h20,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD4
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD8
+            instruction <= {5'd08,5'd08,12'h6F,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xDC
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xE0
+            instruction <= {5'd08,5'd08,12'h6C,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xE4
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xE8
+            instruction <= {5'd08,5'd08,12'h6C,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xEC
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xF0
+            instruction <= {5'd08,5'd08,12'h65,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xF4
+            instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xF8
+            instruction <= {5'd08,5'd08,12'h48,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0xFC
+            instruction <= {5'd09,5'd00,12'h21,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x100
+            instruction <= {5'd09,5'd09,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x104
+            instruction <= {5'd09,5'd09,12'h78,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x108
+            instruction <= {5'd09,5'd09,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x10C
+            instruction <= {5'd09,5'd09,12'h6F,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x110
+            instruction <= {5'd09,5'd09,12'h08,SLLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x114
+            instruction <= {5'd09,5'd09,12'h66,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x118
+            instruction <= {5'd10,20'h80000,LUI_INS_7};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x11C
+            instruction <= {5'd00,5'd10,5'd08,7'h00,SD_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x120
+            instruction <= {5'd00,5'd10,5'd09,7'h00,SW_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x124
+            instruction <= {25'd00,J_INS_7};                    // While(1);
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        `endif
+        `ifdef FPGA_GPIO_TESTCASE
+            // Skip interrupt-program
+            for(i = 0; i < 48; i = i + 1) begin
+                instruction <= {8'h04,8'h03,8'h02,8'h01};
+                begin 
+                    #3;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                end
+            end
+            // PC = 0xC0
+            instruction <= {5'd09,5'd00,12'h0F,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xC4
+            instruction <= {5'd00,5'd00,5'd09,7'h01,SB_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xC8
+            instruction <= {5'd10,20'h40000,LUI_INS_7};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xCC
+            instruction <= {5'd10,5'd10,12'h01,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD0
+            instruction <= {5'd11,5'd10,12'd00,LB_INS_10};      // Load 0(x10) to x11
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD4
+            instruction <= {5'd11,5'd11,12'hA0,ORI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xD8
+            instruction <= {5'd11,5'd11,12'hAF,ANDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xDC
+            instruction <= {5'd00,5'd10,5'd11,7'h00,SB_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xE0
+            instruction <= {5'd12,5'd10,12'd00,LB_INS_10};      // Load 0(x10) to x11
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end   
+            // PC = 0xE4
+            instruction <= {5'd13,5'd12,5'd00,ADD_INS_17};      // 
+            begin 
+                #3;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xE8
+            instruction <= {5'd13,5'd13,12'h01,ANDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xEC
+            instruction <= {5'd14,5'd12,5'd00,ADD_INS_17};      // 
+            begin 
+                #3;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xF0
+            instruction <= {5'd14,5'd14,12'h03,SRLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xF4
+            instruction <= {5'd14,5'd14,12'h01,ANDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0xF8
+            quick_seperate_imm12 <= -6; #1;
+            instruction <= {imm12hi,5'd14,5'd00,imm12lo,BEQ_INS_10};      // JUMP to 0x15C (without sending debug data)
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0xFC    
+            instruction <= {5'd11,5'd10,12'd00,LB_INS_10};      // Load 0(x10) to x11
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x100
+            instruction <= {5'd11,5'd11,12'h50,ORI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x104
+            instruction <= {5'd11,5'd11,12'h5F,ANDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x108
+            instruction <= {5'd00,5'd10,5'd11,7'h00,SB_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+            // PC = 0x10C
+            instruction <= {25'd00,J_INS_7};                    // While(1);
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        `endif
+        
+        `ifdef FPGA_TIMER_TESTCASE
+        // Skip interrupt-program
+            for(i = 0; i < 32; i = i + 1) begin
+                instruction <= {8'h04,8'h03,8'h02,8'h01};
+                begin 
+                    #3;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                end
+            end
+        // ISR 3 //////////////////////////////////////////////////////////////////////////////////////// 
+        // PC = 0x80
+            instruction <= {5'd02,5'd02,-12'd16,ADDI_INS_10};        
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x84
+            instruction <= {5'd00,5'd02,5'd08,7'd00,SD_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x88
+            instruction <= {5'd00,5'd02,5'd09,7'd08,SD_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x8C
+            instruction <= {5'd09,5'd00,12'd144,ADDI_INS_10};   
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x90
+            instruction <= {5'd08,5'd09,12'd00,LD_INS_10};         
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+        // PC = 0x94
+            instruction <= {5'd08,5'd08,12'd1,ADDI_INS_10};   
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x98
+            instruction <= {5'd00,5'd09,5'd08,7'd00,SD_INS_10}; 
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x9C
+            instruction <= {5'd08,5'd02,12'd00,LD_INS_10};         
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end  
+        // PC = 0xA0
+            instruction <= {5'd09,5'd02,12'd08,LD_INS_10};         
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end  
+        // PC = 0xA4
+            instruction <= {5'd02,5'd02,12'd16,ADDI_INS_10};        
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+            
+        // PC = 0xA8
+            instruction <= {5'd00,5'd00,12'd00,RETI_INS_10};      // RETI
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        for(int i = 0; i < 5; i = i + 1) begin    
+        // PC = 0x98 - 7
+            instruction <= {5'd00,5'd00,12'd00,10'd00};      
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        end
+        ///////////////////////////////////////////////////////////////////////////////////////////////// 
+        // MAIN  //////////////////////////////////////////////////////////////////////////////////////// 
+        // PC = 0xC0
+            instruction <= {5'd08,5'd00,12'h30,ADDI_INS_10};        
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end 
+        // PC = 0xC4
+            instruction <= {5'd00,5'd00,5'd08,7'd16,SB_INS_10}; 
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+        // PC = 0xC8
+            instruction <= {5'd08,5'd00,12'h0F,ADDI_INS_10};        
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end 
+        // PC = 0xCC
+            instruction <= {5'd00,5'd00,5'd08,7'd15,SB_INS_10}; 
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end  
+        // PC = 0xD0
+            instruction <= {5'd09,5'd00,12'hC0,ADDI_INS_10};        
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+        // PC = 0xD4
+            instruction <= {5'd00,5'd00,5'd09,7'd14,SB_INS_10}; 
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end  
+        // PC = 0xD8
+            instruction <= {5'd19,5'd00,12'h0F,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xDC
+            instruction <= {5'd00,5'd00,5'd19,7'h01,SB_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xE0
+            instruction <= {5'd20,20'h40000,LUI_INS_7};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xE4
+            instruction <= {5'd20,5'd20,12'h01,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+                
+        // PC = 0xE8
+            instruction <= {5'd15,5'd00,12'd144,ADDI_INS_10};   
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xEC
+            instruction <= {5'd16,5'd15,12'd00,LD_INS_10};         
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+        // PC = 0xF0
+            quick_seperate_imm12 <= 6; #1;                     // if(gvar != 0) {execution}; else {skip}
+            instruction <= {imm12hi,5'd16,5'd00,imm12lo,BEQ_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0xF4            
+            instruction <= {5'd16,5'd16,-12'd1,ADDI_INS_10};    // Clear flag (gvar--) 
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xF8
+            instruction <= {5'd00,5'd15,5'd16,7'h00,SD_INS_10}; // Store flag
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xFC
+            instruction <= {5'd21,5'd20,12'd00,LB_INS_10};    
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x100
+            instruction <= {5'd21,5'd21,12'hF0,XORI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x104
+            instruction <= {5'd00,5'd20,5'd21,7'h00,SB_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+            
+        // PC = 0x108 (EXIT)
+            instruction <= {-25'd08,J_INS_7};                   // While(1) {};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+        ///////////////////////////////////////////////////////////////////////////////////////////////// 
+        `endif
+        `ifdef FPGA_EXTINT_TESTCASE
+        // Skip interrupt-program
+            for(i = 0; i < 16; i = i + 1) begin
+                instruction <= {8'h04,8'h03,8'h02,8'h01};
+                begin 
+                    #3;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                end
+            end
+        // ISR 2 //////////////////////////////////////////////////////////////////////////////////////// 
+        // PC = 0x40
+            instruction <= {5'd02,5'd02,-12'd16,ADDI_INS_10};        
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x44
+            instruction <= {5'd00,5'd02,5'd08,7'd00,SD_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x48
+            instruction <= {5'd00,5'd02,5'd09,7'd08,SD_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x4C
+            instruction <= {5'd09,5'd00,12'd144,ADDI_INS_10};   
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x50
+            instruction <= {5'd08,5'd09,12'd00,LD_INS_10};         
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+        // PC = 0x54
+            instruction <= {5'd08,5'd08,12'd1,ADDI_INS_10};   
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0x58
+            instruction <= {5'd00,5'd09,5'd08,7'd00,SD_INS_10}; 
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0x5C
+            instruction <= {5'd08,5'd02,12'd00,LD_INS_10};         
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end  
+        // PC = 0x60
+            instruction <= {5'd09,5'd02,12'd08,LD_INS_10};         
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end  
+        // PC = 0x64
+            instruction <= {5'd02,5'd02,12'd16,ADDI_INS_10};        
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+            
+        // PC = 0x68
+            instruction <= {5'd00,5'd00,12'd00,RETI_INS_10};      // RETI
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        for(int i = 0; i < 5; i = i + 1) begin    
+        // PC = 0x68 - 7
+            instruction <= {5'd00,5'd00,12'd00,10'd00};      
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        end
+        // Skip interrupt-program
+            for(i = 0; i < 16; i = i + 1) begin
+                instruction <= {8'h04,8'h03,8'h02,8'h01};
+                begin 
+                    #3;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                end
+            end
+        ///////////////////////////////////////////////////////////////////////////////////////////////// 
+        // MAIN  //////////////////////////////////////////////////////////////////////////////////////// 
+        // PC = 0xC0
+            instruction <= {5'd09,5'd00,12'd00,LB_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end   
+        // PC = 0xC4
+            instruction <= {5'd09,5'd09,12'h04,ORI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xC8
+            instruction <= {5'd00,5'd00,5'd09,7'd00,SB_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xCC
+            instruction <= {5'd08,5'd00,12'h90,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xD0
+            instruction <= {5'd00,5'd00,5'd08,7'd13,SB_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xD4
+            instruction <= {5'd20,20'h40000,LUI_INS_7};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xD8
+            instruction <= {5'd15,5'd00,12'd144,ADDI_INS_10};   
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xDC
+            instruction <= {5'd16,5'd15,12'd00,LD_INS_10};         
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+        // PC = 0xE0
+            quick_seperate_imm12 <= 6; #1;                     // if(gvar != 0) {execution}; else {skip}
+            instruction <= {imm12hi,5'd16,5'd00,imm12lo,BEQ_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            
+        // PC = 0xE4        
+            instruction <= {5'd16,5'd16,-12'd1,ADDI_INS_10};    // Clear flag (gvar--) 
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xE8
+            instruction <= {5'd00,5'd15,5'd16,7'h00,SD_INS_10}; // Store flag
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xEC
+            instruction <= {5'd21,5'd20,12'd00,LB_INS_10};    
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xF0
+            instruction <= {5'd21,5'd21,12'hF0,XORI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+        // PC = 0xF4
+            instruction <= {5'd00,5'd20,5'd21,7'h00,SB_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end    
+            
+        // PC = 0xF8 (EXIT)
+            instruction <= {-25'd08,J_INS_7};                   // While(1) {};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end  
+        /////////////////////////////////////////////////////////////////////////////////////////////////     
+        `endif
+        
     // Finish program
     `ifdef FINISH_PROGRAM_OPCODE
         TX_use_ex <= 0;
@@ -953,6 +1719,75 @@ module Dual_core_mcu_tb;
         
 //        GPIO_PORT_A[2] <= 1;
 //        IO_driver[2] <= 1;
+    end
+    `endif
+    
+    `ifdef FPGA_GPIO_TESTCASE
+    initial begin
+        #56815;
+        GPIO_driver[1][0] <= 0;
+        GPIO_driver[1][1] <= 0;
+        GPIO_driver[1][2] <= 0;
+        GPIO_driver[1][3] <= 0;
+        GPIO_ext[1][0] <= 0;
+        GPIO_ext[1][1] <= 0;
+        GPIO_ext[1][2] <= 1;
+        GPIO_ext[1][3] <= 0;
+        #40000;
+        GPIO_ext[1][3] <= 1;
+    end
+    `endif
+    
+    `ifdef FPGA_EXTINT_TESTCASE
+    initial begin
+        
+        GPIO_driver[0][2] <= 0;
+        GPIO_ext[0][2] <= 0;
+        #80000;
+        GPIO_ext[0][2] <= 1;
+        
+        /* Noise generate*/
+        #50;
+        GPIO_ext[0][2] <= 0;
+        #100;
+        GPIO_ext[0][2] <= 1;
+        #30
+        GPIO_ext[0][2] <= 0;
+        #500;
+        GPIO_ext[0][2] <= 0;
+        #10;
+        GPIO_ext[0][2] <= 1;
+        
+        
+        #10000;
+        GPIO_ext[0][2] <= 0;
+        
+        /* Noise generate*/
+        #50;
+        GPIO_ext[0][2] <= 0;
+        #100;
+        GPIO_ext[0][2] <= 1;
+        #30
+        GPIO_ext[0][2] <= 0;
+        #500;
+        GPIO_ext[0][2] <= 1;
+        #10;
+        GPIO_ext[0][2] <= 0;
+        
+        #10000;
+        GPIO_ext[0][2] <= 1;
+        
+        /* Noise generate*/
+        #50;
+        GPIO_ext[0][2] <= 0;
+        #100;
+        GPIO_ext[0][2] <= 1;
+        #30
+        GPIO_ext[0][2] <= 0;
+        #500;
+        GPIO_ext[0][2] <= 0;
+        #10;
+        GPIO_ext[0][2] <= 1;
     end
     `endif
     
@@ -1069,6 +1904,66 @@ module Dual_core_mcu_tb;
         data_bus_in_tx_ex <= 8'h08;
         #3 TX_use_ex <= 1;
         #2 TX_use_ex <= 0;
+    end
+    `endif
+    
+    `ifdef FPGA_UART2_TESTCASE
+    initial begin
+        #80000;
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h27;
+        #3 TX_use_ex_2 <= 1;
+        #2 TX_use_ex_2 <= 0;
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h02;
+        #3 TX_use_ex_2 <= 1;
+        #2 TX_use_ex_2 <= 0;
+        
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h20;
+        #3 TX_use_ex_2 <= 1;
+        #2 TX_use_ex_2 <= 0;
+        
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h03;
+        #3 TX_use_ex_2 <= 1;
+        #2 TX_use_ex_2 <= 0;
+        
+        #4760;
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h21;
+        #3 TX_use_ex_2 <= 1;
+        #2 TX_use_ex_2 <= 0;
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h10;
+        #3 TX_use_ex_2 <= 1;
+        #2 TX_use_ex_2 <= 0;
+        
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h20;
+        #3 TX_use_ex_2 <= 1;
+        #2 TX_use_ex_2 <= 0;
+        
+        
+        
+        TX_use_ex_2 <= 0;
+        data_bus_in_uart_ex_2 <= 8'h03;
+        #3 TX_use_ex_2 <= 1;
+        #2 TX_use_ex_2 <= 0;
+        
     end
     `endif
     

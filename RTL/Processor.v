@@ -790,7 +790,7 @@ module Processor
     logic [DOUBLEWORD_WIDTH - 1:0]  data_bus_wr_n;
     always_comb begin               : RUNNING_PROGRAM_FSM_GENERATOR
         running_program_state_n = running_program_state_reg;
-        alu_enable_seq_n = alu_enable_seq;// Reset register in processor
+        alu_enable_seq_n = 0;// Reset register in processor
         for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
         registers_owner_n[i] = registers_owner[i];
         end
@@ -824,10 +824,13 @@ module Processor
                 end
             end
             DMEM_RD_ACCESS_STATE: begin
+                running_program_state_n = EXECUTE_INSTRUCTION_STATE;
+                rd_ins_n = 0;
                 if(rd_idle) begin
-                    running_program_state_n = EXECUTE_INSTRUCTION_STATE;
                     registers_owner_n[rd_space] = data_bus_rd_sign_extend;
-                    rd_ins_n = 0;
+                end
+                else begin  // Invalid package for Loading data from peripheral (will set 64'h00)
+                    registers_owner_n[rd_space] = {DOUBLEWORD_WIDTH{1'b0}};
                 end
             end
             DMEM_WR_ACCESS_STATE: begin
@@ -1296,7 +1299,7 @@ module Processor
     logic [DOUBLEWORD_WIDTH - 1:0]  data_bus_wr_n;
     always_comb begin               : RUNNING_PROGRAM_FSM_GENERATOR
         running_program_state_n = running_program_state_reg;
-        alu_enable_seq_n = alu_enable_seq;// Reset register in processor
+        alu_enable_seq_n = 0;// Reset register in processor
         for(int i = 0; i < REGISTER_AMOUNT; i = i + 1) begin
         registers_owner_n[i] = registers_owner[i];
         end
@@ -1330,10 +1333,13 @@ module Processor
                 end
             end
             DMEM_RD_ACCESS_STATE: begin
+                running_program_state_n = EXECUTE_INSTRUCTION_STATE;
+                rd_ins_n = 0;
                 if(rd_idle) begin
-                    running_program_state_n = EXECUTE_INSTRUCTION_STATE;
                     registers_owner_n[rd_space] = data_bus_rd_sign_extend;
-                    rd_ins_n = 0;
+                end
+                else begin // Invalid package for Loading data from peripheral (will set 64'h00)
+                    registers_owner_n[rd_space] = {DOUBLEWORD_WIDTH{1'b0}};
                 end
             end
             DMEM_WR_ACCESS_STATE: begin
