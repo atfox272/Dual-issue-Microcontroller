@@ -2,8 +2,8 @@
 # Vivado v2020.2 (64-bit)
 # SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
 # IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
-# Start of session at: Wed Dec 13 01:58:35 2023
-# Process ID: 41296
+# Start of session at: Thu Dec 14 03:13:55 2023
+# Process ID: 35352
 # Current directory: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.runs/impl_2
 # Command line: vivado.exe -log Dual_core_mcu.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source Dual_core_mcu.tcl -notrace
 # Log file: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.runs/impl_2/Dual_core_mcu.vdi

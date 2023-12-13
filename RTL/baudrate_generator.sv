@@ -65,6 +65,8 @@ module baudrate_generator
     reg  [COUNTER_DIV_W - 1:0]  counter_div;
     logic[COUNTER_DIV_W - 1:0]  counter_div_load;
     logic[COUNTER_DIV_W - 1:0]  counter_div_decr;
+    logic[COUNTER_DIV_W - 1:0]  counter_div_next;
+    logic                       baudrate_clk_en_next;
     
     assign counter_div_decr = counter_div - 1;
     always_comb begin
@@ -96,50 +98,68 @@ module baudrate_generator
         endcase
     end 
     if(GENERATE_BD_4TX) begin       : BLOCK_FOR_TX
+    
+    always_comb begin
+        counter_div_next = counter_div;
+        baudrate_clk_en_next = 0;
+        
+        if(transaction_en) begin
+            if(counter_div == {COUNTER_DIV_W{1'b1}}) begin // Overflow
+                baudrate_clk_en_next = 1;
+                counter_div_next = counter_div_load;
+            end 
+            else begin
+                baudrate_clk_en_next = 0;
+                counter_div_next = counter_div_decr;
+            end 
+        end 
+        else begin
+            counter_div_next = {COUNTER_DIV_W{1'b1}};       // overflow immediately when transaction enable
+            baudrate_clk_en_next = 0;
+        end
+    end
+    
     always @(posedge clk) begin
         if(!rst_n) begin
             baudrate_clk_en <= 0;
             counter_div <= 0;
         end 
         else begin
-            if(transaction_en) begin
-                if(counter_div == {COUNTER_DIV_W{1'b1}}) begin // Overflow
-                    baudrate_clk_en <= 1;
-                    counter_div <= counter_div_load;
-                end 
-                else begin
-                    baudrate_clk_en <= 0;
-                    counter_div <= counter_div_decr;
-                end 
-            end 
-            else begin
-                counter_div <= {COUNTER_DIV_W{1'b1}};       // overflow immediately when transaction enable
-                baudrate_clk_en <= 0;
-            end
+            baudrate_clk_en <= baudrate_clk_en_next;
+            counter_div <= counter_div_next;
         end 
     end 
     end 
     else begin                      : BLOCK_FOR_RX
+    
+    always_comb begin
+        counter_div_next = counter_div;
+        baudrate_clk_en_next = 0;
+        
+        if(transaction_en) begin
+            if(counter_div == {COUNTER_DIV_W{1'b1}}) begin // Overflow
+                baudrate_clk_en_next = 1;
+                counter_div_next = counter_div_load;
+            end 
+            else begin
+                baudrate_clk_en_next = 0;
+                counter_div_next = counter_div_decr;
+            end 
+        end 
+        else begin
+            counter_div_next = {1'b0, counter_div_load[COUNTER_DIV_W - 1:1]};  // Load 1/2 cycle of baudrate at start bit (sample stable data)
+            baudrate_clk_en_next = 0;
+        end
+    end
+    
     always @(posedge clk) begin
         if(!rst_n) begin
             baudrate_clk_en <= 0;
             counter_div <= 0;
         end 
         else begin
-            if(transaction_en) begin
-                if(counter_div == {COUNTER_DIV_W{1'b1}}) begin // Overflow
-                    baudrate_clk_en <= 1;
-                    counter_div <= counter_div_load;
-                end 
-                else begin
-                    baudrate_clk_en <= 0;
-                    counter_div <= counter_div_decr;
-                end 
-            end 
-            else begin
-                counter_div <= {1'b0, counter_div_load[COUNTER_DIV_W - 1:1]};  // Load 1/2 cycle of baudrate at start bit (sample stable data)
-                baudrate_clk_en <= 0;
-            end
+            baudrate_clk_en <= baudrate_clk_en_next;
+            counter_div <= counter_div_next;
         end 
     end 
     end

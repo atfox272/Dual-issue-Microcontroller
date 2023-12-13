@@ -15,7 +15,7 @@
 module Dual_core_mcu
     #(
     
-    parameter INTERNAL_CLOCK    = 25000000,
+    parameter INTERNAL_CLOCK    = 40000000,
     parameter DATA_WIDTH        = 8,
     parameter WORD_WIDTH        = 32,
     parameter DOUBLEWORD_WIDTH  = 64,

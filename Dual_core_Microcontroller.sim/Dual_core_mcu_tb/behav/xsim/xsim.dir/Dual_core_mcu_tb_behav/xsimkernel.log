@@ -1,4 +1,0 @@
-Running: xsim.dir/Dual_core_mcu_tb_behav/xsimk.exe -simmode gui -wdb Dual_core_mcu_tb_behav.wdb -simrunnum 0 -socket 53407
-Design successfully loaded
-Design Loading Memory Usage: 10008 KB (Peak: 10008 KB)
-Design Loading CPU Usage: 0 ms

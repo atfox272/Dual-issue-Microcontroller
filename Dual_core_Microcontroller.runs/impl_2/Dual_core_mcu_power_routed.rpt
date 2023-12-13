@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date             : Wed Dec 13 01:53:01 2023
+| Date             : Thu Dec 14 03:13:19 2023
 | Host             : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
 | Command          : report_power -file Dual_core_mcu_power_routed.rpt -pb Dual_core_mcu_power_summary_routed.pb -rpx Dual_core_mcu_power_routed.rpx
 | Design           : Dual_core_mcu
@@ -30,10 +30,10 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.278        |
+| Total On-Chip Power (W)  | 0.277        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.170        |
+| Dynamic (W)              | 0.169        |
 | Device Static (W)        | 0.108        |
 | Effective TJA (C/W)      | 11.5         |
 | Max Ambient (C)          | 81.8         |
@@ -53,18 +53,18 @@ Table of Contents
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
 | Clocks                   |     0.019 |        5 |       --- |             --- |
-| Slice Logic              |     0.014 |    48138 |       --- |             --- |
-|   LUT as Logic           |     0.013 |    22081 |     53200 |           41.51 |
+| Slice Logic              |     0.014 |    48152 |       --- |             --- |
+|   LUT as Logic           |     0.013 |    22092 |     53200 |           41.53 |
 |   F7/F8 Muxes            |    <0.001 |     7176 |     53200 |           13.49 |
-|   CARRY4                 |    <0.001 |      244 |     13300 |            1.83 |
-|   Register               |    <0.001 |    16881 |    106400 |           15.87 |
+|   CARRY4                 |    <0.001 |      248 |     13300 |            1.86 |
+|   Register               |    <0.001 |    16885 |    106400 |           15.87 |
 |   LUT as Distributed RAM |    <0.001 |      132 |     17400 |            0.76 |
 |   Others                 |     0.000 |       68 |       --- |             --- |
-| Signals                  |     0.022 |    28038 |       --- |             --- |
+| Signals                  |     0.022 |    28052 |       --- |             --- |
 | PLL                      |     0.109 |        1 |         4 |           25.00 |
 | I/O                      |     0.005 |       23 |       125 |           18.40 |
 | Static Power             |     0.108 |          |           |                 |
-| Total                    |     0.278 |          |           |                 |
+| Total                    |     0.277 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -152,7 +152,7 @@ Table of Contents
 +------------------------------+-----------+
 | Name                         | Power (W) |
 +------------------------------+-----------+
-| Dual_core_mcu                |     0.170 |
+| Dual_core_mcu                |     0.169 |
 |   ATI_UART2_BUS2             |     0.001 |
 |   DMEM                       |     0.006 |
 |   IMEM                       |     0.009 |
@@ -160,7 +160,7 @@ Table of Contents
 |     MAIN_RPOCESSOR_BLOCK.alu |     0.003 |
 |   ISSUE_PROCESSOR_2          |     0.004 |
 |   PROGRAM_PROCESSOR          |     0.018 |
-|   registers_management       |     0.009 |
+|   registers_management       |     0.008 |
 |   system_tick                |     0.110 |
 |     inst                     |     0.110 |
 +------------------------------+-----------+

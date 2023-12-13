@@ -2,8 +2,8 @@
 # Vivado v2020.2 (64-bit)
 # SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
 # IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
-# Start of session at: Wed Dec 13 01:31:09 2023
-# Process ID: 36440
+# Start of session at: Thu Dec 14 02:59:00 2023
+# Process ID: 31968
 # Current directory: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.runs/synth_optimize
 # Command line: vivado.exe -log Dual_core_mcu.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source Dual_core_mcu.tcl
 # Log file: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.runs/synth_optimize/Dual_core_mcu.vds
@@ -11,7 +11,6 @@
 #-----------------------------------------------------------
 source Dual_core_mcu.tcl -notrace
 WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {17-179}  -suppress '. The existing rule will be replaced.
-create_project: Time (s): cpu = 00:00:00 ; elapsed = 00:00:05 . Memory (MB): peak = 1143.840 ; gain = 0.000
 Command: synth_design -top Dual_core_mcu -part xc7z020clg400-1
 Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7z020'
@@ -20,12 +19,12 @@ INFO: [Device 21-403] Loading part xc7z020clg400-1
 INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
 INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
 WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {17-179}  -suppress '. The existing rule will be replaced.
-INFO: [Synth 8-7075] Helper process launched with PID 41524
+INFO: [Synth 8-7075] Helper process launched with PID 13588
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:02 ; elapsed = 00:00:06 . Memory (MB): peak = 1214.273 ; gain = 70.434
+Starting RTL Elaboration : Time (s): cpu = 00:00:02 ; elapsed = 00:00:06 . Memory (MB): peak = 1215.859 ; gain = 37.438
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'Dual_core_mcu' [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:15]
-	Parameter INTERNAL_CLOCK bound to: 25000000 - type: integer 
+	Parameter INTERNAL_CLOCK bound to: 40000000 - type: integer 
 	Parameter DATA_WIDTH bound to: 8 - type: integer 
 	Parameter WORD_WIDTH bound to: 32 - type: integer 
 	Parameter DOUBLEWORD_WIDTH bound to: 64 - type: integer 
@@ -768,7 +767,7 @@ INFO: [Synth 8-6155] done synthesizing module 'real_time__parameterized1' (22#1)
 INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:251]
 INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized2' (22#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'uart_peripheral' [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
-	Parameter INTERNAL_CLOCK bound to: 25000000 - type: integer 
+	Parameter INTERNAL_CLOCK bound to: 40000000 - type: integer 
 	Parameter RX_FLAG_TYPE bound to: 1'b1 
 	Parameter DATA_WIDTH bound to: 8 - type: integer 
 	Parameter FIFO_DEPTH bound to: 64 - type: integer 
@@ -854,7 +853,7 @@ INFO: [Synth 8-6157] synthesizing module 'RX_controller' [L:/Projects/peripheral
 	Parameter STOP_BIT bound to: 1'b1 
 INFO: [Synth 8-6155] done synthesizing module 'RX_controller' (24#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/RX_controller.v:2]
 INFO: [Synth 8-6157] synthesizing module 'baudrate_generator' [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/baudrate_generator.sv:15]
-	Parameter INTERNAL_CLOCK bound to: 25000000 - type: integer 
+	Parameter INTERNAL_CLOCK bound to: 40000000 - type: integer 
 	Parameter GENERATE_BD_4TX bound to: 1'b1 
 	Parameter BAUDRATE_AMOUNT bound to: 8 - type: integer 
 	Parameter BAUDRATE_4800_ENC bound to: 0 - type: integer 
@@ -867,8 +866,8 @@ INFO: [Synth 8-6157] synthesizing module 'baudrate_generator' [L:/Projects/perip
 	Parameter BAUDRATE_115200_ENC bound to: 7 - type: integer 
 	Parameter BAUDRATE_AMOUNT_W bound to: 3 - type: integer 
 	Parameter BAUDRATE_DIV_1 bound to: 4800 - type: integer 
-	Parameter COUNTER_DIV_MAX bound to: 5208 - type: integer 
-	Parameter COUNTER_DIV_W bound to: 13 - type: integer 
+	Parameter COUNTER_DIV_MAX bound to: 8333 - type: integer 
+	Parameter COUNTER_DIV_W bound to: 14 - type: integer 
 	Parameter BD4800 bound to: 4800 - type: integer 
 	Parameter BD9600 bound to: 9600 - type: integer 
 	Parameter BD19200 bound to: 19200 - type: integer 
@@ -877,17 +876,17 @@ INFO: [Synth 8-6157] synthesizing module 'baudrate_generator' [L:/Projects/perip
 	Parameter BD28800 bound to: 28800 - type: integer 
 	Parameter BD57600 bound to: 57600 - type: integer 
 	Parameter BD115200 bound to: 115200 - type: integer 
-	Parameter COUNTER_BD4800 bound to: 5208 - type: integer 
-	Parameter COUNTER_BD9600 bound to: 2604 - type: integer 
-	Parameter COUNTER_BD19200 bound to: 1302 - type: integer 
-	Parameter COUNTER_BD38400 bound to: 651 - type: integer 
-	Parameter COUNTER_BD14400 bound to: 1736 - type: integer 
-	Parameter COUNTER_BD28800 bound to: 868 - type: integer 
-	Parameter COUNTER_BD57600 bound to: 434 - type: integer 
-	Parameter COUNTER_BD115200 bound to: 217 - type: integer 
+	Parameter COUNTER_BD4800 bound to: 8333 - type: integer 
+	Parameter COUNTER_BD9600 bound to: 4166 - type: integer 
+	Parameter COUNTER_BD19200 bound to: 2083 - type: integer 
+	Parameter COUNTER_BD38400 bound to: 1041 - type: integer 
+	Parameter COUNTER_BD14400 bound to: 2777 - type: integer 
+	Parameter COUNTER_BD28800 bound to: 1388 - type: integer 
+	Parameter COUNTER_BD57600 bound to: 694 - type: integer 
+	Parameter COUNTER_BD115200 bound to: 347 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'baudrate_generator' (25#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/baudrate_generator.sv:15]
 INFO: [Synth 8-6157] synthesizing module 'baudrate_generator__parameterized0' [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/baudrate_generator.sv:15]
-	Parameter INTERNAL_CLOCK bound to: 25000000 - type: integer 
+	Parameter INTERNAL_CLOCK bound to: 40000000 - type: integer 
 	Parameter GENERATE_BD_4TX bound to: 1'b0 
 	Parameter BAUDRATE_AMOUNT bound to: 8 - type: integer 
 	Parameter BAUDRATE_4800_ENC bound to: 0 - type: integer 
@@ -900,8 +899,8 @@ INFO: [Synth 8-6157] synthesizing module 'baudrate_generator__parameterized0' [L
 	Parameter BAUDRATE_115200_ENC bound to: 7 - type: integer 
 	Parameter BAUDRATE_AMOUNT_W bound to: 3 - type: integer 
 	Parameter BAUDRATE_DIV_1 bound to: 4800 - type: integer 
-	Parameter COUNTER_DIV_MAX bound to: 5208 - type: integer 
-	Parameter COUNTER_DIV_W bound to: 13 - type: integer 
+	Parameter COUNTER_DIV_MAX bound to: 8333 - type: integer 
+	Parameter COUNTER_DIV_W bound to: 14 - type: integer 
 	Parameter BD4800 bound to: 4800 - type: integer 
 	Parameter BD9600 bound to: 9600 - type: integer 
 	Parameter BD19200 bound to: 19200 - type: integer 
@@ -910,14 +909,14 @@ INFO: [Synth 8-6157] synthesizing module 'baudrate_generator__parameterized0' [L
 	Parameter BD28800 bound to: 28800 - type: integer 
 	Parameter BD57600 bound to: 57600 - type: integer 
 	Parameter BD115200 bound to: 115200 - type: integer 
-	Parameter COUNTER_BD4800 bound to: 5208 - type: integer 
-	Parameter COUNTER_BD9600 bound to: 2604 - type: integer 
-	Parameter COUNTER_BD19200 bound to: 1302 - type: integer 
-	Parameter COUNTER_BD38400 bound to: 651 - type: integer 
-	Parameter COUNTER_BD14400 bound to: 1736 - type: integer 
-	Parameter COUNTER_BD28800 bound to: 868 - type: integer 
-	Parameter COUNTER_BD57600 bound to: 434 - type: integer 
-	Parameter COUNTER_BD115200 bound to: 217 - type: integer 
+	Parameter COUNTER_BD4800 bound to: 8333 - type: integer 
+	Parameter COUNTER_BD9600 bound to: 4166 - type: integer 
+	Parameter COUNTER_BD19200 bound to: 2083 - type: integer 
+	Parameter COUNTER_BD38400 bound to: 1041 - type: integer 
+	Parameter COUNTER_BD14400 bound to: 2777 - type: integer 
+	Parameter COUNTER_BD28800 bound to: 1388 - type: integer 
+	Parameter COUNTER_BD57600 bound to: 694 - type: integer 
+	Parameter COUNTER_BD115200 bound to: 347 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'baudrate_generator__parameterized0' (25#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/baudrate_generator.sv:15]
 INFO: [Synth 8-6155] done synthesizing module 'uart_peripheral' (26#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
 INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameterized3' [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
@@ -954,7 +953,7 @@ INFO: [Synth 8-6157] synthesizing module 'Atfox_exTensible_Interface__parameteri
 INFO: [Synth 8-226] default block is never used [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:251]
 INFO: [Synth 8-6155] done synthesizing module 'Atfox_exTensible_Interface__parameterized3' (26#1) [L:/Projects/Atfox_exTensible_Interface/Atfox_exTensible_Interface.srcs/sources_1/new/Atfox_exTensible_Interface.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'uart_peripheral__parameterized0' [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
-	Parameter INTERNAL_CLOCK bound to: 25000000 - type: integer 
+	Parameter INTERNAL_CLOCK bound to: 40000000 - type: integer 
 	Parameter RX_FLAG_TYPE bound to: 1'b1 
 	Parameter DATA_WIDTH bound to: 8 - type: integer 
 	Parameter FIFO_DEPTH bound to: 32 - type: integer 
@@ -978,18 +977,18 @@ INFO: [Synth 8-6155] done synthesizing module 'sync_fifo__parameterized1' (26#1)
 INFO: [Synth 8-6155] done synthesizing module 'uart_peripheral__parameterized0' (26#1) [L:/Projects/peripheral_uart/peripheral_uart.srcs/sources_1/new/uart_peripheral.sv:2]
 INFO: [Synth 8-6155] done synthesizing module 'Dual_core_mcu' (27#1) [L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.srcs/sources_1/new/Dual_core_mcu.v:15]
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:08 ; elapsed = 00:00:26 . Memory (MB): peak = 1748.375 ; gain = 604.535
+Finished RTL Elaboration : Time (s): cpu = 00:00:10 ; elapsed = 00:00:26 . Memory (MB): peak = 1778.941 ; gain = 600.520
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:09 ; elapsed = 00:00:29 . Memory (MB): peak = 1748.375 ; gain = 604.535
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:11 ; elapsed = 00:00:29 . Memory (MB): peak = 1778.941 ; gain = 600.520
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:09 ; elapsed = 00:00:29 . Memory (MB): peak = 1748.375 ; gain = 604.535
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:11 ; elapsed = 00:00:29 . Memory (MB): peak = 1778.941 ; gain = 600.520
 ---------------------------------------------------------------------------------
-Netlist sorting complete. Time (s): cpu = 00:00:02 ; elapsed = 00:00:04 . Memory (MB): peak = 1789.086 ; gain = 21.930
+Netlist sorting complete. Time (s): cpu = 00:00:02 ; elapsed = 00:00:04 . Memory (MB): peak = 1803.766 ; gain = 17.363
 INFO: [Netlist 29-17] Analyzing 17 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
@@ -1013,21 +1012,21 @@ INFO: [Project 1-236] Implementation specific constraints were found while readi
 Resolution: To avoid this warning, move constraints listed in [.Xil/Dual_core_mcu_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
 Completed Processing XDC Constraints
 
-Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.012 . Memory (MB): peak = 3310.820 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 3308.969 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
   A total of 16 instances were transformed.
   IOBUF => IOBUF (IBUF, OBUFT): 16 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.153 . Memory (MB): peak = 3310.820 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.146 . Memory (MB): peak = 3308.969 ; gain = 0.000
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:25 ; elapsed = 00:01:16 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Constraint Validation : Time (s): cpu = 00:00:31 ; elapsed = 00:01:16 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7z020clg400-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:25 ; elapsed = 00:01:16 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:31 ; elapsed = 00:01:16 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -1036,7 +1035,7 @@ Applied set_property KEEP_HIERARCHY = SOFT for system_tick/inst. (constraint fil
 Applied set_property KEEP_HIERARCHY = SOFT for system_tick. (constraint file  auto generated constraint).
 Applied set_property KEEP = true for clk. (constraint file  auto generated constraint).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:25 ; elapsed = 00:01:16 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:31 ; elapsed = 00:01:16 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'alu_state_reg_reg' in module 'alu'
 INFO: [Synth 8-802] inferred FSM for state register 'MAIN_RPOCESSOR_BLOCK.main_state_reg_reg' in module 'Processor'
@@ -1152,7 +1151,7 @@ INFO: [Synth 8-3354] encoded FSM with state register 'transaction_state_reg' usi
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'transaction_state_reg' using encoding 'sequential' in module 'RX_controller'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:30 ; elapsed = 00:01:32 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:39 ; elapsed = 00:01:33 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start RTL Component Statistics 
@@ -1162,7 +1161,7 @@ Detailed RTL Component Info :
 	   2 Input   64 Bit       Adders := 6     
 	   3 Input   64 Bit       Adders := 2     
 	   2 Input   16 Bit       Adders := 1     
-	   2 Input   13 Bit       Adders := 4     
+	   2 Input   14 Bit       Adders := 4     
 	   2 Input   10 Bit       Adders := 4     
 	   2 Input    9 Bit       Adders := 8     
 	   2 Input    8 Bit       Adders := 3     
@@ -1182,7 +1181,7 @@ Detailed RTL Component Info :
 +---Registers : 
 	               64 Bit    Registers := 82    
 	               32 Bit    Registers := 6     
-	               13 Bit    Registers := 4     
+	               14 Bit    Registers := 4     
 	               12 Bit    Registers := 17    
 	               10 Bit    Registers := 4     
 	                8 Bit    Registers := 1353  
@@ -1208,8 +1207,8 @@ Detailed RTL Component Info :
 	   5 Input   64 Bit        Muxes := 32    
 	   2 Input   32 Bit        Muxes := 9     
 	   2 Input   16 Bit        Muxes := 1     
-	   8 Input   13 Bit        Muxes := 6     
-	   2 Input   13 Bit        Muxes := 6     
+	   8 Input   14 Bit        Muxes := 6     
+	   2 Input   14 Bit        Muxes := 6     
 	   2 Input   10 Bit        Muxes := 8     
 	   6 Input   10 Bit        Muxes := 2     
 	   5 Input   10 Bit        Muxes := 1     
@@ -1260,7 +1259,7 @@ Finished Part Resource Summary
 Start Cross Boundary and Area Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:02:11 ; elapsed = 00:07:14 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:02:12 ; elapsed = 00:05:45 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -1288,13 +1287,13 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:02:16 ; elapsed = 00:07:32 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:02:15 ; elapsed = 00:05:53 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:02:34 ; elapsed = 00:08:32 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Timing Optimization : Time (s): cpu = 00:02:28 ; elapsed = 00:06:21 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -1321,7 +1320,7 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:02:54 ; elapsed = 00:09:39 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Technology Mapping : Time (s): cpu = 00:02:41 ; elapsed = 00:06:53 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start IO Insertion
@@ -1339,37 +1338,37 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:02:59 ; elapsed = 00:09:55 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished IO Insertion : Time (s): cpu = 00:02:44 ; elapsed = 00:07:01 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:02:59 ; elapsed = 00:09:55 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Renaming Generated Instances : Time (s): cpu = 00:02:44 ; elapsed = 00:07:01 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:03:02 ; elapsed = 00:10:06 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:46 ; elapsed = 00:07:06 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:03:02 ; elapsed = 00:10:06 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Renaming Generated Ports : Time (s): cpu = 00:02:46 ; elapsed = 00:07:06 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:03:03 ; elapsed = 00:10:08 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Handling Custom Attributes : Time (s): cpu = 00:02:46 ; elapsed = 00:07:08 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:03:03 ; elapsed = 00:10:09 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Renaming Generated Nets : Time (s): cpu = 00:02:47 ; elapsed = 00:07:08 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -1386,13 +1385,13 @@ Report Cell Usage:
 |      |Cell      |Count |
 +------+----------+------+
 |1     |BUFG      |     2|
-|2     |CARRY4    |   244|
-|3     |LUT1      |   134|
+|2     |CARRY4    |   248|
+|3     |LUT1      |   138|
 |4     |LUT2      |   588|
-|5     |LUT3      |   782|
+|5     |LUT3      |   777|
 |6     |LUT4      |  2755|
-|7     |LUT5      |  6209|
-|8     |LUT6      | 13076|
+|7     |LUT5      |  6205|
+|8     |LUT6      | 13087|
 |9     |MUXF7     |  5351|
 |10    |MUXF8     |  1825|
 |11    |PLLE2_ADV |     1|
@@ -1402,25 +1401,25 @@ Report Cell Usage:
 |15    |RAM64X1D  |     4|
 |16    |FDCE      |     2|
 |17    |FDPE      |     1|
-|18    |FDRE      | 16787|
+|18    |FDRE      | 16791|
 |19    |FDSE      |    91|
 |20    |IBUF      |     4|
 |21    |IOBUF     |    16|
 |22    |OBUF      |     3|
 +------+----------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:03:03 ; elapsed = 00:10:09 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Finished Writing Synthesis Report : Time (s): cpu = 00:02:47 ; elapsed = 00:07:08 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 ---------------------------------------------------------------------------------
 Synthesis finished with 0 errors, 0 critical warnings and 0 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:02:41 ; elapsed = 00:09:29 . Memory (MB): peak = 3310.820 ; gain = 604.535
-Synthesis Optimization Complete : Time (s): cpu = 00:03:03 ; elapsed = 00:10:09 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+Synthesis Optimization Runtime : Time (s): cpu = 00:02:18 ; elapsed = 00:06:28 . Memory (MB): peak = 3308.969 ; gain = 600.520
+Synthesis Optimization Complete : Time (s): cpu = 00:02:47 ; elapsed = 00:07:08 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 INFO: [Project 1-571] Translating synthesized netlist
-Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:02 . Memory (MB): peak = 3310.820 ; gain = 0.000
-INFO: [Netlist 29-17] Analyzing 7475 Unisim elements for replacement
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.832 . Memory (MB): peak = 3308.969 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 7479 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.032 . Memory (MB): peak = 3310.820 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.014 . Memory (MB): peak = 3308.969 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
   A total of 54 instances were transformed.
   IOBUF => IOBUF (IBUF, OBUFT): 16 instances
@@ -1432,8 +1431,8 @@ INFO: [Project 1-111] Unisim Transformation Summary:
 INFO: [Common 17-83] Releasing license: Synthesis
 134 Infos, 3 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:03:14 ; elapsed = 00:10:57 . Memory (MB): peak = 3310.820 ; gain = 2166.980
+synth_design: Time (s): cpu = 00:02:55 ; elapsed = 00:07:41 . Memory (MB): peak = 3308.969 ; gain = 2130.547
 INFO: [Common 17-1381] The checkpoint 'L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.runs/synth_optimize/Dual_core_mcu.dcp' has been generated.
-write_checkpoint: Time (s): cpu = 00:00:06 ; elapsed = 00:00:16 . Memory (MB): peak = 3310.820 ; gain = 0.000
+write_checkpoint: Time (s): cpu = 00:00:04 ; elapsed = 00:00:08 . Memory (MB): peak = 3308.969 ; gain = 0.000
 INFO: [runtcl-4] Executing : report_utilization -file Dual_core_mcu_utilization_synth.rpt -pb Dual_core_mcu_utilization_synth.pb
-INFO: [Common 17-206] Exiting Vivado at Wed Dec 13 01:42:40 2023...
+INFO: [Common 17-206] Exiting Vivado at Thu Dec 14 03:06:57 2023...

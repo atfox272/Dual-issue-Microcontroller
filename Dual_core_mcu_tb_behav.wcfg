@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="75020334fs"></ZoomStartTime>
-      <ZoomEndTime time="105240335fs"></ZoomEndTime>
-      <Cursor1Time time="80057000fs"></Cursor1Time>
+      <ZoomStartTime time="1176550fs"></ZoomStartTime>
+      <ZoomEndTime time="1242001fs"></ZoomEndTime>
+      <Cursor1Time time="1116000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="116"></NameColumnWidth>
+      <NameColumnWidth column_width="155"></NameColumnWidth>
       <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="84" />
+   <WVObjectSize size="72" />
    <wvobject fp_name="/Dual_core_mcu_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -185,23 +185,6 @@
       <obj_property name="ElementShortName">GPIO_PORT[0:1][7:0]</obj_property>
       <obj_property name="ObjectShortName">GPIO_PORT[0:1][7:0]</obj_property>
       <obj_property name="isExpanded"></obj_property>
-      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[0]" type="array">
-         <obj_property name="ElementShortName">[0][7:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][7:0]</obj_property>
-         <obj_property name="isExpanded"></obj_property>
-      </wvobject>
-      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[1]" type="array">
-         <obj_property name="ElementShortName">[1][7:0]</obj_property>
-         <obj_property name="ObjectShortName">[1][7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[0]" type="array">
-         <obj_property name="ElementShortName">[0][7:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO_PORT[1]" type="array">
-         <obj_property name="ElementShortName">[1][7:0]</obj_property>
-         <obj_property name="ObjectShortName">[1][7:0]</obj_property>
-      </wvobject>
    </wvobject>
    <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/interrupt_request_1" type="logic">
       <obj_property name="ElementShortName">interrupt_request_1</obj_property>
@@ -315,69 +298,21 @@
       <obj_property name="ElementShortName">buffer[0:31][7:0]</obj_property>
       <obj_property name="ObjectShortName">buffer[0:31][7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/ISSUE_PROCESSOR_1/addr_dmem" type="array">
-      <obj_property name="ElementShortName">addr_dmem[63:0]</obj_property>
-      <obj_property name="ObjectShortName">addr_dmem[63:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   <wvobject fp_name="/Dual_core_mcu_tb/TX_use_ex" type="logic">
+      <obj_property name="ElementShortName">TX_use_ex</obj_property>
+      <obj_property name="ObjectShortName">TX_use_ex</obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/ISSUE_PROCESSOR_1/data_bus_wr" type="array">
-      <obj_property name="ElementShortName">data_bus_wr[63:0]</obj_property>
-      <obj_property name="ObjectShortName">data_bus_wr[63:0]</obj_property>
+   <wvobject fp_name="/Dual_core_mcu_tb/data_bus_in_tx_ex" type="array">
+      <obj_property name="ElementShortName">data_bus_in_tx_ex[7:0]</obj_property>
+      <obj_property name="ObjectShortName">data_bus_in_tx_ex[7:0]</obj_property>
+      <obj_property name="WaveformStyle">STYLE_DIGITAL</obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/ISSUE_PROCESSOR_1/wr_ins" type="logic">
-      <obj_property name="ElementShortName">wr_ins</obj_property>
-      <obj_property name="ObjectShortName">wr_ins</obj_property>
+   <wvobject fp_name="/Dual_core_mcu_tb/uart_ex/data_out_rx" type="array">
+      <obj_property name="ElementShortName">data_out_rx[7:0]</obj_property>
+      <obj_property name="ObjectShortName">data_out_rx[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/ISSUE_PROCESSOR_1/wr_access" type="logic">
-      <obj_property name="ElementShortName">wr_access</obj_property>
-      <obj_property name="ObjectShortName">wr_access</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/DMEM/wr_ins" type="logic">
-      <obj_property name="ElementShortName">wr_ins</obj_property>
-      <obj_property name="ObjectShortName">wr_ins</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/DMEM/invalid_wr_flag" type="logic">
-      <obj_property name="ElementShortName">invalid_wr_flag</obj_property>
-      <obj_property name="ObjectShortName">invalid_wr_flag</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO/rd_available" type="logic">
-      <obj_property name="ElementShortName">rd_available</obj_property>
-      <obj_property name="ObjectShortName">rd_available</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/ISSUE_PROCESSOR_1/rd_idle" type="logic">
-      <obj_property name="ElementShortName">rd_idle</obj_property>
-      <obj_property name="ObjectShortName">rd_idle</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/ISSUE_PROCESSOR_2/addr_dmem" type="array">
-      <obj_property name="ElementShortName">addr_dmem[63:0]</obj_property>
-      <obj_property name="ObjectShortName">addr_dmem[63:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO/rd_available" type="logic">
-      <obj_property name="ElementShortName">rd_available</obj_property>
-      <obj_property name="ObjectShortName">rd_available</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/ATI_GPIO_BUS1/s_atis_rd_available" type="logic">
-      <obj_property name="ElementShortName">s_atis_rd_available</obj_property>
-      <obj_property name="ObjectShortName">s_atis_rd_available</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/ATI_GPIO_BUS1/s_atis_rdata" type="array">
-      <obj_property name="ElementShortName">s_atis_rdata[63:0]</obj_property>
-      <obj_property name="ObjectShortName">s_atis_rdata[63:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/ATI_GPIO_BUS1/s_ati_rdata" type="array">
-      <obj_property name="ElementShortName">s_ati_rdata[7:0]</obj_property>
-      <obj_property name="ObjectShortName">s_ati_rdata[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO/rdata_PORT" type="array">
-      <obj_property name="ElementShortName">rdata_PORT[7:0]</obj_property>
-      <obj_property name="ObjectShortName">rdata_PORT[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO/raddr_PORT" type="array">
-      <obj_property name="ElementShortName">raddr_PORT[63:0]</obj_property>
-      <obj_property name="ObjectShortName">raddr_PORT[63:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Dual_core_mcu_tb/dual_core_mcu/GPIO/raddr_PORT_align" type="array">
-      <obj_property name="ElementShortName">raddr_PORT_align[0:0]</obj_property>
-      <obj_property name="ObjectShortName">raddr_PORT_align[0:0]</obj_property>
+   <wvobject fp_name="/Dual_core_mcu_tb/uart_ex/fifo_rx_wr" type="logic">
+      <obj_property name="ElementShortName">fifo_rx_wr</obj_property>
+      <obj_property name="ObjectShortName">fifo_rx_wr</obj_property>
    </wvobject>
 </wave_config>

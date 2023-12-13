@@ -14,11 +14,11 @@
 //`define PERIPHERAL_TESTCASE
 //`define INTERRUPT_HANDLER_TESTCASE
 //`define PARALLEL_TESTCASE
-//`define FPGA_UART1_TESTCASE
+`define FPGA_UART1_TESTCASE
 //`define FPGA_UART2_TESTCASE
 //`define FPGA_GPIO_TESTCASE
 //`define FPGA_TIMER_TESTCASE
-`define FPGA_EXTINT_TESTCASE
+//`define FPGA_EXTINT_TESTCASE
 
 module Dual_core_mcu_tb;
     parameter DATA_WIDTH = 8;
@@ -92,10 +92,16 @@ module Dual_core_mcu_tb;
     wire [DATA_WIDTH - 1:0] data_bus_out_uart_ex_2;                
     wire                    RX_use_ex_2;                
     wire                    RX_flag_ex_2;                
-    wire                    RX_ex_2;  
+    wire                    RX_ex_2;                
+                    
+    wire [DATA_WIDTH - 1:0] data_bus_out_uart_ex_1;                
+    wire                    RX_use_ex_1;                
+    wire                    RX_flag_ex_1;                
+    wire                    RX_ex_1;  
     
     assign RX_1 = TX_ex;
     assign RX_ex_2 = TX_2;
+    assign RX_ex_1 = TX_1;
     assign RX_2 = TX_ex_2; 
     
     Dual_core_mcu       
@@ -128,6 +134,13 @@ module Dual_core_mcu_tb;
         .TX_use(TX_use_ex),
         .data_in(data_bus_in_tx_ex),
         .TX_config_register(TX_config_register_ex),
+        // RX
+        .data_out(data_bus_out_uart_ex_1),
+        .RX_use(RX_use_ex_1),
+        .RX_flag(RX_flag_ex_1),
+        .RX_config_register(TX_config_register_ex),
+        .RX(RX_ex_1),
+        
         .rst_n(rst_n)
         );
     // External UART_2
@@ -1076,13 +1089,35 @@ module Dual_core_mcu_tb;
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
+            
             // PC = 0x138
-            instruction <= {5'd08,5'd08,12'h16,SRLI_INS_10};
+            instruction <= {5'd07,5'd08,12'h00,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end
+            // PC = 0x13C
+            instruction <= {5'd08,5'd08,12'd16,SRLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
             end
             
-            // PC = 0x13C
+            // PC = 0x140
+            instruction <= {5'd00,5'd10,5'd07,7'h00,SD_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end   
+            // PC = 0x144
+            instruction <= {5'd00,5'd10,5'd08,7'h00,SD_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end   
+            // PC = 0x148
+            instruction <= {5'd00,5'd10,5'd09,7'h00,SD_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            end             
+            
+            // PC = 0x14C
             instruction <= {25'd00,J_INS_7};                    // While(1);
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
@@ -1094,138 +1129,218 @@ module Dual_core_mcu_tb;
                 instruction <= {8'h04,8'h03,8'h02,8'h01};
                 begin 
                     #3;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+                $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
                 end
             end
             // PC = 0xC0 
             instruction <= {5'd08,5'd00,12'h74,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xC4
             instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xC8
             instruction <= {5'd08,5'd08,12'h41,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xCC
             instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xD0
             instruction <= {5'd08,5'd08,12'h20,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xD4
             instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xD8
             instruction <= {5'd08,5'd08,12'h6F,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xDC
             instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xE0
             instruction <= {5'd08,5'd08,12'h6C,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xE4
             instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xE8
             instruction <= {5'd08,5'd08,12'h6C,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xEC
             instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xF0
             instruction <= {5'd08,5'd08,12'h65,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xF4
             instruction <= {5'd08,5'd08,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0xF8
             instruction <= {5'd08,5'd08,12'h48,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             
             // PC = 0xFC
             instruction <= {5'd09,5'd00,12'h21,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0x100
             instruction <= {5'd09,5'd09,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0x104
             instruction <= {5'd09,5'd09,12'h78,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0x108
             instruction <= {5'd09,5'd09,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0x10C
             instruction <= {5'd09,5'd09,12'h6F,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0x110
             instruction <= {5'd09,5'd09,12'h08,SLLI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0x114
             instruction <= {5'd09,5'd09,12'h66,ADDI_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0x118
             instruction <= {5'd10,20'h80000,LUI_INS_7};     
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0x11C
             instruction <= {5'd00,5'd10,5'd08,7'h00,SD_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
             // PC = 0x120
             instruction <= {5'd00,5'd10,5'd09,7'h00,SW_INS_10};
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
-            // PC = 0x124
+            
+            // PC = 0x12C
+            instruction <= {5'd08,5'd10,12'd00,LD_INS_10};          
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
+            end
+            // PC = 0x130
+            instruction <= {5'd09,5'd08,12'h0FF,ANDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
+            end
+            // PC = 0x134
+            quick_seperate_imm12 <= -2; #1;
+            instruction <= {imm12hi,5'd09,5'd00,imm12lo,BEQ_INS_10};     
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
+            end
+            
+            // PC = 0x138
+            instruction <= {5'd07,5'd08,12'h00,ADDI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
+            end
+            // PC = 0x13C
+            instruction <= {5'd08,5'd08,12'd16,SRLI_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
+            end
+            
+            // PC = 0x140
+            instruction <= {5'd00,5'd10,5'd07,7'h00,SD_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
+            end   
+            // PC = 0x144
+            instruction <= {5'd00,5'd10,5'd08,7'h00,SD_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
+            end   
+            // PC = 0x148
+            instruction <= {5'd00,5'd10,5'd09,7'h00,SD_INS_10};
+            begin
+                #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
+            end             
+            
+            // PC = 0x14C
             instruction <= {25'd00,J_INS_7};                    // While(1);
             begin
                 #1;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[7:0];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[15:8];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[23:16];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;TX_use_ex <= 0;data_bus_in_tx_ex <= instruction[31:24];#3 TX_use_ex <= 1;#2 TX_use_ex <= 0;
+            $display("%h %h %h %h", instruction[7:0], instruction[15:8], instruction[23:16], instruction[31:24]);
             end
         `endif
         `ifdef FPGA_GPIO_TESTCASE
@@ -1963,6 +2078,65 @@ module Dual_core_mcu_tb;
         data_bus_in_uart_ex_2 <= 8'h03;
         #3 TX_use_ex_2 <= 1;
         #2 TX_use_ex_2 <= 0;
+        
+    end
+    `endif
+    `ifdef FPGA_UART1_TESTCASE
+    initial begin
+        #80000;
+        
+        TX_use_ex <= 0;
+        data_bus_in_tx_ex <= 8'h27;
+        #3 TX_use_ex <= 1;
+        #2 TX_use_ex <= 0;
+        
+        
+        TX_use_ex <= 0;
+        data_bus_in_tx_ex <= 8'h02;
+        #3 TX_use_ex <= 1;
+        #2 TX_use_ex <= 0;
+        
+        
+        
+        TX_use_ex <= 0;
+        data_bus_in_tx_ex <= 8'h20;
+        #3 TX_use_ex <= 1;
+        #2 TX_use_ex <= 0;
+        
+        
+        
+        TX_use_ex <= 0;
+        data_bus_in_tx_ex <= 8'h03;
+        #3 TX_use_ex <= 1;
+        #2 TX_use_ex <= 0;
+        
+        #4760;
+        
+        
+        TX_use_ex <= 0;
+        data_bus_in_tx_ex <= 8'h21;
+        #3 TX_use_ex <= 1;
+        #2 TX_use_ex <= 0;
+        
+        
+        TX_use_ex <= 0;
+        data_bus_in_tx_ex <= 8'h10;
+        #3 TX_use_ex <= 1;
+        #2 TX_use_ex <= 0;
+        
+        
+        
+        TX_use_ex <= 0;
+        data_bus_in_tx_ex <= 8'h20;
+        #3 TX_use_ex <= 1;
+        #2 TX_use_ex <= 0;
+        
+        
+        
+        TX_use_ex <= 0;
+        data_bus_in_tx_ex <= 8'h03;
+        #3 TX_use_ex <= 1;
+        #2 TX_use_ex <= 0;
         
     end
     `endif
