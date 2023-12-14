@@ -1,0 +1,202 @@
+Chapter 1: Overview
+
+1. Introduce about Dual-issue Microcontroller:
+-  64-bit risc-v microcontroller
+	+ Dual issue
+	+ System clock up to 40Mhz
+
+- Harvard Architecture
+=> 2 memory spaces
+	+ Data Memory
+	+ Program Memory
+
+- Both of Data Memory & Program Memory are SRAM
+
+- The Dual-issue microcontroller contains 8Kbits on-chip system memory for Data Memory and 2Kbits on-chip system for Program Memory
+
+- 16 GPIOs & 2 UART peripherals & Internal/External Interrupts
+
+- And some mechanism to handle with 2 issue processors
+
+<image: BlockDiagram.png>
+
+Chapter 2: Central Processing Unit
+1. Overview:
+- The CPU has 3 processors: 1 program processor & 2 issue processors.
+
+<image: CPU.png>
+
+- Program processor is multi-cycle-clock processor and processes instruction-fetch stage (consists of Instruction Fetch + Interrupt Detect + Instruction Dispatch)
+
+- Two Issue processors are multi-cycle-clock processor and processes Execution stage (consists of Execution + Data memory access + Write back)
+
+2. General purpose registers
+- 32 general-purpose registers are 64-bit registers
+
+<image:GeneralPurposeRegisters.png>
+
+	+ Stack pointer registers (x2 - 0xFF): to store the address of stack space
+	+ Global pointer register (x3 - 0x2B): To store the address of global data space in Data memory.
+
+3. Sequential Execution:
+
+<image:WorstExecInstCase.png>
+<image:BestExecInstCase.png>
++ Program Processor: Yellow block
++ Issue Processor 1: Blue block
++ Issue Processor 2: Green block
+* Without interrupt case, jump case
+
+Chapter 3: Memories
+1. Overview
+- The microcontroller consists of 2 memory spaces	
+	+ Data memory 
+	+ Program memory 
+2. Program memory
+- 8Kbits on-chip system for program memory
+
+<image:ProgramMemory_overview.png>
+
+- Maximum of 256 instructions
+	+ 208 instruction for main program
+	+ 48 instructions for interrupt routines
+
+- The program memory provides a half-alignment mechanism.
+=> User can double-fetch instructions at any word base
+
+3. Data memory
+- 2Kbits on-chip system
+
+- Data memory is separated into 3 spaces: 
+	+ I/Os & peripherals configuration space
+	+ Data space
+	+ I/Os & peripherals space
+
+- Data memory has 2 read-handler and 1 write-handler
+
+<image: DataMemory_overview.png>
+
+3.1 I/Os & Devices Memory Space
+
+<image: IOs_Devices_Mem.png>
+
+* Note for presentation: "Sẽ nói rõ hơn ở những phần sau"
+
+Chapter 4: General-purpose I/Os
+1. Overview:
+- The Dual-issue microcontroller provides 16 digital I/O pins.
+
+<image:GPIO_BlockDiagram.png>
+
+- The PORTx bits access from 0x00000000000000 - 0x00000000000001
+to set state of 8 pins of each port
+
+- The PIN_BUFx bits are accessed from 0x40000000000000 - 0x40000000000001 to set pin's value (output state)
+
+2. Assembly code example
+**Cái này m chụp cái hình trong latex cho nó đẹp**
+
+3. Alternate Port Function
+
+3.1. Alternate Function of Port A
+
+<image: AlternateFunction_PA.png>
++ EXTINT - Port A, Pin 2: EXTINT: External Interrupt source.
+
+3.2 Alternate Function of Port B
+
+<image: AlternateFunction_PB.png>
++ TLTF - Port B, Pin 1: Timer Flag will be toggled when the counter has reached the top of TIMER_LIMIT_VALUE.
+
+Chapter 5: Interrupts
+- The Dual-issue microcontroller provides 2 interrupt: external interrupt and internal interrupt.
+- Each interrupt routine cannot have maximum of 16 instructions.
+<images:InterruptRoutineAddress.png>
+
+Chapter 6: External Interrupt
+
+1. Some Features:
+- Maskable interrupt
+- Three sense control
+- Debounce mechanism 
+
+2. Overview:
+- Trigged by PA2 pin (both output state and input state)
+- Configuration register (EXTINT) is placed at 0x0D in Data Memory 
+- User can configure sense of external interrupt; enable debounce mechanism 
+
+3. Register description:
+
+<image: configRegister_ExternalInterrupt.png>
+- Bit 7: External interrupt enable
+	+ Enable request of external interrupt 
+
+- Bit 6 - 5: Sense Control
+<image :ExternalInterrupt_SenseControl.png>
+
+- Bit 4: Debounce option
+	+ Enable / Disable
+
+- Bit 3 - 0: Reserved
+
+4. Assembly code example:
+**Cũng chụp giống cái example trên (phần external interrupt )**
+
+Chapter 6: 16-bit Timer/Counter 
+
+1. Some feature:
+- Clear timer when comparing match automatically.
+- Timer counter's width is 16-bit
+- 4 prescaler options
+- Timer flag signal at PB1 pin
+
+2. Register Description
+
+2.1. Timer Interrupt Register
+
+<image:configRegister_TimerInterrupt.png>
+- Bit 7: Timer Interrupt Enable}
+	+ Enable request of Timer Interrupt to Interrupt Controller
+- Bit 6: Timer Flag Modes (TFM)
+	+ If TFM is set to "1", the module will trigger when the counter reaches TIMLIM's value.
+	+ If TFM is set to "0", the module will trigger when the counter is overflow
+- Bit 5 - 3: Reserved 
+- Bit 2 - 0: Prescaler Select Bit
+<image:/TimerInterrupt_prescaler.png>
+
+2.2 Timer Limit Value Registers
+
+<image: configRegister_TimerLimit.png>
+- Bit 7 - 0 (0x0F): Timer Limit Value LOW.
+	+ Contain lower 8btts of the limit counter
+- Bit 7 - 0 (0x10): Timer Limit Value HIGH
+	+ Contain upper 8bits of the limit counter.
+
+3. Assemble Code Example:
+**Cũng chụp tương tự trong latex**
+
+
+Chapter 7: UART
+
+1. Some features
+- Full duplex operation
+- Serial frames with 5, 6, 7, 8 data bits; 1 or 2 stop bits; none, even or odd parity bit
+- Odd and Even parity generator and checker supported by hardware
+- Store program port (Only for UART1)
+- TX buffer contains up to 64 bytes (32 bytes of Atfox exTensible Interface + 32 bytes of FIFO module).
+- RX buffer contains 56 bytes (24 bytes of Atfox exTensible Interface + 32 bytes of FIFO module).
+
+2. Overview
+- The Dual-issue microcontroller provides 2 UART communications peripherals
+
+
+
+
+
+
+
+
+
+
+
+

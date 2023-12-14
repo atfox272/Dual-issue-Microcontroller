@@ -1,0 +1,132 @@
+Mixed Testcase
+# UART1
+## Test script:
+**First**, the DualIssue MCU will send "Hello Atfox!" to UART1
+**Second**, 
+
+    ; Set up sentence's content (x8 = "Hello At" x9 = "fox!")
+            ADDI x8, x0, 0x74
+            SLLI x8, x8, 8
+            ADDI x8, x8, 0x41
+            SLLI x8, x8, 8
+            ADDI x8, x8, 0x20
+            SLLI x8, x8, 8
+            ADDI x8, x8, 0x6F
+            SLLI x8, x8, 8
+            ADDI x8, x8, 0x6C
+            SLLI x8, x8, 8
+            ADDI x8, x8, 0x6C
+            SLLI x8, x8, 8
+            ADDI x8, x8, 0x65
+            SLLI x8, x8, 8
+            ADDI x8, x8, 0x48
+            SLLI x8, x8, 8
+            ADDI x9, x0, 0x21
+            SLLI x9, x9, 8
+            ADDI x9, x9, 0x78
+            SLLI x9, x9, 8
+            ADDI x9, x9, 0x6F
+            SLLI x9, x9, 8
+            ADDI x9, x9, 0x66
+    ; Send the sentence to UART1
+            LUI  x10, 0x80000; Map address to UART1 (at 0x80000000000000)
+            SD   x8, 0(x10)  ; Send "Hello At"
+            SW   x9, 0(x10)  ; Send "fox!"
+    ; Receive Data
+    LOOP:   LD   x8, 0(x10)
+            ANDI x9, x8, 0x0FF  ; x9 = amount
+            BEQ  x9, x0, LOOP   ; while(amount == 0) 
+            
+            ADDI x7, x8, 0x00   ; Copy data of x8 
+            SRL  x8, x8, 16     ; Remove 2 amount bytes from x8
+            
+            SD   x7, 0(x10)     ; Send raw package
+            SD   x8, 0(x10)     ; Only data 
+            SB   x9, 0(x10)     ; Only amount
+            
+    EXIT:   J 0x00              ; While(1)
+
+Hex Program:
+
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+01 02 03 04
+13 d0 01 40
+93 20 00 42
+13 04 01 42
+93 20 00 42
+13 80 00 42
+93 20 00 42
+13 bc 01 42
+93 20 00 42
+13 b0 01 42
+93 20 00 42
+13 b0 01 42
+93 20 00 42
+13 94 01 42
+93 20 00 42
+13 20 01 42
+13 84 00 48
+93 20 40 4a
+13 e0 41 4a
+93 20 40 4a
+13 bc 41 4a
+93 20 40 4a
+13 98 41 4a
+37 00 00 54
+a3 01 90 02
+23 01 92 02
+83 01 80 42
+93 ff 03 4a
+63 f8 41 fa
+13 00 00 3a
+93 42 00 42
+a3 01 8e 02
+a3 01 90 02
+a3 01 92 02
+67 00 00 00
