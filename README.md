@@ -1,5 +1,7 @@
 # Dual-isue-Microcontroller
-Dual-issue Microcontroller *version Beta*
+Dual-issue Microcontroller
+
+Features demo: https://drive.google.com/drive/folders/1pImyTPES-EB-GDjd5CZTr1XF6T_Y0xMg
 
 ![datasheet01](Report/embeded_image/0001.jpg)
 ![datasheet01](Report/embeded_image/0002.jpg)

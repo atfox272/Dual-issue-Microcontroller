@@ -128,6 +128,7 @@ set ACTIVE_STEP write_bitstream
 set rc [catch {
   create_msg_db write_bitstream.pb
   set_param chipscope.maxJobs 2
+  set_param xicom.use_bs_reader 1
   open_checkpoint Dual_core_mcu_postroute_physopt.dcp
   set_property webtalk.parent_dir L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.cache/wt [current_project]
 set_property TOP Dual_core_mcu [current_fileset]

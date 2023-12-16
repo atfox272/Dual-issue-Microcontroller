@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date             : Thu Dec 14 03:13:19 2023
+| Date             : Fri Dec 15 21:22:28 2023
 | Host             : LAPTOP-UGQ0I2VJ running 64-bit major release  (build 9200)
 | Command          : report_power -file Dual_core_mcu_power_routed.rpt -pb Dual_core_mcu_power_summary_routed.pb -rpx Dual_core_mcu_power_routed.rpx
 | Design           : Dual_core_mcu
@@ -53,14 +53,14 @@ Table of Contents
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
 | Clocks                   |     0.019 |        5 |       --- |             --- |
-| Slice Logic              |     0.014 |    48152 |       --- |             --- |
-|   LUT as Logic           |     0.013 |    22092 |     53200 |           41.53 |
+| Slice Logic              |     0.014 |    48164 |       --- |             --- |
+|   LUT as Logic           |     0.013 |    22095 |     53200 |           41.53 |
 |   F7/F8 Muxes            |    <0.001 |     7176 |     53200 |           13.49 |
-|   CARRY4                 |    <0.001 |      248 |     13300 |            1.86 |
-|   Register               |    <0.001 |    16885 |    106400 |           15.87 |
+|   CARRY4                 |    <0.001 |      250 |     13300 |            1.88 |
+|   Register               |    <0.001 |    16893 |    106400 |           15.88 |
 |   LUT as Distributed RAM |    <0.001 |      132 |     17400 |            0.76 |
 |   Others                 |     0.000 |       68 |       --- |             --- |
-| Signals                  |     0.022 |    28052 |       --- |             --- |
+| Signals                  |     0.022 |    28064 |       --- |             --- |
 | PLL                      |     0.109 |        1 |         4 |           25.00 |
 | I/O                      |     0.005 |       23 |       125 |           18.40 |
 | Static Power             |     0.108 |          |           |                 |
@@ -156,10 +156,10 @@ Table of Contents
 |   ATI_UART2_BUS2             |     0.001 |
 |   DMEM                       |     0.006 |
 |   IMEM                       |     0.009 |
-|   ISSUE_PROCESSOR_1          |     0.005 |
+|   ISSUE_PROCESSOR_1          |     0.006 |
 |     MAIN_RPOCESSOR_BLOCK.alu |     0.003 |
 |   ISSUE_PROCESSOR_2          |     0.004 |
-|   PROGRAM_PROCESSOR          |     0.018 |
+|   PROGRAM_PROCESSOR          |     0.017 |
 |   registers_management       |     0.008 |
 |   system_tick                |     0.110 |
 |     inst                     |     0.110 |

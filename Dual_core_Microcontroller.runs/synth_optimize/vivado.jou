@@ -2,8 +2,8 @@
 # Vivado v2020.2 (64-bit)
 # SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
 # IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
-# Start of session at: Thu Dec 14 02:59:00 2023
-# Process ID: 31968
+# Start of session at: Fri Dec 15 21:04:58 2023
+# Process ID: 41576
 # Current directory: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.runs/synth_optimize
 # Command line: vivado.exe -log Dual_core_mcu.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source Dual_core_mcu.tcl
 # Log file: L:/Projects/Dual_core_Microcontroller/Dual_core_Microcontroller.runs/synth_optimize/Dual_core_mcu.vds

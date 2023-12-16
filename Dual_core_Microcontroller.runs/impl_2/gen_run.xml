@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="impl_2" LaunchPart="xc7z020clg400-1" LaunchTime="1702498028">
+<GenRun Id="impl_2" LaunchPart="xc7z020clg400-1" LaunchTime="1702649791">
   <File Type="ROUTE-PWR" Name="Dual_core_mcu_power_routed.rpt"/>
   <File Type="PA-TCL" Name="Dual_core_mcu.tcl"/>
   <File Type="ROUTE-PWR-SUM" Name="Dual_core_mcu_power_summary_routed.pb"/>
@@ -17,9 +17,12 @@
   <File Type="BITSTR-BMM" Name="Dual_core_mcu_bd.bmm"/>
   <File Type="ROUTE-METHODOLOGY-DRC" Name="Dual_core_mcu_methodology_drc_routed.rpt"/>
   <File Type="BITSTR-MMI" Name="Dual_core_mcu.mmi"/>
+  <File Type="ROUTE-METHODOLOGY-DRC-PB" Name="Dual_core_mcu_methodology_drc_routed.pb"/>
   <File Type="BITSTR-SYSDEF" Name="Dual_core_mcu.sysdef"/>
+  <File Type="ROUTE-DRC-RPX" Name="Dual_core_mcu_drc_routed.rpx"/>
   <File Type="BITSTR-LTX" Name="debug_nets.ltx"/>
   <File Type="BITSTR-LTX" Name="Dual_core_mcu.ltx"/>
+  <File Type="RCFI_FILE" Name="Dual_core_mcu.rcfi"/>
   <File Type="WBT-USG" Name="usage_statistics_webtalk.html"/>
   <File Type="OPT-DRC" Name="Dual_core_mcu_drc_opted.rpt"/>
   <File Type="OPT-HWDEF" Name="Dual_core_mcu.hwdef"/>
@@ -54,11 +57,8 @@
   <File Type="POSTROUTE-PHYSOPT-TIMING-RPX" Name="Dual_core_mcu_timing_summary_postroute_physopted.rpx"/>
   <File Type="POSTROUTE-PHYSOPT-BUS-SKEW" Name="Dual_core_mcu_bus_skew_postroute_physopted.rpt"/>
   <File Type="POSTROUTE-PHYSOPT-BUS-SKEW-PB" Name="Dual_core_mcu_bus_skew_postroute_physopted.pb"/>
-  <File Type="ROUTE-METHODOLOGY-DRC-PB" Name="Dual_core_mcu_methodology_drc_routed.pb"/>
-  <File Type="ROUTE-DRC-RPX" Name="Dual_core_mcu_drc_routed.rpx"/>
   <File Type="ROUTE-METHODOLOGY-DRC-RPX" Name="Dual_core_mcu_methodology_drc_routed.rpx"/>
   <File Type="PDI-FILE" Name="Dual_core_mcu.pdi"/>
-  <File Type="RCFI_FILE" Name="Dual_core_mcu.rcfi"/>
   <File Type="CFI_FILE" Name="Dual_core_mcu.cfi"/>
   <File Type="RNPI_FILE" Name="Dual_core_mcu.rnpi"/>
   <File Type="NPI_FILE" Name="Dual_core_mcu.npi"/>

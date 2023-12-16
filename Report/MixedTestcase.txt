@@ -48,54 +48,54 @@ Mixed Testcase
 
 Hex Program:
 
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
-01 02 03 04
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
 13 d0 01 40
 93 20 00 42
 13 04 01 42
@@ -130,3 +130,414 @@ a3 01 8e 02
 a3 01 90 02
 a3 01 92 02
 67 00 00 00
+0B
+
+# UART2		###################3
+
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+13 d0 01 40
+93 20 00 42
+13 04 01 42
+93 20 00 42
+13 80 00 42
+93 20 00 42
+13 bc 01 42
+93 20 00 42
+13 b0 01 42
+93 20 00 42
+13 b0 01 42
+93 20 00 42
+13 94 01 42
+93 20 00 42
+13 20 01 42
+13 84 00 48
+93 20 40 4a
+13 e0 41 4a
+93 20 40 4a
+13 bc 41 4a
+93 20 40 4a
+13 98 41 4a
+37 00 00 56
+a3 01 90 02
+23 01 92 02
+83 01 80 42
+93 ff 03 4a
+63 f8 41 fa
+13 00 00 3a
+93 42 00 42
+a3 01 8e 02
+a3 01 90 02
+a3 01 92 02
+67 00 00 00
+0b
+
+# Timer
+- Toggle PA[0:3] pins every 1s
+
+; Pre-process: Allocate stack & Restore registers 
+ISR3:	ADDI x2, x2, -16; Increase Stack space(2 64-bit registers)
+    	SD   x8, 0(x2)  ; Store x8 to Stack
+    	SD   x9, 8(x2)  ; Store x9 to Stack
+
+; In-process
+	ADDI x9, x0, 144; Load global variable's address to x9 
+    	LD   x8, 0(x9)  ; Load global variable's data to x8
+    	ADDI x8, x8, 1  ; Set global variable's data HIGH (set flag)
+    	SD   x8, 0(x9)  ; Store global variable's data
+
+; Post-process: Recovery
+    	LD   x8, 0(x2)  ; Recover register
+    	LD   x9, 8(x2)  ; Recover register
+    	ADDI x2, x2, 16 ; De-allocate Stack space(2 64-bit registers)
+
+; Execute RETI (return from interrupt) instruction
+    	RETI            ; Return from interrupt 
+	
+
+; Configure timer
+; First, set TIMER_LIMIT_VALUE  
+MAIN:	ADDI x8, x0, 0x12 ; TIMLIML = 0x12
+    	SB   x8, 16(x0)   ; Set TIMLIMH
+    	ADDI x8, x0, 0x7A ; TIMLIMH = 0x7A
+    	SB   x8, 15(x0)   ; Set TIMLIML
+
+; Second, set Configuration data
+    	ADDI x9, x0, 0xC3 ; EN << 1; TFM << 1; TLFT << 1; PS256 << 1;
+    	SB   x9, 14(x0)   ; Store configuration data
+; Third, set PA0, PA1, PA2, PA3 as Output (PA[4:7] Input)
+	ADDI x19, x0, 0xF0; PA0 << 0; PA1 << 0; PA2 << 1; PA3 << 1; ...
+	SB   x19, 0(0x0)
+	LUI  x20, 0x40000 ; Map to GPIO space
+	ADDI x20, x20, 0x0; Map to PORT A
+	ADDI x22, x0, 5	  ; CONST5
+LOOP: 	ADDI x15, x0, 144
+	LD   x16, 0(x15)   ; Load global variable
+	BNE  x16, x22, RETURN
+	ADDI x16, x0, 0
+	SD   x16, 0(x15)
+	LB   x21, 0(x20)
+	XORI x21, x21, 0x0F; Toggle PA[0:3]
+	SB   x21, 0(x20)
+RETURN: J LOOP	
+
+		
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+13 c0 bf 10
+a3 01 90 00
+a3 21 92 00
+13 40 02 48
+83 01 40 42
+13 04 00 42
+a3 01 50 02
+83 01 80 40
+83 21 80 48
+13 40 80 10
+f7 01 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+13 48 00 40
+23 40 10 00
+13 e8 01 40
+23 3c 10 00
+13 0c 03 48
+23 38 12 00
+13 c0 03 98
+23 00 26 00
+37 00 00 a2
+13 00 00 a5
+13 14 00 b0
+13 40 02 78
+83 01 c0 83
+e3 18 2c 04
+13 00 00 80
+a3 01 e0 03
+03 00 00 ad
+13 3e 40 ad
+23 00 2a 05
+67 fc ff ff
+0B
+
+
+
+
+
+
+# EXTINT
+
+; Pre-process: Allocate stack & Restore registers 
+ISR2:	ADDI x2, x2, -16; Increase Stack space(2 64-bit registers)
+    	SD   x8, 0(x2)  ; Store x8 to Stack
+    	SD   x9, 8(x2)  ; Store x9 to Stack
+
+; In-process
+	ADDI x9, x0, 144; Load global variable's address to x9 
+    	LD   x8, 0(x9)  ; Load global variable's data to x8
+    	ADDI x8, x8, 1  ; Set global variable's data HIGH (set flag)
+    	SD   x8, 0(x9)  ; Store global variable's data
+
+; Post-process: Recovery
+    	LD   x8, 0(x2)  ; Recover register
+    	LD   x9, 8(x2)  ; Recover register
+    	ADDI x2, x2, 16 ; De-allocate Stack space(2 64-bit registers)
+
+; Execute RETI (return from interrupt) instruction
+    	RETI            ; Return from interrupt 
+	
+; Configure external interrupt
+; First, Enable and configure external interrupt 
+MAIN:	LB   x9, x0, 0x0  ; 
+    	ORI  x9, x9, 0x04 ; Set PA2 as Input state 
+	SB   x9, 0(x0)	  ; Set PA2 as Input state 
+	ADDI x8, x0, 90	  ; EXT Enable << 1; Rising << 1; Debounce << 1;
+    	SB   x8, 13(x0)   ; 
+
+; Second, set Configuration data
+    	ADDI x9, x0, 0xC3 ; EN << 1; TFM << 1; TLFT << 1; PS256 << 1;
+    	SB   x9, 14(x0)   ; Store configuration data
+
+; Third, set PA0, PA1, PA2, PA3 as Output (PA[4:7] Input)
+	ADDI x19, x0, 0xF0; PA0 << 0; PA1 << 0; PA2 << 1; PA3 << 1; ...
+	SB   x19, 0(0x0)
+	LUI  x20, 0x40000 ; Map to GPIO space
+	ADDI x20, x20, 0x0; Map to PORT A
+	ADDI x22, x0, 5	  ; CONST5
+LOOP: 	ADDI x15, x0, 144
+	LD   x16, 0(x15)   ; Load global variable
+	BNE  x16, x22, RETURN
+	ADDI x16, x0, 0
+	SD   x16, 0(x15)
+	LB   x21, 0(x20)
+	XORI x21, x21, 0x0F; Toggle PA[0:3]
+	SB   x21, 0(x20)
+RETURN: J LOOP
+
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+13 c0 bf 10
+a3 01 90 00
+a3 21 92 00
+13 40 02 48
+83 01 40 42
+13 04 00 42
+a3 01 50 02
+83 01 80 40
+83 21 80 48
+13 40 80 10
+f7 01 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+03 00 00 48
+13 13 40 4a
+23 00 12 00
+13 40 02 40
+23 34 10 00
+37 00 00 a2
+13 14 00 b0
+13 40 02 78
+83 01 c0 83
+e3 18 2c 04
+13 00 00 80
+a3 01 e0 03
+03 00 00 ad
+13 3e 40 ad
+23 00 2a 05
+67 fc ff ff
+0b
+
+# GPIO
+
+C Language Abstract Level:
+
+int read_PA2;
+
+PORTA = PA0 << 0 | PA1 << 0 | PA2 << 1; // Configure PA[0:1] as Output and PA[2] as Input
+
+read_PA2 = PIN_BUF2;
+
+if(read_PA2 == 1) {
+	PIN_BUF0 = 1;
+	PIN_BUF1 = 1;
+}
+else {
+	PIN_BUF0 = 0;
+	PIN_BUF1 = 0;
+}
+
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+13 10 00 48
+23 00 12 00
+37 00 00 52
+03 00 80 5a
+93 13 c0 62
+63 10 00 03
+13 0f c0 aa
+23 00 aa 02
+e7 01 00 00
+93 f3 c3 aa
+23 00 aa 02
+67 fc ff ff
+0b
+
+
+
